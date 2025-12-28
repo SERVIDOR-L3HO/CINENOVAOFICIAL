@@ -4,7 +4,7 @@ const tmdb = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
   headers: {
     accept: 'application/json',
-    Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+    Authorization: `Bearer ${process.env.TMDB_API_KEY.trim()}`
   }
 });
 
@@ -22,7 +22,6 @@ exports.getPopularMovies = async (req, res) => {
       params: { language: 'es-ES', page: 1 }
     });
     
-    // Obtenemos detalles extra para cada película para tener el IMDB ID
     const movies = await Promise.all(response.data.results.map(async m => {
       try {
         const details = await tmdb.get(`/movie/${m.id}`);
@@ -39,13 +38,24 @@ exports.getPopularMovies = async (req, res) => {
           embeds: getEmbedUrls(imdbId, m.id)
         };
       } catch (e) {
-        return null;
+        console.error(`Error fetching details for movie ${m.id}:`, e.message);
+        return {
+          id: m.id,
+          title: m.title,
+          overview: m.overview,
+          year: new Date(m.release_date).getFullYear(),
+          rating: m.vote_average,
+          poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+          banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
+          embeds: getEmbedUrls(null, m.id)
+        };
       }
     }));
     
     res.json(movies.filter(m => m !== null));
   } catch (error) {
-    res.status(500).json({ error: 'Error al conectar con TMDB' });
+    console.error('TMDB Controller Error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Error al conectar con TMDB', details: error.message });
   }
 };
 
@@ -87,11 +97,19 @@ exports.searchMovies = async (req, res) => {
             id: m.id,
             imdbId: details.data.imdb_id,
             title: m.title,
-            year: new Date(m.release_date).getFullYear(),
+            year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
             poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
             embeds: getEmbedUrls(details.data.imdb_id, m.id)
           };
-        } catch (e) { return null; }
+        } catch (e) { 
+          return {
+            id: m.id,
+            title: m.title,
+            year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+            poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+            embeds: getEmbedUrls(null, m.id)
+          };
+        }
       }));
       
       res.json(movies.filter(m => m !== null));
