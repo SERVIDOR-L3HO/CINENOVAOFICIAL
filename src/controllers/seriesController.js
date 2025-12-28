@@ -8,13 +8,14 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1) => {
+const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
   const base = 'https://multiembed.mov';
   const player = 'directstream.php';
   
   // Priorizar IMDB ID para series, si no existe usar TMDB
   const id = imdbId || tmdbId;
-  let query = `?video_id=${id}`;
+  const language = lang.startsWith('es') ? 'es' : 'en';
+  let query = `?video_id=${id}&lang=${language}`;
   
   if (type === 'tv') {
     query += `&s=${season}&e=${episode}`;
@@ -23,7 +24,7 @@ const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1) =
   // URL de respaldo (TMDB directo)
   const backup = `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&s=${season}&e=${episode}`;
   
-  console.log(`Generando URL para ${type}: ID=${id}, S=${season}, E=${episode}`);
+  console.log(`Generando URL para ${type}: ID=${id}, S=${season}, E=${episode}, L=${language}`);
   
   return {
     simple: `${base}/${query}`,
@@ -127,13 +128,12 @@ exports.searchSeries = async (req, res) => {
 exports.getEpisodeEmbed = async (req, res) => {
   try {
     const { id } = req.params;
-    const { s, e } = req.query;
+    const { s, e, lang } = req.query;
     
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
     
-    // Si no hay IMDB ID, usamos el TMDB ID (id)
-    res.json(getEmbedUrls(imdbId || id, id, 'tv', s || 1, e || 1));
+    res.json(getEmbedUrls(imdbId || id, id, 'tv', s || 1, e || 1, lang || 'es-ES'));
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el enlace del episodio' });
   }

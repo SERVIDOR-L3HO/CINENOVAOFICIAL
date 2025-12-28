@@ -288,7 +288,6 @@
             const frame = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
             
-            // Forzar limpieza y mostrar loader
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
             loader.innerHTML = `
@@ -297,7 +296,7 @@
             `;
             
             try {
-                const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}`);
+                const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}&lang=${currentLang}`);
                 const data = await res.json();
                 
                 // Intentar VIP primero

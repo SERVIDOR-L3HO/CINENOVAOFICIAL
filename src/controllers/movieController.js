@@ -8,11 +8,12 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (imdbId, tmdbId) => {
+const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
+  const language = lang.startsWith('es') ? 'es' : 'en';
   return {
-    simple: `https://multiembed.mov/?video_id=${id}`,
-    vip: `https://multiembed.mov/directstream.php?video_id=${id}`
+    simple: `https://multiembed.mov/?video_id=${id}&lang=${language}`,
+    vip: `https://multiembed.mov/directstream.php?video_id=${id}&lang=${language}`
   };
 };
 
@@ -36,7 +37,7 @@ exports.getPopularMovies = async (req, res) => {
           rating: m.vote_average,
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-          embeds: getEmbedUrls(imdbId, m.id)
+          embeds: getEmbedUrls(imdbId, m.id, lang)
         };
       } catch (e) {
         console.error(`Error fetching details for movie ${m.id}:`, e.message);
@@ -48,7 +49,7 @@ exports.getPopularMovies = async (req, res) => {
           rating: m.vote_average,
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-          embeds: getEmbedUrls(null, m.id)
+          embeds: getEmbedUrls(null, m.id, lang)
         };
       }
     }));
@@ -78,7 +79,7 @@ exports.getMovieById = async (req, res) => {
       rating: m.vote_average,
       poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-      embeds: getEmbedUrls(m.imdb_id, m.id)
+      embeds: getEmbedUrls(m.imdb_id, m.id, lang)
     });
   } catch (error) {
     res.status(404).json({ error: 'Película no encontrada' });
@@ -101,7 +102,7 @@ exports.searchMovies = async (req, res) => {
             title: m.title,
             year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
             poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
-            embeds: getEmbedUrls(details.data.imdb_id, m.id)
+            embeds: getEmbedUrls(details.data.imdb_id, m.id, lang || 'es-ES')
           };
         } catch (e) { 
           return {
@@ -109,7 +110,7 @@ exports.searchMovies = async (req, res) => {
             title: m.title,
             year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
             poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
-            embeds: getEmbedUrls(null, m.id)
+            embeds: getEmbedUrls(null, m.id, lang || 'es-ES')
           };
         }
       }));
