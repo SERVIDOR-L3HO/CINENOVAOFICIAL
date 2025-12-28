@@ -5,6 +5,7 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const movieRoutes = require('./routes/movieRoutes');
+const seriesRoutes = require('./routes/seriesRoutes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/movies', movieRoutes);
+app.use('/api/series', seriesRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

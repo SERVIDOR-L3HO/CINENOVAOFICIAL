@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Breaking Bad",
+    "year": 2008,
+    "genre": "Drama",
+    "imdbId": "tt0903747",
+    "tmdbId": 1396,
+    "type": "series"
+  },
+  {
+    "id": 2,
+    "title": "Stranger Things",
+    "year": 2016,
+    "genre": "Sci-Fi",
+    "imdbId": "tt4574334",
+    "tmdbId": 66732,
+    "type": "series"
+  }
+]
