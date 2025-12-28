@@ -8,10 +8,16 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (id, type = 'tv', season = 1, episode = 1) => {
+const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1) => {
   const base = 'https://multiembed.mov';
   const player = 'directstream.php';
-  let query = `?video_id=${id}&s=${season}&e=${episode}`;
+  const id = imdbId || tmdbId;
+  let query = `?video_id=${id}`;
+  
+  if (type === 'tv') {
+    query += `&s=${season}&e=${episode}`;
+  }
+  
   return {
     simple: `${base}/${query}`,
     vip: `${base}/${player}${query}`
@@ -48,9 +54,13 @@ exports.getSeriesById = async (req, res) => {
       params: { language: 'es-ES' }
     });
     
+    const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
+    const imdbId = externalIds.data.imdb_id;
+    
     const s = response.data;
     res.json({
       id: s.id,
+      imdbId: imdbId,
       title: s.name,
       overview: s.overview,
       year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
@@ -89,8 +99,16 @@ exports.searchSeries = async (req, res) => {
     }
 };
 
-exports.getEpisodeEmbed = (req, res) => {
-  const { id } = req.params;
-  const { s, e } = req.query;
-  res.json(getEmbedUrls(id, 'tv', s || 1, e || 1));
+exports.getEpisodeEmbed = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { s, e } = req.query;
+    
+    const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
+    const imdbId = externalIds.data.imdb_id;
+    
+    res.json(getEmbedUrls(imdbId, id, 'tv', s || 1, e || 1));
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el enlace del episodio' });
+  }
 };
