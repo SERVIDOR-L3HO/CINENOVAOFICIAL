@@ -8,7 +8,10 @@
     "rating": 8.8,
     "imdbId": "tt1375666",
     "tmdbId": 27205,
-    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt1375666"
+    "embeds": {
+      "simple": "https://multiembed.mov/?video_id=tt1375666",
+      "vip": "https://multiembed.mov/directstream.php?video_id=tt1375666"
+    }
   },
   {
     "id": 2,
@@ -19,7 +22,10 @@
     "rating": 9.2,
     "imdbId": "tt0068646",
     "tmdbId": 238,
-    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0068646"
+    "embeds": {
+      "simple": "https://multiembed.mov/?video_id=tt0068646",
+      "vip": "https://multiembed.mov/directstream.php?video_id=tt0068646"
+    }
   },
   {
     "id": 3,
@@ -30,7 +36,10 @@
     "rating": 9.0,
     "imdbId": "tt0468569",
     "tmdbId": 155,
-    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0468569"
+    "embeds": {
+      "simple": "https://multiembed.mov/?video_id=tt0468569",
+      "vip": "https://multiembed.mov/directstream.php?video_id=tt0468569"
+    }
   },
   {
     "id": 4,
@@ -41,7 +50,10 @@
     "rating": 8.7,
     "imdbId": "tt0816692",
     "tmdbId": 157336,
-    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0816692"
+    "embeds": {
+      "simple": "https://multiembed.mov/?video_id=tt0816692",
+      "vip": "https://multiembed.mov/directstream.php?video_id=tt0816692"
+    }
   },
   {
     "id": 5,
@@ -52,6 +64,9 @@
     "rating": 8.7,
     "imdbId": "tt0133093",
     "tmdbId": 603,
-    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0133093"
+    "embeds": {
+      "simple": "https://multiembed.mov/?video_id=tt0133093",
+      "vip": "https://multiembed.mov/directstream.php?video_id=tt0133093"
+    }
   }
 ]
