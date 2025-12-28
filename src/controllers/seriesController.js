@@ -8,15 +8,10 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (id, type = 'tv', season = null, episode = null) => {
+const getEmbedUrls = (id, type = 'tv', season = 1, episode = 1) => {
   const base = 'https://multiembed.mov';
   const player = 'directstream.php';
-  let query = `?video_id=${id}`;
-  
-  if (type === 'tv' && season && episode) {
-    query += `&s=${season}&e=${episode}`;
-  }
-  
+  let query = `?video_id=${id}&s=${season}&e=${episode}`;
   return {
     simple: `${base}/${query}`,
     vip: `${base}/${player}${query}`
@@ -62,19 +57,19 @@ exports.getSeriesById = async (req, res) => {
       rating: s.vote_average,
       poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
-      seasons: s.number_of_seasons,
-      episodes: s.number_of_episodes
+      seasons: s.seasons.map(season => ({
+          number: season.season_number,
+          episodes: season.episode_count,
+          name: season.name
+      }))
     });
   } catch (error) {
-    res.status(404).json({ error: 'Serie no encontrada en TMDB' });
+    res.status(404).json({ error: 'Serie no encontrada' });
   }
 };
 
 exports.getEpisodeEmbed = (req, res) => {
   const { id } = req.params;
   const { s, e } = req.query;
-  
-  if (!s || !e) return res.status(400).json({ error: 'Se requiere temporada (s) y episodio (e)' });
-  
-  res.json(getEmbedUrls(id, 'tv', s, e));
+  res.json(getEmbedUrls(id, 'tv', s || 1, e || 1));
 };
