@@ -10,70 +10,85 @@
     <style>
         * { font-family: 'Outfit', sans-serif; }
         body { background-color: #050505; color: white; overflow-x: hidden; }
-        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(15px); }
-        .movie-card:hover { transform: translateY(-10px) scale(1.05); }
-        .hero-gradient { background: linear-gradient(0deg, #050505 10%, transparent 100%); }
-        .glow-red { box-shadow: 0 0 40px rgba(220, 38, 38, 0.4); }
-        .glow-white { box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+        .glass { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .movie-card:hover { transform: translateY(-8px) scale(1.03); }
+        .hero-gradient { background: linear-gradient(0deg, #050505 5%, transparent 100%); }
+        .glow-red { box-shadow: 0 0 30px rgba(220, 38, 38, 0.3); }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
         .episode-card.active { background: #dc2626; border-color: transparent; }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3.5rem !important; }
+            .grid-container { padding: 1rem !important; }
+        }
     </style>
 </head>
-<body>
-    <nav class="fixed w-full z-[100] glass px-6 py-4 flex justify-between items-center border-b border-white/5">
-        <div class="flex items-center gap-10">
-            <img src="/assets/logo_full.png" alt="CINENOVA" class="h-10 cursor-pointer" onclick="window.location.reload()">
-            <div class="hidden md:flex gap-8 text-[11px] font-black tracking-[4px] uppercase italic">
+<body class="antialiased">
+    <nav class="fixed w-full z-[100] glass px-4 md:px-8 py-3 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center gap-4 md:gap-10">
+            <img src="/assets/logo_full.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer" onclick="window.location.reload()">
+            <div class="hidden lg:flex gap-6 text-[10px] font-black tracking-[3px] uppercase italic">
                 <a href="#" class="text-white hover:text-red-600 transition" onclick="loadCategory('movies')">CINE</a>
                 <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('series')">SERIES</a>
                 <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('tv')">VIVO</a>
             </div>
         </div>
-        <div class="flex items-center gap-6">
-            <div class="relative group hidden sm:block">
-                <input type="text" id="global-search" placeholder="BUSCAR..." class="bg-white/5 border border-white/10 rounded-full px-6 py-2 text-xs focus:outline-none focus:border-red-600 w-48 focus:w-80 transition-all duration-500 uppercase font-bold">
-                <i class="fas fa-search absolute right-4 top-2.5 text-gray-500 group-focus-within:text-red-600"></i>
+        <div class="flex items-center gap-4 md:gap-6">
+            <div class="relative group">
+                <input type="text" id="global-search" placeholder="BUSCAR..." class="bg-white/5 border border-white/10 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-[10px] md:text-xs focus:outline-none focus:border-red-600 w-32 md:w-48 focus:md:w-64 transition-all duration-500 uppercase font-bold">
+                <i class="fas fa-search absolute right-4 top-2 md:top-2.5 text-gray-500 group-focus-within:text-red-600 text-[10px] md:text-xs"></i>
             </div>
-            <img src="/assets/logo_l3ho.png" alt="L3HO" class="h-8 grayscale hover:grayscale-0 transition duration-500">
+            <img src="/assets/logo_l3ho.png" alt="L3HO" class="h-6 md:h-8 grayscale hover:grayscale-0 transition duration-500">
         </div>
     </nav>
 
-    <main id="main-view">
+    <!-- Mobile Bottom Nav -->
+    <div class="lg:hidden fixed bottom-0 w-full glass z-[100] flex justify-around py-4 border-t border-white/5">
+        <button onclick="loadCategory('movies')" class="text-xs font-black tracking-widest text-white flex flex-col items-center gap-1">
+            <i class="fas fa-film"></i> CINE
+        </button>
+        <button onclick="loadCategory('series')" class="text-xs font-black tracking-widest text-gray-400 flex flex-col items-center gap-1">
+            <i class="fas fa-tv"></i> SERIES
+        </button>
+        <button onclick="loadCategory('tv')" class="text-xs font-black tracking-widest text-gray-400 flex flex-col items-center gap-1">
+            <i class="fas fa-broadcast-tower"></i> VIVO
+        </button>
+    </div>
+
+    <main id="main-view" class="pb-24 lg:pb-0">
         <!-- Hero Section -->
-        <div id="hero" class="relative h-[85vh] w-full flex items-end p-12 overflow-hidden">
-            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-110" style="background-image: url('')"></div>
-            <div class="absolute inset-0 bg-black/30"></div>
+        <div id="hero" class="relative h-[70vh] md:h-[85vh] w-full flex items-end p-6 md:p-12 overflow-hidden">
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105" style="background-image: url('')"></div>
+            <div class="absolute inset-0 bg-black/40"></div>
             <div class="absolute inset-0 hero-gradient"></div>
             
-            <div class="relative z-10 max-w-4xl animate-fade-in">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="bg-red-600 text-[10px] font-black px-3 py-1.5 rounded italic uppercase tracking-widest">CINENOVA EXCLUSIVE</span>
-                    <span id="hero-rating" class="text-yellow-400 font-black text-sm">⭐ 0.0</span>
-                    <span id="hero-year" class="text-gray-300 font-bold text-sm">2025</span>
+            <div class="relative z-10 max-w-4xl w-full">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-red-600 text-[8px] md:text-[10px] font-black px-2 py-1 rounded italic uppercase tracking-widest">EXCLUSIVE</span>
+                    <span id="hero-rating" class="text-yellow-400 font-black text-xs md:text-sm">⭐ 0.0</span>
                 </div>
-                <h1 id="hero-title" class="text-8xl font-black mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl">...</h1>
-                <p id="hero-desc" class="text-lg text-gray-200 mb-10 line-clamp-3 leading-relaxed opacity-70 max-w-2xl font-light"></p>
-                <div class="flex gap-5">
-                    <button id="hero-play-btn" class="bg-red-600 hover:bg-red-700 px-12 py-5 rounded-full font-black text-xs flex items-center gap-3 glow-red transition-all transform hover:scale-105 active:scale-95 tracking-[2px]">
-                        <i class="fas fa-play"></i> REPRODUCIR AHORA
+                <h1 id="hero-title" class="hero-title text-4xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl">...</h1>
+                <p id="hero-desc" class="text-sm md:text-lg text-gray-200 mb-6 md:mb-10 line-clamp-2 md:line-clamp-3 leading-relaxed opacity-70 max-w-2xl font-light"></p>
+                <div class="flex flex-wrap gap-3 md:gap-5">
+                    <button id="hero-play-btn" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-2 md:gap-3 glow-red transition-all transform hover:scale-105 active:scale-95 tracking-widest">
+                        <i class="fas fa-play"></i> REPRODUCIR
                     </button>
-                    <button class="bg-white/5 hover:bg-white/10 px-12 py-5 rounded-full font-black text-xs backdrop-blur-xl border border-white/10 transition-all tracking-[2px]">
-                        DETALLES
+                    <button class="flex-1 sm:flex-none bg-white/5 hover:bg-white/10 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs backdrop-blur-xl border border-white/10 transition-all tracking-widest">
+                        INFO
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Grid Section -->
-        <div class="px-12 py-20">
-            <div class="flex justify-between items-end mb-12">
+        <div class="grid-container px-4 md:px-12 py-10 md:py-20">
+            <div class="flex justify-between items-end mb-8 md:mb-12">
                 <div>
-                    <h2 id="section-title" class="text-4xl font-black italic uppercase tracking-tighter mb-2">LO MÁS VISTO</h2>
-                    <div class="h-1.5 w-24 bg-red-600"></div>
+                    <h2 id="section-title" class="text-2xl md:text-4xl font-black italic uppercase tracking-tighter mb-1 md:mb-2">LO MÁS VISTO</h2>
+                    <div class="h-1 w-16 md:h-1.5 md:w-24 bg-red-600"></div>
                 </div>
             </div>
-            <div id="content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-10">
+            <div id="content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-10">
                 <!-- Data injected here -->
             </div>
         </div>
@@ -81,44 +96,41 @@
 
     <!-- Professional Player View -->
     <div id="player-view" class="fixed inset-0 z-[200] bg-black hidden flex flex-col overflow-hidden">
-        <div class="p-6 flex justify-between items-center glass border-b border-white/5">
-            <div class="flex items-center gap-5">
-                <img src="/assets/logo_icon.png" class="h-10 animate-pulse">
-                <div>
-                    <h3 id="player-title" class="font-black italic uppercase text-lg tracking-tighter">CARGANDO...</h3>
-                    <div class="flex gap-4 text-[10px] text-red-600 font-black tracking-widest uppercase opacity-80">
+        <div class="p-4 md:p-6 flex justify-between items-center glass border-b border-white/5">
+            <div class="flex items-center gap-3 md:gap-5">
+                <img src="/assets/logo_icon.png" class="h-6 md:h-10">
+                <div class="max-w-[150px] md:max-w-none">
+                    <h3 id="player-title" class="font-black italic uppercase text-sm md:text-lg tracking-tighter truncate">CARGANDO...</h3>
+                    <div class="hidden md:flex gap-4 text-[10px] text-red-600 font-black tracking-widest uppercase opacity-80">
                         <span>FULL HD 1080P</span>
-                        <span>AUDIO LATINO</span>
                         <span>SISTEMA VIP L3HO</span>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="closePlayer()" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-xl transition-all duration-500 group">
-                    <i class="fas fa-times text-xl group-hover:rotate-90 transition"></i>
-                </button>
-            </div>
+            <button onclick="closePlayer()" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-xl transition-all duration-500 group">
+                <i class="fas fa-times text-lg md:text-xl group-hover:rotate-90 transition"></i>
+            </button>
         </div>
         
-        <div class="flex-grow flex flex-col lg:flex-row">
+        <div class="flex-grow flex flex-col lg:flex-row h-full overflow-hidden">
             <!-- Video Area -->
-            <div class="flex-grow bg-black relative shadow-2xl">
+            <div class="flex-grow bg-black relative shadow-2xl h-[50vh] lg:h-full">
                 <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                 <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950">
-                    <div class="w-20 h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p class="text-[10px] font-black tracking-[4px] text-gray-500 uppercase">ENLAZANDO SERVIDOR SEGURO...</p>
+                    <div class="w-12 h-12 md:w-20 md:h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-[8px] md:text-[10px] font-black tracking-[4px] text-gray-500 uppercase">CARGANDO SERVIDOR...</p>
                 </div>
             </div>
             
-            <!-- Series Panel (Optional) -->
-            <div id="series-panel" class="w-full lg:w-96 bg-zinc-950 border-l border-white/5 hidden flex flex-col">
-                <div class="p-6 border-b border-white/5">
-                    <h4 class="font-black italic uppercase tracking-tighter mb-4">EPISODIOS</h4>
-                    <select id="season-select" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-xs font-bold outline-none focus:border-red-600">
+            <!-- Series Panel -->
+            <div id="series-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 hidden flex flex-col h-[50vh] lg:h-full">
+                <div class="p-4 md:p-6 border-b border-white/5">
+                    <h4 class="font-black italic uppercase tracking-tighter mb-3 md:mb-4 text-sm">EPISODIOS</h4>
+                    <select id="season-select" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 text-[10px] md:text-xs font-bold outline-none focus:border-red-600">
                         <!-- Seasons -->
                     </select>
                 </div>
-                <div id="episode-list" class="flex-grow overflow-y-auto p-4 grid gap-3">
+                <div id="episode-list" class="flex-grow overflow-y-auto p-4 grid gap-2 md:gap-3 pb-24 lg:pb-4">
                     <!-- Episodes -->
                 </div>
             </div>
@@ -131,6 +143,18 @@
 
         async function loadContent(category = 'movies', query = '') {
             currentCategory = category;
+            
+            // Actualizar estilo de botones nav
+            document.querySelectorAll('nav a, div.lg\\:hidden button').forEach(el => {
+                if(el.innerText.toLowerCase().includes(category === 'movies' ? 'cine' : category)) {
+                    el.classList.add('text-white');
+                    el.classList.remove('text-gray-400');
+                } else {
+                    el.classList.remove('text-white');
+                    el.classList.add('text-gray-400');
+                }
+            });
+
             const endpoint = query ? `/api/${category}/search?query=${query}` : `/api/${category}`;
             const res = await fetch(endpoint);
             const data = await res.json();
@@ -145,20 +169,19 @@
                 card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
                 card.onclick = () => openItem(item);
                 card.innerHTML = `
-                    <div class="aspect-[2/3] rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
-                        <img src="${item.poster}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[2px]">
-                            <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
-                                <i class="fas fa-play text-white ml-1 text-xl"></i>
+                    <div class="aspect-[2/3] rounded-xl md:rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
+                        <img src="${item.poster}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[1px]">
+                            <div class="w-10 h-10 md:w-16 md:h-16 bg-red-600 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
+                                <i class="fas fa-play text-white ml-1 text-sm md:text-xl"></i>
                             </div>
                         </div>
-                        <div class="absolute bottom-6 left-6 right-6">
-                            <h3 class="font-black text-sm uppercase italic tracking-tighter leading-none mb-2">${item.title}</h3>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] text-red-600 font-black tracking-widest uppercase">${item.year}</span>
-                                <span class="h-1 w-1 bg-white/20 rounded-full"></span>
-                                <span class="text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
+                        <div class="absolute bottom-3 md:bottom-6 left-3 md:left-6 right-3 md:right-6">
+                            <h3 class="font-black text-[10px] md:text-sm uppercase italic tracking-tighter leading-none mb-1 md:mb-2 line-clamp-1">${item.title}</h3>
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <span class="text-[8px] md:text-[10px] text-red-600 font-black tracking-widest uppercase">${item.year}</span>
+                                <span class="text-[8px] md:text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}</span>
                             </div>
                         </div>
                     </div>
@@ -177,7 +200,6 @@
             document.getElementById('hero-title').innerText = item.title;
             document.getElementById('hero-desc').innerText = item.overview;
             document.getElementById('hero-rating').innerText = `⭐ ${item.rating.toFixed(1)}`;
-            document.getElementById('hero-year').innerText = item.year;
             document.getElementById('hero-play-btn').onclick = () => openItem(item);
         }
 
@@ -210,11 +232,15 @@
             const data = await res.json();
             
             const seasonSelect = document.getElementById('season-select');
-            seasonSelect.innerHTML = data.seasons.map(s => `<option value="${s.number}">${s.name}</option>`).join('');
+            seasonSelect.innerHTML = data.seasons
+                .filter(s => s.number > 0)
+                .map(s => `<option value="${s.number}">${s.name}</option>`)
+                .join('');
             
             seasonSelect.onchange = (e) => loadEpisodes(id, e.target.value, data.seasons.find(s => s.number == e.target.value).episodes);
             
-            loadEpisodes(id, data.seasons[0].number, data.seasons[0].episodes);
+            const firstSeason = data.seasons.find(s => s.number > 0) || data.seasons[0];
+            loadEpisodes(id, firstSeason.number, firstSeason.episodes);
         }
 
         function loadEpisodes(seriesId, seasonNum, episodeCount) {
@@ -222,10 +248,10 @@
             list.innerHTML = '';
             for(let i=1; i<=episodeCount; i++) {
                 const btn = document.createElement('button');
-                btn.className = `episode-card p-4 rounded-xl border border-white/5 bg-white/5 text-left transition hover:border-red-600 hover:bg-red-600/10 flex items-center justify-between`;
+                btn.className = `episode-card p-3 md:p-4 rounded-xl border border-white/5 bg-white/5 text-left transition hover:border-red-600 hover:bg-red-600/10 flex items-center justify-between`;
                 btn.innerHTML = `
-                    <span class="text-[10px] font-black uppercase tracking-widest">Episodio ${i}</span>
-                    <i class="fas fa-play text-[10px] opacity-20"></i>
+                    <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest">EPI ${i}</span>
+                    <i class="fas fa-play text-[8px] opacity-20"></i>
                 `;
                 btn.onclick = () => {
                     document.querySelectorAll('.episode-card').forEach(b => b.classList.remove('active'));
@@ -234,7 +260,6 @@
                 };
                 list.appendChild(btn);
             }
-            // Play first episode by default
             playEpisode(seriesId, seasonNum, 1);
         }
 
@@ -256,7 +281,6 @@
             loadContent(cat);
         }
 
-        // Search Engine
         let searchTimeout;
         document.getElementById('global-search').oninput = (e) => {
             clearTimeout(searchTimeout);
@@ -269,7 +293,6 @@
             }, 600);
         };
 
-        // Init
         loadContent('movies');
     </script>
 </body>
