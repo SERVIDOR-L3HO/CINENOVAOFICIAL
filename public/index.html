@@ -273,10 +273,35 @@
         }
 
         async function playEpisode(id, s, e) {
-            const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}`);
-            const data = await res.json();
-            document.getElementById('video-frame').src = data.vip;
-            document.getElementById('player-loader').classList.remove('hidden');
+            const frame = document.getElementById('video-frame');
+            const loader = document.getElementById('player-loader');
+            
+            frame.src = 'about:blank';
+            loader.classList.remove('hidden');
+            
+            try {
+                const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}`);
+                const data = await res.json();
+                
+                // Intentar VIP, si falla tras 5 segundos, usar backup
+                frame.src = data.vip;
+                
+                // Detectar si el frame sigue vacío o en negro (basado en tiempo de carga)
+                const backupTimeout = setTimeout(() => {
+                    if (frame.src.includes('multiembed.mov')) {
+                        console.log("Activando servidor de respaldo...");
+                        frame.src = data.backup;
+                    }
+                }, 8000);
+
+                frame.onload = () => {
+                    clearTimeout(backupTimeout);
+                    loader.classList.add('hidden');
+                };
+            } catch (err) {
+                console.error("Error al reproducir episodio:", err);
+                loader.innerHTML = '<p class="text-red-500 font-bold uppercase text-[10px]">Error de conexión</p>';
+            }
         }
 
         function closePlayer() {
