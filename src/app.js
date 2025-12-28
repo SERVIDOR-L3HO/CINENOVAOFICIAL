@@ -47,4 +47,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Algo salió mal!' });
 });
 
+// Exportar para Vercel
 module.exports = app;
+
+// Solo escuchar si no estamos en Vercel
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor API profesional corriendo en http://0.0.0.0:${PORT}`);
+  });
+}

@@ -3,7 +3,7 @@
   "name": "cinenova-api",
   "builds": [
     {
-      "src": "src/server.js",
+      "src": "src/app.js",
       "use": "@vercel/node"
     },
     {
@@ -14,7 +14,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "src/server.js"
+      "dest": "src/app.js"
     },
     {
       "src": "/assets/(.*)",
