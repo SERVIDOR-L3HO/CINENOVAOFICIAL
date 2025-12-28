@@ -18,13 +18,14 @@ const getEmbedUrls = (imdbId, tmdbId) => {
 
 exports.getPopularMovies = async (req, res) => {
   try {
+    const lang = req.query.lang || 'es-ES';
     const response = await tmdb.get('/movie/popular', {
-      params: { language: 'es-ES', page: 1 }
+      params: { language: lang, page: 1 }
     });
     
     const movies = await Promise.all(response.data.results.map(async m => {
       try {
-        const details = await tmdb.get(`/movie/${m.id}`);
+        const details = await tmdb.get(`/movie/${m.id}`, { params: { language: lang } });
         const imdbId = details.data.imdb_id;
         return {
           id: m.id,
@@ -62,8 +63,9 @@ exports.getPopularMovies = async (req, res) => {
 exports.getMovieById = async (req, res) => {
   try {
     const { id } = req.params;
+    const lang = req.query.lang || 'es-ES';
     const response = await tmdb.get(`/movie/${id}`, {
-      params: { language: 'es-ES' }
+      params: { language: lang }
     });
     
     const m = response.data;
@@ -85,14 +87,14 @@ exports.getMovieById = async (req, res) => {
 
 exports.searchMovies = async (req, res) => {
     try {
-      const { query } = req.query;
+      const { query, lang } = req.query;
       const response = await tmdb.get('/search/movie', {
-        params: { language: 'es-ES', query: query }
+        params: { language: lang || 'es-ES', query: query }
       });
       
       const movies = await Promise.all(response.data.results.map(async m => {
         try {
-          const details = await tmdb.get(`/movie/${m.id}`);
+          const details = await tmdb.get(`/movie/${m.id}`, { params: { language: lang || 'es-ES' } });
           return {
             id: m.id,
             imdbId: details.data.imdb_id,

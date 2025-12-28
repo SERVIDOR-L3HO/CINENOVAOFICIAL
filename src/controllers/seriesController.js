@@ -34,8 +34,9 @@ const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1) =
 
 exports.getAllSeries = async (req, res) => {
   try {
+    const lang = req.query.lang || 'es-ES';
     const response = await tmdb.get('/tv/popular', {
-      params: { language: 'es-ES', page: 1 }
+      params: { language: lang, page: 1 }
     });
     
     const series = response.data.results.map(s => ({
@@ -58,8 +59,9 @@ exports.getAllSeries = async (req, res) => {
 exports.getSeriesById = async (req, res) => {
   try {
     const { id } = req.params;
+    const lang = req.query.lang || 'es-ES';
     const response = await tmdb.get(`/tv/${id}`, {
-      params: { language: 'es-ES' }
+      params: { language: lang }
     });
     
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
@@ -88,9 +90,9 @@ exports.getSeriesById = async (req, res) => {
 
 exports.searchSeries = async (req, res) => {
     try {
-      const { query } = req.query;
+      const { query, lang } = req.query;
       const response = await tmdb.get('/search/tv', {
-        params: { language: 'es-ES', query: query }
+        params: { language: lang || 'es-ES', query: query }
       });
       
       const series = await Promise.all(response.data.results.map(async s => {

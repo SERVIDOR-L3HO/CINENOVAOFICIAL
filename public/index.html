@@ -32,6 +32,10 @@
                 <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('series')">SERIES</a>
                 <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('tv')">VIVO</a>
             </div>
+            <div class="flex bg-white/5 rounded-full p-1 border border-white/10">
+                <button onclick="setLanguage('es-ES')" id="lang-es" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white">ESP</button>
+                <button onclick="setLanguage('en-US')" id="lang-en" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400">ENG</button>
+            </div>
         </div>
         <div class="flex items-center gap-4 md:gap-6">
             <div class="relative group">
@@ -140,6 +144,14 @@
     <script>
         let currentCategory = 'movies';
         let currentItem = null;
+        let currentLang = 'es-ES';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('lang-es').className = lang === 'es-ES' ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white' : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
+            document.getElementById('lang-en').className = lang === 'en-US' ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white' : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
+            loadContent(currentCategory);
+        }
 
         async function loadContent(category = 'movies', query = '') {
             currentCategory = category;
@@ -155,7 +167,7 @@
                 }
             });
 
-            const endpoint = query ? `/api/${category}/search?query=${query}` : `/api/${category}`;
+            const endpoint = query ? `/api/${category}/search?query=${query}&lang=${currentLang}` : `/api/${category}?lang=${currentLang}`;
             try {
                 const res = await fetch(endpoint);
                 const data = await res.json();
