@@ -5,7 +5,10 @@
     "director": "Christopher Nolan",
     "year": 2010,
     "genre": "Sci-Fi",
-    "rating": 8.8
+    "rating": 8.8,
+    "imdbId": "tt1375666",
+    "tmdbId": 27205,
+    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt1375666"
   },
   {
     "id": 2,
@@ -13,7 +16,10 @@
     "director": "Francis Ford Coppola",
     "year": 1972,
     "genre": "Crime",
-    "rating": 9.2
+    "rating": 9.2,
+    "imdbId": "tt0068646",
+    "tmdbId": 238,
+    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0068646"
   },
   {
     "id": 3,
@@ -21,6 +27,31 @@
     "director": "Christopher Nolan",
     "year": 2008,
     "genre": "Action",
-    "rating": 9.0
+    "rating": 9.0,
+    "imdbId": "tt0468569",
+    "tmdbId": 155,
+    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0468569"
+  },
+  {
+    "id": 4,
+    "title": "Interstellar",
+    "director": "Christopher Nolan",
+    "year": 2014,
+    "genre": "Sci-Fi",
+    "rating": 8.7,
+    "imdbId": "tt0816692",
+    "tmdbId": 157336,
+    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0816692"
+  },
+  {
+    "id": 5,
+    "title": "The Matrix",
+    "director": "Lana Wachowski, Lilly Wachowski",
+    "year": 1999,
+    "genre": "Action",
+    "rating": 8.7,
+    "imdbId": "tt0133093",
+    "tmdbId": 603,
+    "embedUrl": "https://www.superembed.stream/embed/movie?imdb=tt0133093"
   }
 ]
