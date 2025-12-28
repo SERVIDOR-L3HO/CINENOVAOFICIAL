@@ -24,17 +24,20 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // Static files
-app.use(express.static(path.join(__dirname, '../public'), {
-  index: 'index.html'
-}));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
 app.use('/api/movies', movieRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/tv', tvRoutes);
 
-// Catch-all for Frontend
-app.get(/^\/(?!api).*/, (req, res) => {
+// Root path handler
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Catch-all for Frontend (Non-API)
+app.get(/^(?!\/api).+/, (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
