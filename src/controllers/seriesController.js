@@ -4,7 +4,7 @@ const tmdb = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
   headers: {
     accept: 'application/json',
-    Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+    Authorization: `Bearer ${process.env.TMDB_API_KEY.trim()}`
   }
 });
 
@@ -85,12 +85,27 @@ exports.searchSeries = async (req, res) => {
         params: { language: 'es-ES', query: query }
       });
       
-      const series = response.data.results.map(s => ({
-        id: s.id,
-        title: s.name,
-        year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
-        poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
-        type: 'series'
+      const series = await Promise.all(response.data.results.map(async s => {
+        try {
+          const ext = await tmdb.get(`/tv/${s.id}/external_ids`);
+          return {
+            id: s.id,
+            imdbId: ext.data.imdb_id,
+            title: s.name,
+            year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+            poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+            banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
+            type: 'series'
+          };
+        } catch (e) {
+          return {
+            id: s.id,
+            title: s.name,
+            year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+            poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+            type: 'series'
+          };
+        }
       }));
       
       res.json(series);
@@ -107,7 +122,8 @@ exports.getEpisodeEmbed = async (req, res) => {
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
     
-    res.json(getEmbedUrls(imdbId, id, 'tv', s || 1, e || 1));
+    // Si no hay IMDB ID, usamos el TMDB ID (id)
+    res.json(getEmbedUrls(imdbId || id, id, 'tv', s || 1, e || 1));
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el enlace del episodio' });
   }

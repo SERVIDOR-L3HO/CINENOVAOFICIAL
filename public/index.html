@@ -145,7 +145,8 @@
             currentCategory = category;
             
             document.querySelectorAll('nav a, div.lg\\:hidden button').forEach(el => {
-                if(el.innerText.toLowerCase().includes(category === 'movies' ? 'cine' : category)) {
+                const text = el.innerText.toLowerCase();
+                if(text.includes(category === 'movies' ? 'cine' : category)) {
                     el.classList.add('text-white');
                     el.classList.remove('text-gray-400');
                 } else {
@@ -155,38 +156,47 @@
             });
 
             const endpoint = query ? `/api/${category}/search?query=${query}` : `/api/${category}`;
-            const res = await fetch(endpoint);
-            const data = await res.json();
-            
-            const grid = document.getElementById('content-grid');
-            grid.innerHTML = '';
-            
-            data.forEach((item, index) => {
-                if(!query && index === 0) updateHero(item);
+            try {
+                const res = await fetch(endpoint);
+                const data = await res.json();
                 
-                const card = document.createElement('div');
-                card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
-                card.onclick = () => openItem(item);
-                card.innerHTML = `
-                    <div class="aspect-[2/3] rounded-xl md:rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
-                        <img src="${item.poster}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125" loading="lazy">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[1px]">
-                            <div class="w-10 h-10 md:w-16 md:h-16 bg-red-600 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
-                                <i class="fas fa-play text-white ml-1 text-sm md:text-xl"></i>
+                const grid = document.getElementById('content-grid');
+                grid.innerHTML = '';
+                
+                if (data.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest">No se encontraron resultados</div>';
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    if(!query && index === 0) updateHero(item);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
+                    card.onclick = () => openItem(item);
+                    card.innerHTML = `
+                        <div class="aspect-[2/3] rounded-xl md:rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
+                            <img src="${item.poster || 'https://placehold.co/500x750/000/fff?text=NO+IMAGE'}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[1px]">
+                                <div class="w-10 h-10 md:w-16 md:h-16 bg-red-600 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
+                                    <i class="fas fa-play text-white ml-1 text-sm md:text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-3 md:bottom-6 left-3 md:left-6 right-3 md:right-6">
+                                <h3 class="font-black text-[10px] md:text-sm uppercase italic tracking-tighter leading-none mb-1 md:mb-2 line-clamp-1">${item.title}</h3>
+                                <div class="flex items-center gap-2 md:gap-3">
+                                    <span class="text-[8px] md:text-[10px] text-red-600 font-black tracking-widest uppercase">${item.year}</span>
+                                    <span class="text-[8px] md:text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="absolute bottom-3 md:bottom-6 left-3 md:left-6 right-3 md:right-6">
-                            <h3 class="font-black text-[10px] md:text-sm uppercase italic tracking-tighter leading-none mb-1 md:mb-2 line-clamp-1">${item.title}</h3>
-                            <div class="flex items-center gap-2 md:gap-3">
-                                <span class="text-[8px] md:text-[10px] text-red-600 font-black tracking-widest uppercase">${item.year}</span>
-                                <span class="text-[8px] md:text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Error al cargar contenido:", err);
+            }
         }
 
         function updateHero(item) {
