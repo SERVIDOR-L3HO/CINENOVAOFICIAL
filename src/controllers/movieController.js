@@ -10,10 +10,11 @@ const tmdb = axios.create({
 
 const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
-  const language = lang.startsWith('es') ? 'es' : 'en';
   return {
-    simple: `https://multiembed.mov/?video_id=${id}&lang=${language}`,
-    vip: `https://multiembed.mov/directstream.php?video_id=${id}&lang=${language}`
+    simple: `https://multiembed.mov/?video_id=${id}`,
+    vip: `https://multiembed.mov/directstream.php?video_id=${id}`,
+    vidsrc: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
+    vidsrc_tmdb: `https://vidsrc.to/embed/movie/${tmdbId}`
   };
 };
 

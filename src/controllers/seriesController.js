@@ -11,25 +11,13 @@ const tmdb = axios.create({
 const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
   const base = 'https://multiembed.mov';
   const player = 'directstream.php';
-  
-  // Priorizar IMDB ID para series, si no existe usar TMDB
   const id = imdbId || tmdbId;
-  const language = lang.startsWith('es') ? 'es' : 'en';
-  let query = `?video_id=${id}&lang=${language}`;
-  
-  if (type === 'tv') {
-    query += `&s=${season}&e=${episode}`;
-  }
-  
-  // URL de respaldo (TMDB directo)
-  const backup = `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&s=${season}&e=${episode}`;
-  
-  console.log(`Generando URL para ${type}: ID=${id}, S=${season}, E=${episode}, L=${language}`);
   
   return {
-    simple: `${base}/${query}`,
-    vip: `${base}/${player}${query}`,
-    backup: backup
+    simple: `${base}/?video_id=${id}&s=${season}&e=${episode}`,
+    vip: `${base}/${player}?video_id=${id}&s=${season}&e=${episode}`,
+    vidsrc: `https://vidsrc.me/embed/tv?imdb=${imdbId || id}&sea=${season}&epi=${episode}`,
+    vidsrc_to: `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
   };
 };
 
