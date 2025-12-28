@@ -3,131 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CINENOVA - Streaming de Elite</title>
+    <title>CINENOVA - Premium Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Outfit', sans-serif; }
-        body { background-color: #080808; color: white; overflow-x: hidden; }
-        .glass { background: rgba(15, 15, 15, 0.7); backdrop-filter: blur(12px); }
-        .movie-card:hover { transform: translateY(-10px) scale(1.02); }
-        .hero-shadow { background: linear-gradient(to top, #080808 0%, transparent 100%); }
-        .glow-red { box-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #080808; }
-        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; }
+        body { background-color: #050505; color: white; overflow-x: hidden; }
+        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(15px); }
+        .movie-card:hover { transform: translateY(-10px) scale(1.05); }
+        .hero-gradient { background: linear-gradient(0deg, #050505 10%, transparent 100%); }
+        .glow-red { box-shadow: 0 0 40px rgba(220, 38, 38, 0.4); }
+        .glow-white { box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
+        .episode-card.active { background: #dc2626; border-color: transparent; }
     </style>
 </head>
 <body>
-    <nav class="fixed w-full z-[100] glass px-8 py-4 flex justify-between items-center border-b border-white/5">
-        <div class="flex items-center gap-12">
-            <img src="/assets/logo_full.png" alt="CINENOVA" class="h-12 cursor-pointer" onclick="loadContent('movies')">
-            <div class="hidden md:flex gap-8 text-sm font-bold tracking-widest uppercase">
-                <a href="#" class="text-white hover:text-red-500 transition" onclick="loadCategory('movies')">CINE</a>
-                <a href="#" class="text-gray-400 hover:text-red-500 transition" onclick="loadCategory('series')">SERIES</a>
-                <a href="#" class="text-gray-400 hover:text-red-500 transition" onclick="loadCategory('tv')">TV EN VIVO</a>
+    <nav class="fixed w-full z-[100] glass px-6 py-4 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center gap-10">
+            <img src="/assets/logo_full.png" alt="CINENOVA" class="h-10 cursor-pointer" onclick="window.location.reload()">
+            <div class="hidden md:flex gap-8 text-[11px] font-black tracking-[4px] uppercase italic">
+                <a href="#" class="text-white hover:text-red-600 transition" onclick="loadCategory('movies')">CINE</a>
+                <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('series')">SERIES</a>
+                <a href="#" class="text-gray-400 hover:text-red-600 transition" onclick="loadCategory('tv')">VIVO</a>
             </div>
         </div>
         <div class="flex items-center gap-6">
-            <div class="relative hidden sm:block">
-                <input type="text" id="search-input" placeholder="Buscar..." class="bg-white/5 border border-white/10 rounded-full px-6 py-2 text-sm focus:outline-none focus:border-red-500 w-64 transition">
-                <i class="fas fa-search absolute right-4 top-2.5 text-gray-500"></i>
+            <div class="relative group hidden sm:block">
+                <input type="text" id="global-search" placeholder="BUSCAR..." class="bg-white/5 border border-white/10 rounded-full px-6 py-2 text-xs focus:outline-none focus:border-red-600 w-48 focus:w-80 transition-all duration-500 uppercase font-bold">
+                <i class="fas fa-search absolute right-4 top-2.5 text-gray-500 group-focus-within:text-red-600"></i>
             </div>
-            <img src="/assets/logo_l3ho.png" alt="L3HO" class="h-8 hover:scale-110 transition">
+            <img src="/assets/logo_l3ho.png" alt="L3HO" class="h-8 grayscale hover:grayscale-0 transition duration-500">
         </div>
     </nav>
 
-    <main id="main-content">
-        <!-- Hero -->
-        <div id="hero" class="relative h-[90vh] w-full flex items-end p-12 overflow-hidden">
-            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 scale-105" style="background-image: url('')"></div>
-            <div class="absolute inset-0 bg-black/40"></div>
-            <div class="absolute inset-0 hero-shadow"></div>
+    <main id="main-view">
+        <!-- Hero Section -->
+        <div id="hero" class="relative h-[85vh] w-full flex items-end p-12 overflow-hidden">
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-110" style="background-image: url('')"></div>
+            <div class="absolute inset-0 bg-black/30"></div>
+            <div class="absolute inset-0 hero-gradient"></div>
             
-            <div class="relative z-10 max-w-3xl">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="bg-red-600 text-[10px] font-black px-2 py-1 rounded italic uppercase">EXCLUSIVO</span>
-                    <span id="hero-year" class="text-gray-300 font-bold">2024</span>
+            <div class="relative z-10 max-w-4xl animate-fade-in">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="bg-red-600 text-[10px] font-black px-3 py-1.5 rounded italic uppercase tracking-widest">CINENOVA EXCLUSIVE</span>
+                    <span id="hero-rating" class="text-yellow-400 font-black text-sm">⭐ 0.0</span>
+                    <span id="hero-year" class="text-gray-300 font-bold text-sm">2025</span>
                 </div>
-                <h1 id="hero-title" class="text-7xl font-black mb-6 leading-none uppercase italic tracking-tighter">CARGANDO...</h1>
-                <p id="hero-desc" class="text-lg text-gray-200 mb-8 line-clamp-3 leading-relaxed opacity-80"></p>
-                <div class="flex gap-4">
-                    <button id="hero-play" class="bg-red-600 hover:bg-red-700 px-10 py-4 rounded-full font-black text-sm flex items-center gap-3 glow-red transition-all transform hover:scale-105">
+                <h1 id="hero-title" class="text-8xl font-black mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl">...</h1>
+                <p id="hero-desc" class="text-lg text-gray-200 mb-10 line-clamp-3 leading-relaxed opacity-70 max-w-2xl font-light"></p>
+                <div class="flex gap-5">
+                    <button id="hero-play-btn" class="bg-red-600 hover:bg-red-700 px-12 py-5 rounded-full font-black text-xs flex items-center gap-3 glow-red transition-all transform hover:scale-105 active:scale-95 tracking-[2px]">
                         <i class="fas fa-play"></i> REPRODUCIR AHORA
                     </button>
-                    <button class="bg-white/10 hover:bg-white/20 px-10 py-4 rounded-full font-black text-sm backdrop-blur-md transition">
+                    <button class="bg-white/5 hover:bg-white/10 px-12 py-5 rounded-full font-black text-xs backdrop-blur-xl border border-white/10 transition-all tracking-[2px]">
                         DETALLES
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="px-12 py-10">
-            <h2 id="section-title" class="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3">
-                <span class="w-1.5 h-10 bg-red-600"></span> LO MÁS TOP
-            </h2>
-            <div id="content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
-                <!-- Cards -->
+        <!-- Grid Section -->
+        <div class="px-12 py-20">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 id="section-title" class="text-4xl font-black italic uppercase tracking-tighter mb-2">LO MÁS VISTO</h2>
+                    <div class="h-1.5 w-24 bg-red-600"></div>
+                </div>
+            </div>
+            <div id="content-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-10">
+                <!-- Data injected here -->
             </div>
         </div>
     </main>
 
-    <!-- Player -->
-    <div id="player-view" class="fixed inset-0 z-[200] bg-black hidden flex flex-col">
-        <div class="p-6 flex justify-between items-center bg-zinc-950/80 border-b border-white/5 backdrop-blur-xl">
-            <div class="flex items-center gap-4">
-                <img src="/assets/logo_icon.png" class="h-10">
+    <!-- Professional Player View -->
+    <div id="player-view" class="fixed inset-0 z-[200] bg-black hidden flex flex-col overflow-hidden">
+        <div class="p-6 flex justify-between items-center glass border-b border-white/5">
+            <div class="flex items-center gap-5">
+                <img src="/assets/logo_icon.png" class="h-10 animate-pulse">
                 <div>
-                    <h3 id="player-title" class="font-black italic uppercase">Título</h3>
-                    <p id="player-info" class="text-xs text-red-500 font-bold tracking-widest uppercase">Streaming VIP Activo</p>
+                    <h3 id="player-title" class="font-black italic uppercase text-lg tracking-tighter">CARGANDO...</h3>
+                    <div class="flex gap-4 text-[10px] text-red-600 font-black tracking-widest uppercase opacity-80">
+                        <span>FULL HD 1080P</span>
+                        <span>AUDIO LATINO</span>
+                        <span>SISTEMA VIP L3HO</span>
+                    </div>
                 </div>
             </div>
-            <button onclick="closePlayer()" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-full transition group">
-                <i class="fas fa-times text-xl group-hover:rotate-90 transition"></i>
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="closePlayer()" class="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-xl transition-all duration-500 group">
+                    <i class="fas fa-times text-xl group-hover:rotate-90 transition"></i>
+                </button>
+            </div>
         </div>
-        <div class="flex-grow relative bg-black">
-            <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-            <div id="loading-spinner" class="absolute inset-0 flex items-center justify-center bg-black">
-                <div class="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+        
+        <div class="flex-grow flex flex-col lg:flex-row">
+            <!-- Video Area -->
+            <div class="flex-grow bg-black relative shadow-2xl">
+                <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950">
+                    <div class="w-20 h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-[10px] font-black tracking-[4px] text-gray-500 uppercase">ENLAZANDO SERVIDOR SEGURO...</p>
+                </div>
+            </div>
+            
+            <!-- Series Panel (Optional) -->
+            <div id="series-panel" class="w-full lg:w-96 bg-zinc-950 border-l border-white/5 hidden flex flex-col">
+                <div class="p-6 border-b border-white/5">
+                    <h4 class="font-black italic uppercase tracking-tighter mb-4">EPISODIOS</h4>
+                    <select id="season-select" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-xs font-bold outline-none focus:border-red-600">
+                        <!-- Seasons -->
+                    </select>
+                </div>
+                <div id="episode-list" class="flex-grow overflow-y-auto p-4 grid gap-3">
+                    <!-- Episodes -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentType = 'movies';
+        let currentCategory = 'movies';
+        let currentItem = null;
 
-        async function loadContent(type = 'movies') {
-            currentType = type;
-            const res = await fetch(`/api/${type}`);
+        async function loadContent(category = 'movies', query = '') {
+            currentCategory = category;
+            const endpoint = query ? `/api/${category}/search?query=${query}` : `/api/${category}`;
+            const res = await fetch(endpoint);
             const data = await res.json();
-            renderGrid(data, type);
-            if(data.length > 0) updateHero(data[0]);
-        }
-
-        function renderGrid(data, type) {
+            
             const grid = document.getElementById('content-grid');
             grid.innerHTML = '';
-            data.forEach(item => {
+            
+            data.forEach((item, index) => {
+                if(!query && index === 0) updateHero(item);
+                
                 const card = document.createElement('div');
-                card.className = 'movie-card relative group cursor-pointer transition-all duration-500';
-                card.onclick = () => openPlayer(item, type);
+                card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
+                card.onclick = () => openItem(item);
                 card.innerHTML = `
-                    <div class="aspect-[2/3] rounded-2xl overflow-hidden relative border border-white/5">
-                        <img src="${item.poster}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-                            <div class="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center glow-red">
-                                <i class="fas fa-play text-white ml-1"></i>
+                    <div class="aspect-[2/3] rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
+                        <img src="${item.poster}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[2px]">
+                            <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
+                                <i class="fas fa-play text-white ml-1 text-xl"></i>
                             </div>
                         </div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <h3 class="font-black text-sm uppercase italic tracking-tighter truncate">${item.title}</h3>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-[10px] text-gray-400 font-bold">${item.year}</span>
-                                <span class="text-[10px] text-red-500 font-black">${item.rating.toFixed(1)} ⭐</span>
+                        <div class="absolute bottom-6 left-6 right-6">
+                            <h3 class="font-black text-sm uppercase italic tracking-tighter leading-none mb-2">${item.title}</h3>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] text-red-600 font-black tracking-widest uppercase">${item.year}</span>
+                                <span class="h-1 w-1 bg-white/20 rounded-full"></span>
+                                <span class="text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -145,36 +176,78 @@
             }, 500);
             document.getElementById('hero-title').innerText = item.title;
             document.getElementById('hero-desc').innerText = item.overview;
+            document.getElementById('hero-rating').innerText = `⭐ ${item.rating.toFixed(1)}`;
             document.getElementById('hero-year').innerText = item.year;
-            document.getElementById('hero-play').onclick = () => openPlayer(item, currentType);
+            document.getElementById('hero-play-btn').onclick = () => openItem(item);
         }
 
-        function openPlayer(item, type) {
+        async function openItem(item) {
+            currentItem = item;
             const modal = document.getElementById('player-view');
             const frame = document.getElementById('video-frame');
-            const spinner = document.getElementById('loading-spinner');
+            const loader = document.getElementById('player-loader');
+            const panel = document.getElementById('series-panel');
             
             document.getElementById('player-title').innerText = item.title;
-            
-            let url = type === 'movies' ? item.embeds.vip : `/api/series/${item.id}/episode?s=1&e=1`;
-            
-            if (type === 'series') {
-                fetch(url).then(r => r.json()).then(d => frame.src = d.vip);
+            modal.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            frame.src = '';
+
+            if (currentCategory === 'movies') {
+                panel.classList.add('hidden');
+                frame.src = item.embeds.vip;
             } else {
-                frame.src = url;
+                panel.classList.remove('hidden');
+                await loadSeriesDetails(item.id);
             }
 
-            modal.classList.remove('hidden');
-            spinner.classList.remove('hidden');
-            frame.onload = () => spinner.classList.add('hidden');
+            frame.onload = () => loader.classList.add('hidden');
             document.body.style.overflow = 'hidden';
         }
 
+        async function loadSeriesDetails(id) {
+            const res = await fetch(`/api/series/${id}`);
+            const data = await res.json();
+            
+            const seasonSelect = document.getElementById('season-select');
+            seasonSelect.innerHTML = data.seasons.map(s => `<option value="${s.number}">${s.name}</option>`).join('');
+            
+            seasonSelect.onchange = (e) => loadEpisodes(id, e.target.value, data.seasons.find(s => s.number == e.target.value).episodes);
+            
+            loadEpisodes(id, data.seasons[0].number, data.seasons[0].episodes);
+        }
+
+        function loadEpisodes(seriesId, seasonNum, episodeCount) {
+            const list = document.getElementById('episode-list');
+            list.innerHTML = '';
+            for(let i=1; i<=episodeCount; i++) {
+                const btn = document.createElement('button');
+                btn.className = `episode-card p-4 rounded-xl border border-white/5 bg-white/5 text-left transition hover:border-red-600 hover:bg-red-600/10 flex items-center justify-between`;
+                btn.innerHTML = `
+                    <span class="text-[10px] font-black uppercase tracking-widest">Episodio ${i}</span>
+                    <i class="fas fa-play text-[10px] opacity-20"></i>
+                `;
+                btn.onclick = () => {
+                    document.querySelectorAll('.episode-card').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    playEpisode(seriesId, seasonNum, i);
+                };
+                list.appendChild(btn);
+            }
+            // Play first episode by default
+            playEpisode(seriesId, seasonNum, 1);
+        }
+
+        async function playEpisode(id, s, e) {
+            const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}`);
+            const data = await res.json();
+            document.getElementById('video-frame').src = data.vip;
+            document.getElementById('player-loader').classList.remove('hidden');
+        }
+
         function closePlayer() {
-            const modal = document.getElementById('player-view');
-            const frame = document.getElementById('video-frame');
-            frame.src = '';
-            modal.classList.add('hidden');
+            document.getElementById('player-view').classList.add('hidden');
+            document.getElementById('video-frame').src = '';
             document.body.style.overflow = 'auto';
         }
 
@@ -183,15 +256,20 @@
             loadContent(cat);
         }
 
-        // Search
-        document.getElementById('search-input').onkeyup = async (e) => {
-            if(e.target.value.length > 2) {
-                const res = await fetch(`/api/movies/search?query=${e.target.value}`);
-                const data = await res.json();
-                renderGrid(data, 'movies');
-            }
+        // Search Engine
+        let searchTimeout;
+        document.getElementById('global-search').oninput = (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if(e.target.value.length > 2) {
+                    loadContent(currentCategory, e.target.value);
+                } else if(e.target.value.length === 0) {
+                    loadContent(currentCategory);
+                }
+            }, 600);
         };
 
+        // Init
         loadContent('movies');
     </script>
 </body>

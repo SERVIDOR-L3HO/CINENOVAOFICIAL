@@ -28,7 +28,7 @@ exports.getAllSeries = async (req, res) => {
       id: s.id,
       title: s.name,
       overview: s.overview,
-      year: new Date(s.first_air_date).getFullYear(),
+      year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
       rating: s.vote_average,
       poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
@@ -53,7 +53,7 @@ exports.getSeriesById = async (req, res) => {
       id: s.id,
       title: s.name,
       overview: s.overview,
-      year: new Date(s.first_air_date).getFullYear(),
+      year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
       rating: s.vote_average,
       poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
@@ -66,6 +66,27 @@ exports.getSeriesById = async (req, res) => {
   } catch (error) {
     res.status(404).json({ error: 'Serie no encontrada' });
   }
+};
+
+exports.searchSeries = async (req, res) => {
+    try {
+      const { query } = req.query;
+      const response = await tmdb.get('/search/tv', {
+        params: { language: 'es-ES', query: query }
+      });
+      
+      const series = response.data.results.map(s => ({
+        id: s.id,
+        title: s.name,
+        year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+        poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+        type: 'series'
+      }));
+      
+      res.json(series);
+    } catch (error) {
+      res.status(500).json({ error: 'Error en la búsqueda de series' });
+    }
 };
 
 exports.getEpisodeEmbed = (req, res) => {
