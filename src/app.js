@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const movieRoutes = require('./routes/movieRoutes');
 const seriesRoutes = require('./routes/seriesRoutes');
+const tvRoutes = require('./routes/tvRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/movies', movieRoutes);
 app.use('/api/series', seriesRoutes);
+app.use('/api/tv', tvRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
