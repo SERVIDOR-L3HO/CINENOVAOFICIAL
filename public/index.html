@@ -276,26 +276,45 @@
             const frame = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
             
+            // Forzar limpieza y mostrar loader
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
+            loader.innerHTML = `
+                <div class="w-12 h-12 md:w-20 md:h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p id="loader-text" class="text-[8px] md:text-[10px] font-black tracking-[4px] text-gray-500 uppercase">INICIANDO SERVIDOR VIP...</p>
+            `;
             
             try {
                 const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}`);
                 const data = await res.json();
                 
-                // Intentar VIP, si falla tras 5 segundos, usar backup
+                // Intentar VIP primero
                 frame.src = data.vip;
                 
-                // Detectar si el frame sigue vacío o en negro (basado en tiempo de carga)
-                const backupTimeout = setTimeout(() => {
-                    if (frame.src.includes('multiembed.mov')) {
-                        console.log("Activando servidor de respaldo...");
+                let attempts = 0;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    const loaderText = document.getElementById('loader-text');
+                    
+                    if (attempts === 4 && loaderText) {
+                        loaderText.innerText = "ESTABILIZANDO CONEXIÓN...";
+                        loaderText.classList.add('text-yellow-500');
+                    }
+                    
+                    if (attempts === 8) {
+                        clearInterval(checkInterval);
+                        console.log("Servidor VIP lento, cambiando a respaldo...");
+                        if (loaderText) {
+                            loaderText.innerText = "CAMBIANDO A SERVIDOR GLOBAL...";
+                            loaderText.classList.remove('text-yellow-500');
+                            loaderText.classList.add('text-blue-500');
+                        }
                         frame.src = data.backup;
                     }
-                }, 8000);
+                }, 1000);
 
                 frame.onload = () => {
-                    clearTimeout(backupTimeout);
+                    clearInterval(checkInterval);
                     loader.classList.add('hidden');
                 };
             } catch (err) {
