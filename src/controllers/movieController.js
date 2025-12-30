@@ -21,14 +21,14 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
 exports.getPopularMovies = async (req, res) => {
   try {
     const lang = req.query.lang || 'es-ES';
-    const region = lang.includes('es') ? 'ES' : 'US';
     
-    const response = await tmdb.get('/movie/popular', {
+    const response = await tmdb.get('/discover/movie', {
       params: { 
-        language: lang, 
-        region: region,
-        page: 1,
-        sort_by: 'popularity.desc'
+        language: lang,
+        original_language: 'es',
+        with_original_language: 'es',
+        sort_by: 'popularity.desc',
+        page: 1
       }
     });
     
@@ -98,7 +98,11 @@ exports.searchMovies = async (req, res) => {
     try {
       const { query, lang } = req.query;
       const response = await tmdb.get('/search/movie', {
-        params: { language: lang || 'es-ES', query: query }
+        params: { 
+          language: lang || 'es-ES', 
+          query: query,
+          original_language: 'es'
+        }
       });
       
       const movies = await Promise.all(response.data.results.map(async m => {
