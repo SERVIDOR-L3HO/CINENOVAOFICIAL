@@ -300,7 +300,34 @@
                 </button>
             `).join('');
 
+            // Setup tab switching
+            setupTabSwitching();
             playFromServer(servers[0].url);
+        }
+
+        function setupTabSwitching() {
+            const tabEpisodes = document.getElementById('tab-episodes');
+            const tabServers = document.getElementById('tab-servers');
+            const episodesSection = document.getElementById('episodes-section');
+            const serversSection = document.getElementById('servers-section');
+
+            tabEpisodes.onclick = () => {
+                episodesSection.classList.remove('hidden');
+                serversSection.classList.add('hidden');
+                tabEpisodes.classList.remove('border-transparent', 'text-gray-400');
+                tabEpisodes.classList.add('border-red-600', 'text-white');
+                tabServers.classList.add('border-transparent', 'text-gray-400');
+                tabServers.classList.remove('border-red-600', 'text-white');
+            };
+
+            tabServers.onclick = () => {
+                episodesSection.classList.add('hidden');
+                serversSection.classList.remove('hidden');
+                tabServers.classList.remove('border-transparent', 'text-gray-400');
+                tabServers.classList.add('border-red-600', 'text-white');
+                tabEpisodes.classList.add('border-transparent', 'text-gray-400');
+                tabEpisodes.classList.remove('border-red-600', 'text-white');
+            };
         }
 
         function playFromServer(url) {
