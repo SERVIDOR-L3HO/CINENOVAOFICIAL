@@ -14,7 +14,9 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
     simple: `https://multiembed.mov/?video_id=${id}`,
     vip: `https://multiembed.mov/directstream.php?video_id=${id}`,
     vidsrc: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
-    vidsrc_tmdb: `https://vidsrc.to/embed/movie/${tmdbId}`
+    vidsrc_tmdb: `https://vidsrc.to/embed/movie/${tmdbId}`,
+    superembed: `https://multiembed.mov/?video_id=${imdbId || tmdbId}`,
+    superembed_direct: `https://www.superembed.stream/?video_id=${imdbId || tmdbId}`
   };
 };
 
