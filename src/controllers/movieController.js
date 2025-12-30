@@ -21,8 +21,15 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
 exports.getPopularMovies = async (req, res) => {
   try {
     const lang = req.query.lang || 'es-ES';
+    const region = lang.includes('es') ? 'ES' : 'US';
+    
     const response = await tmdb.get('/movie/popular', {
-      params: { language: lang, page: 1 }
+      params: { 
+        language: lang, 
+        region: region,
+        page: 1,
+        sort_by: 'popularity.desc'
+      }
     });
     
     const movies = await Promise.all(response.data.results.map(async m => {
@@ -32,9 +39,9 @@ exports.getPopularMovies = async (req, res) => {
         return {
           id: m.id,
           imdbId: imdbId,
-          title: m.title,
-          overview: m.overview,
-          year: new Date(m.release_date).getFullYear(),
+          title: m.title || details.data.title,
+          overview: m.overview || details.data.overview,
+          year: new Date(m.release_date || details.data.release_date).getFullYear(),
           rating: m.vote_average,
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
@@ -55,7 +62,7 @@ exports.getPopularMovies = async (req, res) => {
       }
     }));
     
-    res.json(movies.filter(m => m !== null));
+    res.json(movies.filter(m => m !== null && m.poster && m.banner));
   } catch (error) {
     console.error('TMDB Controller Error:', error.response?.data || error.message);
     res.status(500).json({ error: 'Error al conectar con TMDB', details: error.message });
