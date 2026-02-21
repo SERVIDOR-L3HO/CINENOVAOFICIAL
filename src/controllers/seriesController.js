@@ -9,21 +9,20 @@ const tmdb = axios.create({
 });
 
 const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
-  const base = 'https://multiembed.mov';
-  const player = 'directstream.php';
   const id = imdbId || tmdbId;
   
   return {
-    simple: `${base}/?video_id=${id}&s=${season}&e=${episode}`,
-    vip: `${base}/${player}?video_id=${id}&s=${season}&e=${episode}`,
-    vidsrc: `https://vidsrc.me/embed/tv?imdb=${imdbId || id}&sea=${season}&epi=${episode}`,
-    vidsrc_to: `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`
+    player1: `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`,
+    player2: `https://vidsrc.me/embed/tv?imdb=${imdbId || id}&sea=${season}&epi=${episode}`,
+    player3: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`,
+    player4: `https://multiembed.mov/directstream.php?video_id=${id}&s=${season}&e=${episode}`,
+    player5: `https://autoembed.to/tv/tmdb/${tmdbId}/${season}/${episode}?server=1`
   };
 };
 
 exports.getAllSeries = async (req, res) => {
   try {
-    const lang = req.query.lang || 'es-ES';
+    const lang = req.query.lang || 'es-MX';
     const response = await tmdb.get('/tv/popular', {
       params: { language: lang, page: 1 }
     });
@@ -81,7 +80,7 @@ exports.searchSeries = async (req, res) => {
     try {
       const { query, lang } = req.query;
       const response = await tmdb.get('/search/tv', {
-        params: { language: lang || 'es-ES', query: query }
+        params: { language: lang || 'es-MX', query: query, include_adult: false }
       });
       
       const series = await Promise.all(response.data.results.map(async s => {

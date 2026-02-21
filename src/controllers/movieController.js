@@ -10,26 +10,26 @@ const tmdb = axios.create({
 
 const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
+  const isLatam = lang.toLowerCase().includes('mx') || lang.toLowerCase().includes('ar');
+  
   return {
-    simple: `https://multiembed.mov/?video_id=${id}`,
-    vip: `https://multiembed.mov/directstream.php?video_id=${id}`,
-    vidsrc: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
-    vidsrc_tmdb: `https://vidsrc.to/embed/movie/${tmdbId}`,
-    superembed: `https://multiembed.mov/?video_id=${imdbId || tmdbId}`,
-    superembed_direct: `https://www.superembed.stream/?video_id=${imdbId || tmdbId}`
+    player1: `https://vidsrc.to/embed/movie/${tmdbId}`,
+    player2: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
+    player3: `https://embed.su/embed/movie/${tmdbId}`,
+    player4: `https://multiembed.mov/directstream.php?video_id=${id}`,
+    player5: `https://autoembed.to/movie/tmdb/${tmdbId}?server=1`
   };
 };
 
 exports.getPopularMovies = async (req, res) => {
   try {
-    const lang = req.query.lang || 'es-ES';
+    const lang = req.query.lang || 'es-MX'; // Priorizar español latino por defecto como en la página de referencia
     
     const response = await tmdb.get('/discover/movie', {
       params: { 
         language: lang,
-        original_language: 'es',
-        with_original_language: 'es',
         sort_by: 'popularity.desc',
+        include_adult: false,
         page: 1
       }
     });
@@ -101,9 +101,9 @@ exports.searchMovies = async (req, res) => {
       const { query, lang } = req.query;
       const response = await tmdb.get('/search/movie', {
         params: { 
-          language: lang || 'es-ES', 
+          language: lang || 'es-MX', 
           query: query,
-          original_language: 'es'
+          include_adult: false
         }
       });
       
