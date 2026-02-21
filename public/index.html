@@ -126,33 +126,36 @@
                 </div>
             </div>
             
-            <!-- Streaming Panel -->
-            <div id="streaming-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col h-[50vh] lg:h-full">
-                <!-- Servers Header -->
-                <div class="p-4 md:p-6 border-b border-white/5">
-                    <h4 class="font-black italic uppercase tracking-tighter text-sm">SERVIDORES</h4>
-                </div>
+                <div id="streaming-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col h-[50vh] lg:h-full">
+                    <!-- Servers Header -->
+                    <div class="p-4 md:p-6 border-b border-white/5 flex justify-between items-center">
+                        <h4 class="font-black italic uppercase tracking-tighter text-sm">SERVIDORES</h4>
+                        <button id="show-episodes-btn" class="hidden lg:hidden text-[10px] font-black text-red-600 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-red-600/20">EPISODIOS</button>
+                    </div>
 
-                <!-- Servers Tab -->
-                <div id="servers-section" class="flex-grow overflow-y-auto p-4 grid gap-3 pb-24 lg:pb-4">
-                    <div id="servers-list" class="grid gap-3">
-                        <!-- Streaming servers -->
+                    <!-- Servers Tab -->
+                    <div id="servers-section" class="flex-grow overflow-y-auto p-4 grid gap-3 pb-24 lg:pb-4">
+                        <div id="servers-list" class="grid gap-3">
+                            <!-- Streaming servers -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- Series Panel (hidden for movies) -->
                 <div id="series-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 hidden flex flex-col h-[50vh] lg:h-full">
+                    <div class="p-4 md:p-6 border-b border-white/5 flex justify-between items-center">
+                        <h4 class="font-black italic uppercase tracking-tighter text-sm">EPISODIOS</h4>
+                        <button onclick="togglePanels()" class="lg:hidden text-[10px] font-black text-red-600 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-red-600/20">SERVIDORES</button>
+                    </div>
                     <div class="p-4 md:p-6 border-b border-white/5">
-                        <h4 class="font-black italic uppercase tracking-tighter mb-3 md:mb-4 text-sm">EPISODIOS</h4>
-                        <select id="season-select-old" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 text-[10px] md:text-xs font-bold outline-none focus:border-red-600">
+                        <select id="season-select" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 text-[10px] md:text-xs font-bold outline-none focus:border-red-600">
                             <!-- Seasons -->
                         </select>
                     </div>
-                    <div id="episode-list-old" class="flex-grow overflow-y-auto p-4 grid gap-2 md:gap-3 pb-24 lg:pb-4">
+                    <div id="episode-list" class="flex-grow overflow-y-auto p-4 grid gap-2 md:gap-3 pb-24 lg:pb-4">
                         <!-- Episodes -->
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 
@@ -246,6 +249,7 @@
             const loader = document.getElementById('player-loader');
             const streamingPanel = document.getElementById('streaming-panel');
             const seriesPanel = document.getElementById('series-panel');
+            const showEpisodesBtn = document.getElementById('show-episodes-btn');
             
             document.getElementById('player-title').innerText = item.title;
             modal.classList.remove('hidden');
@@ -255,10 +259,13 @@
             if (currentCategory === 'movies') {
                 seriesPanel.classList.add('hidden');
                 streamingPanel.classList.remove('hidden');
+                showEpisodesBtn.classList.add('hidden');
                 loadMovieServers(item);
             } else {
-                seriesPanel.classList.remove('hidden');
-                streamingPanel.classList.add('hidden');
+                seriesPanel.classList.add('hidden'); // Empezar con servidores
+                streamingPanel.classList.remove('hidden');
+                showEpisodesBtn.classList.remove('hidden');
+                showEpisodesBtn.onclick = () => togglePanels();
                 await loadSeriesDetails(item.id);
             }
 
@@ -266,13 +273,26 @@
             document.body.style.overflow = 'hidden';
         }
 
+        function togglePanels() {
+            const streamingPanel = document.getElementById('streaming-panel');
+            const seriesPanel = document.getElementById('series-panel');
+            if (streamingPanel.classList.contains('hidden')) {
+                streamingPanel.classList.remove('hidden');
+                seriesPanel.classList.add('hidden');
+            } else {
+                streamingPanel.classList.add('hidden');
+                seriesPanel.classList.remove('hidden');
+            }
+        }
+
         function loadMovieServers(item) {
             const serversList = document.getElementById('servers-list');
             const servers = [
-                { name: '🎬 SuperEmbed Prime', url: item.embeds.superembed_direct, icon: 'fa-play-circle' },
-                { name: '📺 VidSrc HD', url: item.embeds.vidsrc, icon: 'fa-video' },
-                { name: '⚡ MultiEmbed', url: item.embeds.simple, icon: 'fa-bolt' },
-                { name: '🔗 VidSrc TMDb', url: item.embeds.vidsrc_tmdb, icon: 'fa-link' }
+                { name: '🎬 Opción 1 (Directo)', url: item.embeds.player1, icon: 'fa-play-circle' },
+                { name: '📺 Opción 2 (HD)', url: item.embeds.player2, icon: 'fa-video' },
+                { name: '⚡ Opción 3 (Rápido)', url: item.embeds.player3, icon: 'fa-bolt' },
+                { name: '🔗 Opción 4 (Vip)', url: item.embeds.player4, icon: 'fa-link' },
+                { name: '🛡️ Opción 5 (Estable)', url: item.embeds.player5, icon: 'fa-shield-alt' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
@@ -346,45 +366,38 @@
         async function playEpisode(id, s, e) {
             const frame = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
+            const serversList = document.getElementById('servers-list');
             
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
-            loader.innerHTML = `
-                <div class="w-12 h-12 md:w-20 md:h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p id="loader-text" class="text-[8px] md:text-[10px] font-black tracking-[4px] text-gray-500 uppercase">INICIANDO SERVIDOR VIP...</p>
-            `;
             
             try {
                 const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}&lang=${currentLang}`);
                 const data = await res.json();
                 
-                // Intentar VIP primero
-                frame.src = data.vip;
-                
-                let attempts = 0;
-                const checkInterval = setInterval(() => {
-                    attempts++;
-                    const loaderText = document.getElementById('loader-text');
-                    
-                    if (attempts === 4 && loaderText) {
-                        loaderText.innerText = "ESTABILIZANDO CONEXIÓN...";
-                        loaderText.classList.add('text-yellow-500');
-                    }
-                    
-                    if (attempts === 8) {
-                        clearInterval(checkInterval);
-                        console.log("Servidor VIP lento, cambiando a respaldo...");
-                        if (loaderText) {
-                            loaderText.innerText = "CAMBIANDO A SERVIDOR GLOBAL...";
-                            loaderText.classList.remove('text-yellow-500');
-                            loaderText.classList.add('text-blue-500');
-                        }
-                        frame.src = data.backup;
-                    }
-                }, 1000);
+                const servers = [
+                    { name: '🎬 Opción 1', url: data.player1, icon: 'fa-play-circle' },
+                    { name: '📺 Opción 2', url: data.player2, icon: 'fa-video' },
+                    { name: '⚡ Opción 3', url: data.player3, icon: 'fa-bolt' },
+                    { name: '🔗 Opción 4', url: data.player4, icon: 'fa-link' },
+                    { name: '🛡️ Opción 5', url: data.player5, icon: 'fa-shield-alt' }
+                ];
+
+                serversList.innerHTML = servers.map((server) => `
+                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fas ${server.icon} text-red-600 text-lg"></i>
+                                <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-500 group-hover:text-red-600 transition"></i>
+                        </div>
+                    </button>
+                `).join('');
+
+                playFromServer(servers[0].url);
 
                 frame.onload = () => {
-                    clearInterval(checkInterval);
                     loader.classList.add('hidden');
                 };
             } catch (err) {
