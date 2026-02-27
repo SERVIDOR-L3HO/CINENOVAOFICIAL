@@ -12,7 +12,7 @@ const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, l
   const id = imdbId || tmdbId;
   return {
     player1: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`,
-    player2: `https://supervideo.cc/e/${id}/${season}/${episode}`
+    player2: `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
   };
 };
 
