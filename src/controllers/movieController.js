@@ -10,15 +10,8 @@ const tmdb = axios.create({
 
 const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
-  const isLatam = lang.toLowerCase().includes('mx') || lang.toLowerCase().includes('ar');
-  
   return {
-    player1: `https://vidsrc.to/embed/movie/${tmdbId}`,
-    player2: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
-    player3: `https://embed.su/embed/movie/${tmdbId}`,
-    player4: `https://multiembed.mov/directstream.php?video_id=${id}`,
-    player5: `https://autoembed.to/movie/tmdb/${tmdbId}?server=1`,
-    player6: `https://supervideo.cc/e/${imdbId || tmdbId}`
+    player1: `https://supervideo.cc/e/${id}`
   };
 };
 
