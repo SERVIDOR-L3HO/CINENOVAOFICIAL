@@ -288,17 +288,18 @@
         function loadMovieServers(item) {
             const serversList = document.getElementById('servers-list');
             const servers = [
-                { name: '🎬 SERVIDOR PRINCIPAL', url: item.embeds.player1, icon: 'fa-play-circle' }
+                { name: '🎬 SERVIDOR 1 (Recomendado)', url: item.embeds.player1, icon: 'fa-play-circle' },
+                { name: '📺 SERVIDOR 2 (SuperVideo)', url: item.embeds.player2, icon: 'fa-video' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
-                <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-red-600/10 border border-red-600 transition text-left group">
+                <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <i class="fas ${server.icon} text-red-600 text-lg"></i>
                             <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
                         </div>
-                        <i class="fas fa-play text-red-600 transition"></i>
+                        <i class="fas fa-play text-gray-500 group-hover:text-red-600 transition"></i>
                     </div>
                 </button>
             `).join('');
@@ -370,17 +371,18 @@
                 const data = await res.json();
                 
                 const servers = [
-                    { name: '🎬 SERVIDOR PRINCIPAL', url: data.player1, icon: 'fa-play-circle' }
+                    { name: '🎬 SERVIDOR 1 (Recomendado)', url: data.player1, icon: 'fa-play-circle' },
+                    { name: '📺 SERVIDOR 2 (SuperVideo)', url: data.player2, icon: 'fa-video' }
                 ];
 
                 serversList.innerHTML = servers.map((server) => `
-                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-red-600/10 border border-red-600 transition text-left group">
+                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <i class="fas ${server.icon} text-red-600 text-lg"></i>
                                 <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
                             </div>
-                            <i class="fas fa-play text-red-600 transition"></i>
+                            <i class="fas fa-play text-gray-500 group-hover:text-red-600 transition"></i>
                         </div>
                     </button>
                 `).join('');
