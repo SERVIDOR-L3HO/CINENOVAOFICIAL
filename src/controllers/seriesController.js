@@ -16,7 +16,8 @@ const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, l
     player2: `https://vidsrc.me/embed/tv?imdb=${imdbId || id}&sea=${season}&epi=${episode}`,
     player3: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`,
     player4: `https://multiembed.mov/directstream.php?video_id=${id}&s=${season}&e=${episode}`,
-    player5: `https://autoembed.to/tv/tmdb/${tmdbId}/${season}/${episode}?server=1`
+    player5: `https://autoembed.to/tv/tmdb/${tmdbId}/${season}/${episode}?server=1`,
+    player6: `https://supervideo.cc/e/${imdbId || tmdbId}/${season}/${episode}`
   };
 };
 

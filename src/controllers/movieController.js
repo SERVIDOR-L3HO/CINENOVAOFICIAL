@@ -17,7 +17,8 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
     player2: `https://vidsrc.me/embed/movie?imdb=${imdbId || id}`,
     player3: `https://embed.su/embed/movie/${tmdbId}`,
     player4: `https://multiembed.mov/directstream.php?video_id=${id}`,
-    player5: `https://autoembed.to/movie/tmdb/${tmdbId}?server=1`
+    player5: `https://autoembed.to/movie/tmdb/${tmdbId}?server=1`,
+    player6: `https://supervideo.cc/e/${imdbId || tmdbId}`
   };
 };
 
