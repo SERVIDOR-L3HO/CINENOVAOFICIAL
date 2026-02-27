@@ -12,7 +12,8 @@ const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, l
   const id = imdbId || tmdbId;
   return {
     player1: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`,
-    player2: `/api/player?video_id=${id}&tmdb=1&s=${season}&e=${episode}`
+    player2: `/api/player?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
+    player3: `https://player.vidsrc.nl/embed/tv/${tmdbId}/${season}/${episode}`
   };
 };
 

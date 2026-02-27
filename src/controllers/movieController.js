@@ -12,7 +12,8 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
   return {
     player1: `https://vidsrc.me/embed/movie?imdb=${id}`,
-    player2: `/api/player?video_id=${id}&tmdb=1`
+    player2: `/api/player?video_id=${id}&tmdb=1`,
+    player3: `https://player.vidsrc.nl/embed/movie/${tmdbId}`
   };
 };
 
