@@ -288,27 +288,21 @@
         function loadMovieServers(item) {
             const serversList = document.getElementById('servers-list');
             const servers = [
-                { name: '🎬 Opción 1 (Directo)', url: item.embeds.player1, icon: 'fa-play-circle' },
-                { name: '📺 Opción 2 (HD)', url: item.embeds.player2, icon: 'fa-video' },
-                { name: '⚡ Opción 3 (Rápido)', url: item.embeds.player3, icon: 'fa-bolt' },
-                { name: '🔗 Opción 4 (Vip)', url: item.embeds.player4, icon: 'fa-link' },
-                { name: '🛡️ Opción 5 (Estable)', url: item.embeds.player5, icon: 'fa-shield-alt' }
+                { name: '🎬 SERVIDOR PRINCIPAL', url: item.embeds.player1, icon: 'fa-play-circle' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
-                <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
+                <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-red-600/10 border border-red-600 transition text-left group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <i class="fas ${server.icon} text-red-600 text-lg"></i>
                             <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
                         </div>
-                        <i class="fas fa-chevron-right text-gray-500 group-hover:text-red-600 transition"></i>
+                        <i class="fas fa-play text-red-600 transition"></i>
                     </div>
                 </button>
             `).join('');
 
-            // Setup tab switching
-            setupTabSwitching();
             playFromServer(servers[0].url);
         }
 
@@ -376,21 +370,17 @@
                 const data = await res.json();
                 
                 const servers = [
-                    { name: '🎬 Opción 1', url: data.player1, icon: 'fa-play-circle' },
-                    { name: '📺 Opción 2', url: data.player2, icon: 'fa-video' },
-                    { name: '⚡ Opción 3', url: data.player3, icon: 'fa-bolt' },
-                    { name: '🔗 Opción 4', url: data.player4, icon: 'fa-link' },
-                    { name: '🛡️ Opción 5', url: data.player5, icon: 'fa-shield-alt' }
+                    { name: '🎬 SERVIDOR PRINCIPAL', url: data.player1, icon: 'fa-play-circle' }
                 ];
 
                 serversList.innerHTML = servers.map((server) => `
-                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
+                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-red-600/10 border border-red-600 transition text-left group">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <i class="fas ${server.icon} text-red-600 text-lg"></i>
                                 <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-500 group-hover:text-red-600 transition"></i>
+                            <i class="fas fa-play text-red-600 transition"></i>
                         </div>
                     </button>
                 `).join('');

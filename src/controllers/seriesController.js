@@ -11,7 +11,7 @@ const tmdb = axios.create({
 const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
   const id = imdbId || tmdbId;
   return {
-    player1: `https://supervideo.cc/e/${id}/${season}/${episode}`
+    player1: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`
   };
 };
 
