@@ -12,7 +12,7 @@ const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
   return {
     player1: `https://vidsrc.me/embed/movie?imdb=${id}`,
-    player2: `https://multiembed.mov/?video_id=${id}&tmdb=1`
+    player2: `/api/player?video_id=${id}&tmdb=1`
   };
 };
 
