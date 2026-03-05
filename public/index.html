@@ -290,7 +290,8 @@
             const servers = [
                 { name: '🎬 SERVIDOR 1 (Recomendado)', url: item.embeds.player1, icon: 'fa-play-circle' },
                 { name: '📺 SERVIDOR 2 (SuperVideo)', url: item.embeds.player2, icon: 'fa-video' },
-                { name: '🇪🇸 SERVIDOR 3 (Español)', url: item.embeds.player3, icon: 'fa-language' }
+                { name: '🌐 SERVIDOR 3 (Multi-idioma)', url: item.embeds.player3, icon: 'fa-globe' },
+                { name: '🇪🇸 SERVIDOR 4 (Español Latino/Cast)', url: item.embeds.player4, icon: 'fa-language' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
@@ -374,7 +375,8 @@
                 const servers = [
                     { name: '🎬 SERVIDOR 1 (Recomendado)', url: data.player1, icon: 'fa-play-circle' },
                     { name: '📺 SERVIDOR 2 (SuperVideo)', url: data.player2, icon: 'fa-video' },
-                    { name: '🇪🇸 SERVIDOR 3 (Español)', url: data.player3, icon: 'fa-language' }
+                    { name: '🌐 SERVIDOR 3 (Multi-idioma)', url: data.player1, icon: 'fa-globe' },
+                    { name: '🇪🇸 SERVIDOR 4 (Español Latino/Cast)', url: data.player4, icon: 'fa-language' }
                 ];
 
                 serversList.innerHTML = servers.map((server) => `
