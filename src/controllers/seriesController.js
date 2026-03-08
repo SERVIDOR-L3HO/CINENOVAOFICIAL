@@ -8,23 +8,32 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
+const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
   const id = imdbId || tmdbId;
   return {
-    player1: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`,
-    player2: `/api/player?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
-    player3: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`,
-    player4: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`
+    player1: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`,
+    player2: `https://vidplus.to/embed/tv/${tmdbId}/${season}/${episode}`,
+    player3: `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
+    player4: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`,
+    player5: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`
   };
+};
+
+const getRegion = (lang) => {
+  if (lang === 'es-MX') return 'MX';
+  if (lang === 'es-ES') return 'ES';
+  if (lang === 'en-US') return 'US';
+  return 'MX';
 };
 
 exports.getAllSeries = async (req, res) => {
   try {
     const lang = req.query.lang || 'es-MX';
+    const region = getRegion(lang);
     const response = await tmdb.get('/tv/popular', {
-      params: { language: lang, page: 1 }
+      params: { language: lang, page: 1, region: region }
     });
-    
+
     const series = response.data.results.map(s => ({
       id: s.id,
       title: s.name,
@@ -35,7 +44,7 @@ exports.getAllSeries = async (req, res) => {
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
       type: 'series'
     }));
-    
+
     res.json(series);
   } catch (error) {
     res.status(500).json({ error: 'Error al conectar con TMDB' });
@@ -49,10 +58,10 @@ exports.getSeriesById = async (req, res) => {
     const response = await tmdb.get(`/tv/${id}`, {
       params: { language: lang }
     });
-    
+
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
-    
+
     const s = response.data;
     res.json({
       id: s.id,
@@ -64,9 +73,9 @@ exports.getSeriesById = async (req, res) => {
       poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
       seasons: s.seasons.map(season => ({
-          number: season.season_number,
-          episodes: season.episode_count,
-          name: season.name
+        number: season.season_number,
+        episodes: season.episode_count,
+        name: season.name
       }))
     });
   } catch (error) {
@@ -75,50 +84,50 @@ exports.getSeriesById = async (req, res) => {
 };
 
 exports.searchSeries = async (req, res) => {
-    try {
-      const { query, lang } = req.query;
-      const response = await tmdb.get('/search/tv', {
-        params: { language: lang || 'es-MX', query: query, include_adult: false }
-      });
-      
-      const series = await Promise.all(response.data.results.map(async s => {
-        try {
-          const ext = await tmdb.get(`/tv/${s.id}/external_ids`);
-          return {
-            id: s.id,
-            imdbId: ext.data.imdb_id,
-            title: s.name,
-            year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
-            poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
-            banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
-            type: 'series'
-          };
-        } catch (e) {
-          return {
-            id: s.id,
-            title: s.name,
-            year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
-            poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
-            type: 'series'
-          };
-        }
-      }));
-      
-      res.json(series);
-    } catch (error) {
-      res.status(500).json({ error: 'Error en la búsqueda de series' });
-    }
+  try {
+    const { query, lang } = req.query;
+    const response = await tmdb.get('/search/tv', {
+      params: { language: lang || 'es-MX', query: query, include_adult: false }
+    });
+
+    const series = await Promise.all(response.data.results.map(async s => {
+      try {
+        const ext = await tmdb.get(`/tv/${s.id}/external_ids`);
+        return {
+          id: s.id,
+          imdbId: ext.data.imdb_id,
+          title: s.name,
+          year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+          poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+          banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
+          type: 'series'
+        };
+      } catch (e) {
+        return {
+          id: s.id,
+          title: s.name,
+          year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+          poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+          type: 'series'
+        };
+      }
+    }));
+
+    res.json(series);
+  } catch (error) {
+    res.status(500).json({ error: 'Error en la búsqueda de series' });
+  }
 };
 
 exports.getEpisodeEmbed = async (req, res) => {
   try {
     const { id } = req.params;
     const { s, e, lang } = req.query;
-    
+
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
-    
-    res.json(getEmbedUrls(imdbId || id, id, 'tv', s || 1, e || 1, lang || 'es-ES'));
+
+    res.json(getEmbedUrls(imdbId, id, s || 1, e || 1));
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el enlace del episodio' });
   }

@@ -1,66 +1,82 @@
-# Movie API
+# CINENOVA — Premium Streaming Platform
 
 ## Overview
 
-A simple REST API for serving movie data built with Express.js. The API provides endpoints to retrieve movie information including titles, directors, years, genres, ratings, and external service IDs (IMDB, TMDB). Data is stored in a local JSON file rather than a database.
+CINENOVA is a professional streaming platform for movies and TV shows. It aggregates metadata from TMDB and streams content via third-party embed providers. The UI is a single-page application with a dark, premium design (similar to Netflix).
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+Preferred communication style: Simple, everyday language. Responds in Spanish context (target audience is Spanish/Latino).
 
 ## System Architecture
 
 ### Backend Framework
-- **Express.js 5.x** serves as the web framework
-- Standard MVC-like structure with routes, controllers, and data separation
-- Entry point is `src/server.js` which imports the app configuration from `src/app.js`
+- **Express.js 5.x** web framework
+- MVC-like structure: routes → controllers
+- Entry point: `src/server.js` → `src/app.js`
+- Runs on port **5000**
 
 ### Directory Structure
 ```
 src/
-├── app.js          # Express app configuration and middleware
-├── server.js       # Server startup
-├── controllers/    # Request handlers
-├── routes/         # API route definitions
-└── data/           # JSON data storage
+├── app.js                  # Express app, middleware, proxy route
+├── server.js               # Server startup (local + Vercel export)
+├── controllers/
+│   ├── movieController.js  # Movie TMDB + embed logic
+│   ├── seriesController.js # Series TMDB + embed logic
+│   └── tvController.js     # Live TV channels (static)
+├── routes/
+│   ├── movieRoutes.js
+│   ├── seriesRoutes.js
+│   └── tvRoutes.js
+└── player/
+    └── se_player.php       # Legacy player (unused)
+public/
+├── index.html              # Single-page frontend (Tailwind CSS)
+└── assets/                 # Logos and icons
 ```
 
-### Middleware Stack
-- **Helmet** - Security headers
-- **CORS** - Cross-origin resource sharing
-- **Morgan** - HTTP request logging (dev mode)
-- **express.json()** - JSON body parsing
-
-### Data Storage
-- Uses local JSON file (`src/data/movies.json`) for movie data
-- File-based storage using Node.js `fs.promises` for async file operations
-- No database currently configured
+### Frontend
+- Vanilla JavaScript SPA in `public/index.html`
+- Tailwind CSS (CDN)
+- Language toggle: ESP (es-MX) / ENG (en-US)
 
 ### API Endpoints
-- `GET /api/movies` - Returns all movies
-- `GET /api/movies/:id` - Returns a single movie by ID
+- `GET /api/movies?lang=es-MX` — Popular movies
+- `GET /api/movies/:id` — Movie details
+- `GET /api/movies/search?query=&lang=` — Search movies
+- `GET /api/series?lang=es-MX` — Popular TV series
+- `GET /api/series/:id` — Series details with seasons
+- `GET /api/series/:id/episode?s=&e=&lang=` — Episode embed URLs
+- `GET /api/tv` — Live TV channels (static list)
+- `GET /api/player?video_id=&tmdb=1` — SuperEmbed proxy
 
-### Error Handling
-- Global error handler middleware returns 500 status with generic error message
-- Controller-level try/catch for file read operations
+### Video Embed Providers (5 servers)
+1. **vidsrc.cc** — Primary, best Spanish/Latino support
+2. **vidplus.to** — Secondary, good Spanish support
+3. **vidsrc.to** — Uses IMDB ID
+4. **2embed.org** — Fallback
+5. **embed.su** — Fallback
+
+### TMDB Integration
+- Bearer token auth (hardcoded in controllers)
+- Language: `es-MX` default, switches on user toggle
+- Region parameter: `MX` for Spanish, `US` for English
+- Discover movies with `region` for localized content
 
 ## External Dependencies
 
 ### NPM Packages
-- **express** (5.2.1) - Web framework
-- **cors** (2.8.5) - CORS middleware
-- **helmet** (8.1.0) - Security middleware
-- **morgan** (1.10.1) - HTTP logging
-- **dotenv** (17.2.3) - Environment variable management
-- **@types/node** (22.13.11) - Node.js type definitions
+- **express** (5.2.1)
+- **axios** (1.x)
+- **cors** (2.8.6)
+- **helmet** (8.1.0)
+- **morgan** (1.10.1)
+- **dotenv** (17.x)
+- **@types/node** (22.x)
 
-### External Service References
-Movie data includes references to external services (not actively integrated):
-- **IMDB** - Movie IDs stored for reference
-- **TMDB** - The Movie Database IDs stored
-- **SuperEmbed** - Embed URLs for movie streaming widgets
-
-### Environment Configuration
-- Uses `dotenv` for environment variables
-- `PORT` defaults to 5000 if not specified
-- Server binds to `0.0.0.0` for external accessibility
+### Deployment
+- Configured for **Vercel** via `vercel.json`
+- API routes → `src/app.js` (serverless)
+- Static assets → `public/`
+- All other routes → `public/index.html`

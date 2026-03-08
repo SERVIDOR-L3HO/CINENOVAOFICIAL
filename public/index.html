@@ -288,10 +288,11 @@
         function loadMovieServers(item) {
             const serversList = document.getElementById('servers-list');
             const servers = [
-                { name: '🎬 SERVIDOR 1 (Recomendado)', url: item.embeds.player1, icon: 'fa-play-circle' },
-                { name: '📺 SERVIDOR 2 (SuperVideo)', url: item.embeds.player2, icon: 'fa-video' },
-                { name: '🌐 SERVIDOR 3 (2Embed)', url: item.embeds.player3, icon: 'fa-globe' },
-                { name: '🎞️ SERVIDOR 4 (Su.Embed)', url: item.embeds.player4, icon: 'fa-film' }
+                { name: '🎬 SERVIDOR 1 — Latino/Español', url: item.embeds.player1, icon: 'fa-play-circle' },
+                { name: '📺 SERVIDOR 2 — VidPlus', url: item.embeds.player2, icon: 'fa-video' },
+                { name: '🌐 SERVIDOR 3 — VidSrc', url: item.embeds.player3, icon: 'fa-globe' },
+                { name: '🎞️ SERVIDOR 4 — 2Embed', url: item.embeds.player4, icon: 'fa-film' },
+                { name: '⚡ SERVIDOR 5 — Embed.su', url: item.embeds.player5, icon: 'fa-bolt' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
@@ -373,10 +374,11 @@
                 const data = await res.json();
                 
                 const servers = [
-                    { name: '🎬 SERVIDOR 1 (Recomendado)', url: data.player1, icon: 'fa-play-circle' },
-                    { name: '📺 SERVIDOR 2 (SuperVideo)', url: data.player2, icon: 'fa-video' },
-                    { name: '🌐 SERVIDOR 3 (2Embed)', url: data.player3, icon: 'fa-globe' },
-                    { name: '🎞️ SERVIDOR 4 (Su.Embed)', url: data.player4, icon: 'fa-film' }
+                    { name: '🎬 SERVIDOR 1 — Latino/Español', url: data.player1, icon: 'fa-play-circle' },
+                    { name: '📺 SERVIDOR 2 — VidPlus', url: data.player2, icon: 'fa-video' },
+                    { name: '🌐 SERVIDOR 3 — VidSrc', url: data.player3, icon: 'fa-globe' },
+                    { name: '🎞️ SERVIDOR 4 — 2Embed', url: data.player4, icon: 'fa-film' },
+                    { name: '⚡ SERVIDOR 5 — Embed.su', url: data.player5, icon: 'fa-bolt' }
                 ];
 
                 serversList.innerHTML = servers.map((server) => `

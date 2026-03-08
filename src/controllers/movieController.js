@@ -8,29 +8,39 @@ const tmdb = axios.create({
   }
 });
 
-const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
-  const id = imdbId || tmdbId;
+const getEmbedUrls = (imdbId, tmdbId) => {
   return {
-    player1: `https://vidsrc.me/embed/movie?imdb=${id}`,
-    player2: `/api/player?video_id=${id}&tmdb=1`,
-    player3: `https://2embed.org/embed/movie/${tmdbId}`,
-    player4: `https://embed.su/embed/movie/${tmdbId}`
+    player1: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`,
+    player2: `https://vidplus.to/embed/movie/${tmdbId}`,
+    player3: `https://vidsrc.to/embed/movie/${imdbId || tmdbId}`,
+    player4: `https://2embed.org/embed/movie/${tmdbId}`,
+    player5: `https://embed.su/embed/movie/${tmdbId}`
   };
+};
+
+const getRegion = (lang) => {
+  if (lang === 'es-MX') return 'MX';
+  if (lang === 'es-ES') return 'ES';
+  if (lang === 'es-AR') return 'AR';
+  if (lang === 'en-US') return 'US';
+  return 'MX';
 };
 
 exports.getPopularMovies = async (req, res) => {
   try {
-    const lang = req.query.lang || 'es-MX'; // Priorizar español latino por defecto como en la página de referencia
-    
+    const lang = req.query.lang || 'es-MX';
+    const region = getRegion(lang);
+
     const response = await tmdb.get('/discover/movie', {
-      params: { 
+      params: {
         language: lang,
         sort_by: 'popularity.desc',
         include_adult: false,
-        page: 1
+        page: 1,
+        region: region
       }
     });
-    
+
     const movies = await Promise.all(response.data.results.map(async m => {
       try {
         const details = await tmdb.get(`/movie/${m.id}`, { params: { language: lang } });
@@ -44,7 +54,7 @@ exports.getPopularMovies = async (req, res) => {
           rating: m.vote_average,
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-          embeds: getEmbedUrls(imdbId, m.id, lang)
+          embeds: getEmbedUrls(imdbId, m.id)
         };
       } catch (e) {
         console.error(`Error fetching details for movie ${m.id}:`, e.message);
@@ -56,11 +66,11 @@ exports.getPopularMovies = async (req, res) => {
           rating: m.vote_average,
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-          embeds: getEmbedUrls(null, m.id, lang)
+          embeds: getEmbedUrls(null, m.id)
         };
       }
     }));
-    
+
     res.json(movies.filter(m => m !== null && m.poster && m.banner));
   } catch (error) {
     console.error('TMDB Controller Error:', error.response?.data || error.message);
@@ -75,7 +85,7 @@ exports.getMovieById = async (req, res) => {
     const response = await tmdb.get(`/movie/${id}`, {
       params: { language: lang }
     });
-    
+
     const m = response.data;
     res.json({
       id: m.id,
@@ -86,7 +96,7 @@ exports.getMovieById = async (req, res) => {
       rating: m.vote_average,
       poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
       banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
-      embeds: getEmbedUrls(m.imdb_id, m.id, lang)
+      embeds: getEmbedUrls(m.imdb_id, m.id)
     });
   } catch (error) {
     res.status(404).json({ error: 'Película no encontrada' });
@@ -94,40 +104,40 @@ exports.getMovieById = async (req, res) => {
 };
 
 exports.searchMovies = async (req, res) => {
-    try {
-      const { query, lang } = req.query;
-      const response = await tmdb.get('/search/movie', {
-        params: { 
-          language: lang || 'es-MX', 
-          query: query,
-          include_adult: false
-        }
-      });
-      
-      const movies = await Promise.all(response.data.results.map(async m => {
-        try {
-          const details = await tmdb.get(`/movie/${m.id}`, { params: { language: lang || 'es-ES' } });
-          return {
-            id: m.id,
-            imdbId: details.data.imdb_id,
-            title: m.title,
-            year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
-            poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
-            embeds: getEmbedUrls(details.data.imdb_id, m.id, lang || 'es-ES')
-          };
-        } catch (e) { 
-          return {
-            id: m.id,
-            title: m.title,
-            year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
-            poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
-            embeds: getEmbedUrls(null, m.id, lang || 'es-ES')
-          };
-        }
-      }));
-      
-      res.json(movies.filter(m => m !== null));
-    } catch (error) {
-      res.status(500).json({ error: 'Error en la búsqueda' });
-    }
+  try {
+    const { query, lang } = req.query;
+    const response = await tmdb.get('/search/movie', {
+      params: {
+        language: lang || 'es-MX',
+        query: query,
+        include_adult: false
+      }
+    });
+
+    const movies = await Promise.all(response.data.results.map(async m => {
+      try {
+        const details = await tmdb.get(`/movie/${m.id}`, { params: { language: lang || 'es-MX' } });
+        return {
+          id: m.id,
+          imdbId: details.data.imdb_id,
+          title: m.title,
+          year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+          poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+          embeds: getEmbedUrls(details.data.imdb_id, m.id)
+        };
+      } catch (e) {
+        return {
+          id: m.id,
+          title: m.title,
+          year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+          poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+          embeds: getEmbedUrls(null, m.id)
+        };
+      }
+    }));
+
+    res.json(movies.filter(m => m !== null));
+  } catch (error) {
+    res.status(500).json({ error: 'Error en la búsqueda' });
+  }
 };
