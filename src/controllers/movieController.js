@@ -9,19 +9,24 @@ const tmdb = axios.create({
 });
 
 const getEmbedUrls = (imdbId, tmdbId) => {
+  const imdb = imdbId || tmdbId;
   return {
-    player1: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`,
-    player2: `https://vidplus.to/embed/movie/${tmdbId}`,
-    player3: `https://vidsrc.to/embed/movie/${imdbId || tmdbId}`,
-    player4: `https://2embed.org/embed/movie/${tmdbId}`,
-    player5: `https://embed.su/embed/movie/${tmdbId}`
+    latino: [
+      { name: 'MULTIVIDEO', url: `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`, quality: 'HD' },
+      { name: 'VIDSRC', url: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`, quality: '1080p' },
+      { name: 'VIDSRC 2', url: `https://vidsrc.to/embed/movie/${imdb}`, quality: '1080p' }
+    ],
+    castellano: [
+      { name: 'VIDPLUS', url: `https://vidplus.to/embed/movie/${tmdbId}`, quality: '1080p' },
+      { name: '2EMBED', url: `https://2embed.org/embed/movie/${tmdbId}`, quality: 'HD' },
+      { name: 'EMBED.SU', url: `https://embed.su/embed/movie/${tmdbId}`, quality: 'HD' }
+    ]
   };
 };
 
 const getRegion = (lang) => {
   if (lang === 'es-MX') return 'MX';
   if (lang === 'es-ES') return 'ES';
-  if (lang === 'es-AR') return 'AR';
   if (lang === 'en-US') return 'US';
   return 'MX';
 };
@@ -57,7 +62,6 @@ exports.getPopularMovies = async (req, res) => {
           embeds: getEmbedUrls(imdbId, m.id)
         };
       } catch (e) {
-        console.error(`Error fetching details for movie ${m.id}:`, e.message);
         return {
           id: m.id,
           title: m.title,
@@ -82,10 +86,7 @@ exports.getMovieById = async (req, res) => {
   try {
     const { id } = req.params;
     const lang = req.query.lang || 'es-ES';
-    const response = await tmdb.get(`/movie/${id}`, {
-      params: { language: lang }
-    });
-
+    const response = await tmdb.get(`/movie/${id}`, { params: { language: lang } });
     const m = response.data;
     res.json({
       id: m.id,
@@ -107,11 +108,7 @@ exports.searchMovies = async (req, res) => {
   try {
     const { query, lang } = req.query;
     const response = await tmdb.get('/search/movie', {
-      params: {
-        language: lang || 'es-MX',
-        query: query,
-        include_adult: false
-      }
+      params: { language: lang || 'es-MX', query: query, include_adult: false }
     });
 
     const movies = await Promise.all(response.data.results.map(async m => {

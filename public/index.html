@@ -98,64 +98,72 @@
         </div>
     </main>
 
-    <!-- Professional Player View -->
-    <div id="player-view" class="fixed inset-0 z-[200] bg-black hidden flex flex-col overflow-hidden">
-        <div class="p-4 md:p-6 flex justify-between items-center glass border-b border-white/5">
-            <div class="flex items-center gap-3 md:gap-5">
-                <img src="/assets/cinenova_icon.png" class="h-6 md:h-10">
-                <div class="max-w-[150px] md:max-w-none">
-                    <h3 id="player-title" class="font-black italic uppercase text-sm md:text-lg tracking-tighter truncate">CARGANDO...</h3>
-                    <div class="hidden md:flex gap-4 text-[10px] text-red-600 font-black tracking-widest uppercase opacity-80">
-                        <span>FULL HD 1080P</span>
-                        <span>SISTEMA VIP L3HO</span>
-                    </div>
+    <!-- Player View -->
+    <div id="player-view" class="fixed inset-0 z-[200] bg-[#0a0a0a] hidden flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex-shrink-0 px-4 py-3 flex justify-between items-center bg-black/80 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <img src="/assets/cinenova_icon.png" class="h-7">
+                <div>
+                    <h3 id="player-title" class="font-black italic uppercase text-sm tracking-tighter truncate max-w-[200px] md:max-w-md">CARGANDO...</h3>
+                    <p class="text-[9px] text-red-500 font-bold tracking-widest uppercase opacity-70">FULL HD • LATINO / CASTELLANO</p>
                 </div>
             </div>
-            <button onclick="closePlayer()" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/5 hover:bg-red-600 rounded-xl transition-all duration-500 group">
-                <i class="fas fa-times text-lg md:text-xl group-hover:rotate-90 transition"></i>
+            <button onclick="closePlayer()" class="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-red-600 rounded-lg transition-all">
+                <i class="fas fa-times"></i>
             </button>
         </div>
-        
-        <div class="flex-grow flex flex-col lg:flex-row h-full overflow-hidden">
-            <!-- Video Area -->
-            <div class="flex-grow bg-black relative shadow-2xl h-[50vh] lg:h-full">
-                <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950">
-                    <div class="w-12 h-12 md:w-20 md:h-20 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p class="text-[8px] md:text-[10px] font-black tracking-[4px] text-gray-500 uppercase">CARGANDO SERVIDOR...</p>
-                </div>
+
+        <!-- Audio Selector -->
+        <div id="audio-selector-row" class="flex-shrink-0 px-4 py-3 bg-zinc-950 border-b border-white/5 flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2">
+                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest mr-1">Seleccionar Audio:</span>
+                <button id="btn-latino" onclick="setAudioType('latino')"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-red-600 text-white border-2 border-red-600">
+                    🇲🇽 LATINO <span class="bg-white/20 px-1.5 py-0.5 rounded text-[8px]">HD</span>
+                </button>
+                <button id="btn-castellano" onclick="setAudioType('castellano')"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-white/5 text-gray-300 border-2 border-white/10 hover:border-red-600/50">
+                    🇪🇸 CASTELLANO <span class="bg-white/10 px-1.5 py-0.5 rounded text-[8px]">HD</span>
+                </button>
             </div>
-            
-                <div id="streaming-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col h-[50vh] lg:h-full">
-                    <!-- Servers Header -->
-                    <div class="p-4 md:p-6 border-b border-white/5 flex justify-between items-center">
-                        <h4 class="font-black italic uppercase tracking-tighter text-sm">SERVIDORES</h4>
-                        <button id="show-episodes-btn" class="hidden lg:hidden text-[10px] font-black text-red-600 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-red-600/20">EPISODIOS</button>
-                    </div>
+            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black text-red-500 uppercase tracking-widest bg-white/5 px-3 py-2 rounded-lg border border-red-600/20 hover:bg-red-600/10 transition">
+                <i class="fas fa-list mr-1"></i> EPISODIOS
+            </button>
+        </div>
 
-                    <!-- Servers Tab -->
-                    <div id="servers-section" class="flex-grow overflow-y-auto p-4 grid gap-3 pb-24 lg:pb-4">
-                        <div id="servers-list" class="grid gap-3">
-                            <!-- Streaming servers -->
-                        </div>
-                    </div>
-                </div>
+        <!-- Server Tabs -->
+        <div class="flex-shrink-0 px-4 py-2 bg-zinc-950 border-b border-white/5">
+            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <!-- Injected by JS -->
+            </div>
+        </div>
 
-                <!-- Series Panel (hidden for movies) -->
-                <div id="series-panel" class="w-full lg:w-96 bg-zinc-950 border-t lg:border-t-0 lg:border-l border-white/5 hidden flex flex-col h-[50vh] lg:h-full">
-                    <div class="p-4 md:p-6 border-b border-white/5 flex justify-between items-center">
-                        <h4 class="font-black italic uppercase tracking-tighter text-sm">EPISODIOS</h4>
-                        <button onclick="togglePanels()" class="lg:hidden text-[10px] font-black text-red-600 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-red-600/20">SERVIDORES</button>
-                    </div>
-                    <div class="p-4 md:p-6 border-b border-white/5">
-                        <select id="season-select" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 md:p-3 text-[10px] md:text-xs font-bold outline-none focus:border-red-600">
-                            <!-- Seasons -->
-                        </select>
-                    </div>
-                    <div id="episode-list" class="flex-grow overflow-y-auto p-4 grid gap-2 md:gap-3 pb-24 lg:pb-4">
-                        <!-- Episodes -->
-                    </div>
-                </div>
+        <!-- Video iframe -->
+        <div class="flex-grow relative bg-black min-h-0">
+            <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+            <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950">
+                <div class="w-14 h-14 border-4 border-red-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-[9px] font-black tracking-[4px] text-gray-500 uppercase">CARGANDO SERVIDOR...</p>
+            </div>
+        </div>
+
+        <!-- Info bar -->
+        <div class="flex-shrink-0 px-4 py-2 bg-zinc-950 border-t border-white/5 flex items-center justify-between text-[9px] text-gray-500 font-bold">
+            <span>🎬 Si no carga, cambia de servidor o de audio</span>
+            <span class="text-red-600 uppercase tracking-widest">Full HD 1080p</span>
+        </div>
+
+        <!-- Episodes Drawer (series only) -->
+        <div id="episodes-drawer" class="hidden flex-shrink-0 bg-zinc-900 border-t border-white/10 max-h-56 flex flex-col">
+            <div class="px-4 py-2 border-b border-white/5 flex items-center justify-between">
+                <select id="season-select" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:border-red-600 flex-grow mr-3">
+                </select>
+                <button onclick="toggleEpisodesDrawer()" class="text-[9px] font-black text-gray-400 hover:text-white transition">✕</button>
+            </div>
+            <div id="episode-list" class="overflow-y-auto p-3 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+            </div>
         </div>
     </div>
 
@@ -163,44 +171,51 @@
         let currentCategory = 'movies';
         let currentItem = null;
         let currentLang = 'es-ES';
+        let currentAudioType = 'latino';
+        let currentEmbeds = null;
+        let currentSeriesId = null;
+        let currentSeason = 1;
+        let currentEpisode = 1;
 
         function setLanguage(lang) {
             currentLang = lang;
-            document.getElementById('lang-es').className = lang === 'es-ES' ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white' : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
-            document.getElementById('lang-en').className = lang === 'en-US' ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white' : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
+            document.getElementById('lang-es').className = lang === 'es-ES'
+                ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white'
+                : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
+            document.getElementById('lang-en').className = lang === 'en-US'
+                ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-red-600 text-white'
+                : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
             loadContent(currentCategory);
         }
 
         async function loadContent(category = 'movies', query = '') {
             currentCategory = category;
-            
+
             document.querySelectorAll('nav a, div.lg\\:hidden button').forEach(el => {
                 const text = el.innerText.toLowerCase();
-                if(text.includes(category === 'movies' ? 'cine' : category)) {
-                    el.classList.add('text-white');
-                    el.classList.remove('text-gray-400');
+                if (text.includes(category === 'movies' ? 'cine' : category)) {
+                    el.classList.add('text-white'); el.classList.remove('text-gray-400');
                 } else {
-                    el.classList.remove('text-white');
-                    el.classList.add('text-gray-400');
+                    el.classList.remove('text-white'); el.classList.add('text-gray-400');
                 }
             });
 
-            const endpoint = query ? `/api/${category}/search?query=${query}&lang=${currentLang}` : `/api/${category}?lang=${currentLang}`;
+            const endpoint = query
+                ? `/api/${category}/search?query=${query}&lang=${currentLang}`
+                : `/api/${category}?lang=${currentLang}`;
             try {
                 const res = await fetch(endpoint);
                 const data = await res.json();
-                
                 const grid = document.getElementById('content-grid');
                 grid.innerHTML = '';
-                
+
                 if (data.length === 0) {
                     grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest">No se encontraron resultados</div>';
                     return;
                 }
 
                 data.forEach((item, index) => {
-                    if(!query && index === 0) updateHero(item);
-                    
+                    if (!query && index === 0) updateHero(item);
                     const card = document.createElement('div');
                     card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
                     card.onclick = () => openItem(item);
@@ -220,8 +235,7 @@
                                     <span class="text-[8px] md:text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}</span>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     grid.appendChild(card);
                 });
             } catch (err) {
@@ -232,10 +246,7 @@
         function updateHero(item) {
             const bg = document.getElementById('hero-bg');
             bg.style.opacity = '0';
-            setTimeout(() => {
-                bg.style.backgroundImage = `url('${item.banner}')`;
-                bg.style.opacity = '1';
-            }, 500);
+            setTimeout(() => { bg.style.backgroundImage = `url('${item.banner}')`; bg.style.opacity = '1'; }, 500);
             document.getElementById('hero-title').innerText = item.title;
             document.getElementById('hero-desc').innerText = item.overview;
             document.getElementById('hero-rating').innerText = `⭐ ${item.rating.toFixed(1)}`;
@@ -244,75 +255,80 @@
 
         async function openItem(item) {
             currentItem = item;
-            const modal = document.getElementById('player-view');
-            const frame = document.getElementById('video-frame');
-            const loader = document.getElementById('player-loader');
-            const streamingPanel = document.getElementById('streaming-panel');
-            const seriesPanel = document.getElementById('series-panel');
-            const showEpisodesBtn = document.getElementById('show-episodes-btn');
-            
+            currentAudioType = 'latino';
             document.getElementById('player-title').innerText = item.title;
-            modal.classList.remove('hidden');
-            loader.classList.remove('hidden');
-            frame.src = '';
-
-            if (currentCategory === 'movies') {
-                seriesPanel.classList.add('hidden');
-                streamingPanel.classList.remove('hidden');
-                showEpisodesBtn.classList.add('hidden');
-                loadMovieServers(item);
-            } else {
-                seriesPanel.classList.add('hidden'); // Empezar con servidores
-                streamingPanel.classList.remove('hidden');
-                showEpisodesBtn.classList.remove('hidden');
-                showEpisodesBtn.onclick = () => togglePanels();
-                await loadSeriesDetails(item.id);
-            }
-
-            frame.onload = () => loader.classList.add('hidden');
+            document.getElementById('player-view').classList.remove('hidden');
+            document.getElementById('player-loader').classList.remove('hidden');
+            document.getElementById('video-frame').src = '';
             document.body.style.overflow = 'hidden';
+
+            const episodesBtn = document.getElementById('toggle-episodes-btn');
+            const episodesDrawer = document.getElementById('episodes-drawer');
+            const audioRow = document.getElementById('audio-selector-row');
+
+            if (currentCategory === 'tv') {
+                episodesBtn.classList.add('hidden');
+                episodesDrawer.classList.add('hidden');
+                audioRow.classList.add('hidden');
+                document.getElementById('server-tabs').innerHTML = `
+                    <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-red-600 text-white border-2 border-red-600">
+                        📺 EN VIVO <span class="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">LIVE</span>
+                    </button>`;
+                playFromServer(item.embeds.vip);
+            } else if (currentCategory === 'series') {
+                episodesBtn.classList.remove('hidden');
+                episodesDrawer.classList.remove('hidden');
+                audioRow.classList.remove('hidden');
+                currentSeriesId = item.id;
+                await loadSeriesDetails(item.id);
+            } else {
+                episodesBtn.classList.add('hidden');
+                episodesDrawer.classList.add('hidden');
+                audioRow.classList.remove('hidden');
+                currentEmbeds = item.embeds;
+                renderAudioButtons('latino');
+                renderServerTabs(currentEmbeds.latino, 0);
+            }
+
+            document.getElementById('video-frame').onload = () =>
+                document.getElementById('player-loader').classList.add('hidden');
         }
 
-        function togglePanels() {
-            const streamingPanel = document.getElementById('streaming-panel');
-            const seriesPanel = document.getElementById('series-panel');
-            if (streamingPanel.classList.contains('hidden')) {
-                streamingPanel.classList.remove('hidden');
-                seriesPanel.classList.add('hidden');
-            } else {
-                streamingPanel.classList.add('hidden');
-                seriesPanel.classList.remove('hidden');
+        function setAudioType(type) {
+            currentAudioType = type;
+            renderAudioButtons(type);
+            if (currentEmbeds) {
+                renderServerTabs(currentEmbeds[type], 0);
             }
         }
 
-        function loadMovieServers(item) {
-            const serversList = document.getElementById('servers-list');
-            const servers = [
-                { name: '🎬 SERVIDOR 1 — Latino/Español', url: item.embeds.player1, icon: 'fa-play-circle' },
-                { name: '📺 SERVIDOR 2 — VidPlus', url: item.embeds.player2, icon: 'fa-video' },
-                { name: '🌐 SERVIDOR 3 — VidSrc', url: item.embeds.player3, icon: 'fa-globe' },
-                { name: '🎞️ SERVIDOR 4 — 2Embed', url: item.embeds.player4, icon: 'fa-film' },
-                { name: '⚡ SERVIDOR 5 — Embed.su', url: item.embeds.player5, icon: 'fa-bolt' }
-            ];
+        function renderAudioButtons(active) {
+            const activeClass = 'flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-red-600 text-white border-2 border-red-600';
+            const inactiveClass = 'flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-white/5 text-gray-300 border-2 border-white/10 hover:border-red-600/50';
+            document.getElementById('btn-latino').className = active === 'latino' ? activeClass : inactiveClass;
+            document.getElementById('btn-castellano').className = active === 'castellano' ? activeClass : inactiveClass;
+        }
 
-            serversList.innerHTML = servers.map((server, idx) => `
-                <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i class="fas ${server.icon} text-red-600 text-lg"></i>
-                            <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
-                        </div>
-                        <i class="fas fa-play text-gray-500 group-hover:text-red-600 transition"></i>
-                    </div>
+        function renderServerTabs(servers, activeIdx) {
+            const tabs = document.getElementById('server-tabs');
+            tabs.innerHTML = servers.map((s, i) => `
+                <button id="tab-${i}" onclick="selectServerTab(${i})"
+                    class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-2 ${i === activeIdx ? 'bg-red-600 text-white border-red-600' : 'bg-white/5 text-gray-300 border-white/10 hover:border-red-600/50'}">
+                    ${s.name}
+                    <span class="text-[8px] ${i === activeIdx ? 'bg-white/20' : 'bg-white/10'} px-1.5 py-0.5 rounded">${s.quality}</span>
                 </button>
             `).join('');
-
-            playFromServer(servers[0].url);
+            playFromServer(servers[activeIdx].url);
         }
 
-        function setupTabSwitching() {
-            // Para películas, no necesitamos tab switching
-            // Solo mostramos servidores
+        function selectServerTab(idx) {
+            const servers = currentEmbeds[currentAudioType];
+            document.querySelectorAll('#server-tabs button').forEach((btn, i) => {
+                btn.className = `flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-2 ${i === idx ? 'bg-red-600 text-white border-red-600' : 'bg-white/5 text-gray-300 border-white/10 hover:border-red-600/50'}`;
+                const badge = btn.querySelector('span');
+                if (badge) badge.className = `text-[8px] ${i === idx ? 'bg-white/20' : 'bg-white/10'} px-1.5 py-0.5 rounded`;
+            });
+            playFromServer(servers[idx].url);
         }
 
         function playFromServer(url) {
@@ -320,37 +336,36 @@
             const loader = document.getElementById('player-loader');
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
-            setTimeout(() => {
-                frame.src = url;
-            }, 300);
+            setTimeout(() => { frame.src = url; }, 300);
+        }
+
+        function toggleEpisodesDrawer() {
+            document.getElementById('episodes-drawer').classList.toggle('hidden');
         }
 
         async function loadSeriesDetails(id) {
             const res = await fetch(`/api/series/${id}`);
             const data = await res.json();
-            
             const seasonSelect = document.getElementById('season-select');
             seasonSelect.innerHTML = data.seasons
                 .filter(s => s.number > 0)
-                .map(s => `<option value="${s.number}">${s.name}</option>`)
-                .join('');
-            
-            seasonSelect.onchange = (e) => loadEpisodes(id, e.target.value, data.seasons.find(s => s.number == e.target.value).episodes);
-            
-            const firstSeason = data.seasons.find(s => s.number > 0) || data.seasons[0];
-            loadEpisodes(id, firstSeason.number, firstSeason.episodes);
+                .map(s => `<option value="${s.number}">${s.name}</option>`).join('');
+            seasonSelect.onchange = (e) => {
+                const season = data.seasons.find(s => s.number == e.target.value);
+                loadEpisodes(id, season.number, season.episodes);
+            };
+            const first = data.seasons.find(s => s.number > 0) || data.seasons[0];
+            loadEpisodes(id, first.number, first.episodes);
         }
 
         function loadEpisodes(seriesId, seasonNum, episodeCount) {
+            currentSeason = seasonNum;
             const list = document.getElementById('episode-list');
             list.innerHTML = '';
-            for(let i=1; i<=episodeCount; i++) {
+            for (let i = 1; i <= episodeCount; i++) {
                 const btn = document.createElement('button');
-                btn.className = `episode-card p-3 md:p-4 rounded-xl border border-white/5 bg-white/5 text-left transition hover:border-red-600 hover:bg-red-600/10 flex items-center justify-between`;
-                btn.innerHTML = `
-                    <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest">EPI ${i}</span>
-                    <i class="fas fa-play text-[8px] opacity-20"></i>
-                `;
+                btn.className = 'episode-card p-2 rounded-lg border border-white/10 bg-white/5 text-center transition hover:border-red-600 hover:bg-red-600/10';
+                btn.innerHTML = `<span class="text-[9px] font-black uppercase tracking-widest block">EP ${i}</span>`;
                 btn.onclick = () => {
                     document.querySelectorAll('.episode-card').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -362,45 +377,19 @@
         }
 
         async function playEpisode(id, s, e) {
-            const frame = document.getElementById('video-frame');
-            const loader = document.getElementById('player-loader');
-            const serversList = document.getElementById('servers-list');
-            
-            frame.src = 'about:blank';
-            loader.classList.remove('hidden');
-            
+            currentEpisode = e;
+            document.getElementById('video-frame').src = 'about:blank';
+            document.getElementById('player-loader').classList.remove('hidden');
             try {
                 const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}&lang=${currentLang}`);
                 const data = await res.json();
-                
-                const servers = [
-                    { name: '🎬 SERVIDOR 1 — Latino/Español', url: data.player1, icon: 'fa-play-circle' },
-                    { name: '📺 SERVIDOR 2 — VidPlus', url: data.player2, icon: 'fa-video' },
-                    { name: '🌐 SERVIDOR 3 — VidSrc', url: data.player3, icon: 'fa-globe' },
-                    { name: '🎞️ SERVIDOR 4 — 2Embed', url: data.player4, icon: 'fa-film' },
-                    { name: '⚡ SERVIDOR 5 — Embed.su', url: data.player5, icon: 'fa-bolt' }
-                ];
-
-                serversList.innerHTML = servers.map((server) => `
-                    <button onclick="playFromServer('${server.url}')" class="w-full p-4 rounded-lg bg-white/5 border border-white/10 hover:border-red-600 hover:bg-red-600/10 transition text-left group">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class="fas ${server.icon} text-red-600 text-lg"></i>
-                                <span class="font-black text-[10px] md:text-xs uppercase tracking-widest">${server.name}</span>
-                            </div>
-                            <i class="fas fa-play text-gray-500 group-hover:text-red-600 transition"></i>
-                        </div>
-                    </button>
-                `).join('');
-
-                playFromServer(servers[0].url);
-
-                frame.onload = () => {
-                    loader.classList.add('hidden');
-                };
+                currentEmbeds = data;
+                renderAudioButtons(currentAudioType);
+                renderServerTabs(currentEmbeds[currentAudioType], 0);
+                document.getElementById('video-frame').onload = () =>
+                    document.getElementById('player-loader').classList.add('hidden');
             } catch (err) {
                 console.error("Error al reproducir episodio:", err);
-                loader.innerHTML = '<p class="text-red-500 font-bold uppercase text-[10px]">Error de conexión</p>';
             }
         }
 
@@ -408,6 +397,7 @@
             document.getElementById('player-view').classList.add('hidden');
             document.getElementById('video-frame').src = '';
             document.body.style.overflow = 'auto';
+            currentEmbeds = null;
         }
 
         function loadCategory(cat) {
@@ -419,11 +409,8 @@
         document.getElementById('global-search').oninput = (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                if(e.target.value.length > 2) {
-                    loadContent(currentCategory, e.target.value);
-                } else if(e.target.value.length === 0) {
-                    loadContent(currentCategory);
-                }
+                if (e.target.value.length > 2) loadContent(currentCategory, e.target.value);
+                else if (e.target.value.length === 0) loadContent(currentCategory);
             }, 600);
         };
 

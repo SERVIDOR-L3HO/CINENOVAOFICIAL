@@ -9,13 +9,18 @@ const tmdb = axios.create({
 });
 
 const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
-  const id = imdbId || tmdbId;
+  const imdb = imdbId || tmdbId;
   return {
-    player1: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`,
-    player2: `https://vidplus.to/embed/tv/${tmdbId}/${season}/${episode}`,
-    player3: `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
-    player4: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`,
-    player5: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`
+    latino: [
+      { name: 'MULTIVIDEO', url: `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`, quality: 'HD' },
+      { name: 'VIDSRC', url: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`, quality: '1080p' },
+      { name: 'VIDSRC 2', url: `https://vidsrc.to/embed/tv/${imdb}/${season}/${episode}`, quality: '1080p' }
+    ],
+    castellano: [
+      { name: 'VIDPLUS', url: `https://vidplus.to/embed/tv/${tmdbId}/${season}/${episode}`, quality: '1080p' },
+      { name: '2EMBED', url: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' },
+      { name: 'EMBED.SU', url: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' }
+    ]
   };
 };
 
@@ -55,13 +60,9 @@ exports.getSeriesById = async (req, res) => {
   try {
     const { id } = req.params;
     const lang = req.query.lang || 'es-ES';
-    const response = await tmdb.get(`/tv/${id}`, {
-      params: { language: lang }
-    });
-
+    const response = await tmdb.get(`/tv/${id}`, { params: { language: lang } });
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
-
     const s = response.data;
     res.json({
       id: s.id,
@@ -122,11 +123,9 @@ exports.searchSeries = async (req, res) => {
 exports.getEpisodeEmbed = async (req, res) => {
   try {
     const { id } = req.params;
-    const { s, e, lang } = req.query;
-
+    const { s, e } = req.query;
     const externalIds = await tmdb.get(`/tv/${id}/external_ids`);
     const imdbId = externalIds.data.imdb_id;
-
     res.json(getEmbedUrls(imdbId, id, s || 1, e || 1));
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener el enlace del episodio' });
