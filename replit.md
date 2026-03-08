@@ -51,12 +51,29 @@ public/
 - `GET /api/tv` — Live TV channels (static list)
 - `GET /api/player?video_id=&tmdb=1` — SuperEmbed proxy
 
-### Video Embed Providers (5 servers)
-1. **vidsrc.cc** — Primary, best Spanish/Latino support
-2. **vidplus.to** — Secondary, good Spanish support
-3. **vidsrc.to** — Uses IMDB ID
-4. **2embed.org** — Fallback
-5. **embed.su** — Fallback
+### Video Embed Providers
+
+**Movies — LATINO tab:**
+1. **verhdlink.cam/movie/{IMDB_ID}** — Primary, exact same player used by repelishd.run & pelicinehd.com. Has supervideo.tv, dropload.tv, mixdrop, doodstream all in Spanish (Latino/Castellano tabs built in)
+2. **multiembed.mov** — Secondary, uses TMDB ID
+3. **vidlink.pro** — Tertiary, has Spanish subtitle options (Latin American / European)
+
+**Movies — CASTELLANO tab:**
+1. **verhdlink.cam/movie/{IMDB_ID}** — Same player (has Castellano tab built in)
+2. **vidsrc.cc** — Secondary
+3. **2embed.org** — Fallback
+
+**Series — LATINO tab:**
+1. **vidlink.pro/tv/{TMDB_ID}/{s}/{e}** — Primary, Spanish audio/subtitles
+2. **multiembed.mov** — Secondary
+3. **vidsrc.cc** — Tertiary
+
+**Series — CASTELLANO tab:**
+1. **player.autoembed.cc** — Primary
+2. **2embed.org** — Secondary
+3. **embed.su** — Fallback
+
+**Key discovery:** verhdlink.cam is the Spanish-dubbed video aggregator used by repelishd.run. It indexes supervideo.tv/dropload.tv/mixdrop/doodstream by IMDB ID with manually curated Latino/Castellano audio files.
 
 ### TMDB Integration
 - Bearer token auth (hardcoded in controllers)
