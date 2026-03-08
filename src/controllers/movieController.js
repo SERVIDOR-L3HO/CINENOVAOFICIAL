@@ -11,10 +11,10 @@ const tmdb = axios.create({
 const getEmbedUrls = (imdbId, tmdbId, lang = 'es') => {
   const id = imdbId || tmdbId;
   return {
-    player1: `https://multiload.org/embed/movie/${tmdbId}`,
+    player1: `https://vidsrc.me/embed/movie?imdb=${id}`,
     player2: `/api/player?video_id=${id}&tmdb=1`,
-    player3: `https://embed.smashystream.com/movie/${tmdbId}`,
-    player4: `https://vidsrc.me/embed/movie?imdb=${id}`
+    player3: `https://2embed.org/embed/movie/${tmdbId}`,
+    player4: `https://embed.su/embed/movie/${tmdbId}`
   };
 };
 

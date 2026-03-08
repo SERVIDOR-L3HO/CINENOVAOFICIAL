@@ -11,10 +11,10 @@ const tmdb = axios.create({
 const getEmbedUrls = (imdbId, tmdbId, type = 'movie', season = 1, episode = 1, lang = 'es') => {
   const id = imdbId || tmdbId;
   return {
-    player1: `https://multiload.org/embed/tv/${tmdbId}/${season}/${episode}`,
+    player1: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`,
     player2: `/api/player?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
-    player3: `https://embed.smashystream.com/tv/${tmdbId}/${season}/${episode}`,
-    player4: `https://vidsrc.me/embed/tv?imdb=${id}&sea=${season}&epi=${episode}`
+    player3: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`,
+    player4: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`
   };
 };
 

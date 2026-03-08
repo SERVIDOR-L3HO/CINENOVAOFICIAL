@@ -288,10 +288,10 @@
         function loadMovieServers(item) {
             const serversList = document.getElementById('servers-list');
             const servers = [
-                { name: '🇪🇸 SERVIDOR 1 (Español Latino)', url: item.embeds.player1, icon: 'fa-language' },
+                { name: '🎬 SERVIDOR 1 (Recomendado)', url: item.embeds.player1, icon: 'fa-play-circle' },
                 { name: '📺 SERVIDOR 2 (SuperVideo)', url: item.embeds.player2, icon: 'fa-video' },
-                { name: '🎬 SERVIDOR 3 (Multi-fuente)', url: item.embeds.player3, icon: 'fa-play-circle' },
-                { name: '🌐 SERVIDOR 4 (Alternativo)', url: item.embeds.player4, icon: 'fa-globe' }
+                { name: '🌐 SERVIDOR 3 (2Embed)', url: item.embeds.player3, icon: 'fa-globe' },
+                { name: '🎞️ SERVIDOR 4 (Su.Embed)', url: item.embeds.player4, icon: 'fa-film' }
             ];
 
             serversList.innerHTML = servers.map((server, idx) => `
@@ -373,10 +373,10 @@
                 const data = await res.json();
                 
                 const servers = [
-                    { name: '🇪🇸 SERVIDOR 1 (Español Latino)', url: data.player1, icon: 'fa-language' },
+                    { name: '🎬 SERVIDOR 1 (Recomendado)', url: data.player1, icon: 'fa-play-circle' },
                     { name: '📺 SERVIDOR 2 (SuperVideo)', url: data.player2, icon: 'fa-video' },
-                    { name: '🎬 SERVIDOR 3 (Multi-fuente)', url: data.player3, icon: 'fa-play-circle' },
-                    { name: '🌐 SERVIDOR 4 (Alternativo)', url: data.player4, icon: 'fa-globe' }
+                    { name: '🌐 SERVIDOR 3 (2Embed)', url: data.player3, icon: 'fa-globe' },
+                    { name: '🎞️ SERVIDOR 4 (Su.Embed)', url: data.player4, icon: 'fa-film' }
                 ];
 
                 serversList.innerHTML = servers.map((server) => `
