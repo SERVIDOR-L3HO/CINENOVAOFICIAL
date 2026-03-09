@@ -9,16 +9,29 @@ const tmdb = axios.create({
 });
 
 const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
+  const useImdb = imdbId || null;
   return {
     latino: [
+      {
+        name: 'SUPERVIDEO',
+        url: useImdb
+          ? `https://multiembed.mov/?video_id=${imdbId}&s=${season}&e=${episode}`
+          : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`,
+        quality: 'HD'
+      },
       { name: 'VIDLINK', url: `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`, quality: '4K' },
-      { name: 'MULTIVIDEO', url: `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`, quality: 'HD' },
-      { name: 'VIDSRC', url: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`, quality: '1080p' }
+      {
+        name: 'VIDSRC',
+        url: useImdb
+          ? `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${season}&episode=${episode}`
+          : `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`,
+        quality: '1080p'
+      }
     ],
     castellano: [
+      { name: 'VIDSRC+', url: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`, quality: '1080p' },
       { name: 'AUTOEMBED', url: `https://player.autoembed.cc/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' },
-      { name: '2EMBED', url: `https://2embed.org/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' },
-      { name: 'EMBED.SU', url: `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' }
+      { name: 'VIDAPI', url: `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`, quality: 'HD' }
     ]
   };
 };
