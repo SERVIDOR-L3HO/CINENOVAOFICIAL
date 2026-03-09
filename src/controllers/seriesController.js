@@ -96,6 +96,47 @@ exports.getSeriesById = async (req, res) => {
   }
 };
 
+exports.getSeriesCategories = async (req, res) => {
+  try {
+    const lang = req.query.lang || 'es-ES';
+    const mapSeries = s => ({
+      id: s.id,
+      title: s.name,
+      overview: s.overview,
+      year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+      rating: s.vote_average,
+      poster: s.poster_path ? `https://image.tmdb.org/t/p/w500${s.poster_path}` : null,
+      banner: s.backdrop_path ? `https://image.tmdb.org/t/p/original${s.backdrop_path}` : null,
+      type: 'series'
+    });
+    const params = (genre) => ({ language: lang, with_genres: genre, sort_by: 'popularity.desc', include_adult: false });
+    const [trending, topRated, drama, comedy, crime, scifi, animation, reality, documentary] = await Promise.all([
+      tmdb.get('/trending/tv/week', { params: { language: lang } }),
+      tmdb.get('/tv/top_rated', { params: { language: lang } }),
+      tmdb.get('/discover/tv', { params: params(18) }),
+      tmdb.get('/discover/tv', { params: params(35) }),
+      tmdb.get('/discover/tv', { params: params(80) }),
+      tmdb.get('/discover/tv', { params: params(10765) }),
+      tmdb.get('/discover/tv', { params: params(16) }),
+      tmdb.get('/discover/tv', { params: params(10764) }),
+      tmdb.get('/discover/tv', { params: params(99) }),
+    ]);
+    res.json([
+      { id: 'trending', label: 'EN TENDENCIA', title: 'Series del Momento', accent: '#38bdf8', items: trending.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'top_rated', label: 'TOP GLOBAL', title: 'Mejor Calificadas', accent: '#facc15', items: topRated.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'drama', label: 'EMOCIONES', title: 'Drama', accent: '#a78bfa', items: drama.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'crime', label: 'MISTERIO', title: 'Crimen & Policíaca', accent: '#f43f5e', items: crime.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'comedy', label: 'ENTRETENIMIENTO', title: 'Comedia', accent: '#34d399', items: comedy.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'scifi', label: 'FUTURO', title: 'Ciencia Ficción', accent: '#22d3ee', items: scifi.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'animation', label: 'ARTE EN MOVIMIENTO', title: 'Animación', accent: '#e879f9', items: animation.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'documentary', label: 'CONOCIMIENTO', title: 'Documental', accent: '#fb923c', items: documentary.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+    ]);
+  } catch (error) {
+    console.error('Series categories error:', error.message);
+    res.status(500).json({ error: 'Error al cargar categorías de series' });
+  }
+};
+
 exports.getSeriesDetails = async (req, res) => {
   try {
     const { id } = req.params;

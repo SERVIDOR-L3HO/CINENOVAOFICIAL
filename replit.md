@@ -42,14 +42,26 @@ public/
 - Language toggle: ESP (es-MX) / ENG (en-US)
 
 ### API Endpoints
-- `GET /api/movies?lang=es-MX` — Popular movies
+- `GET /api/movies?lang=` — Popular movies
+- `GET /api/movies/categories?lang=` — 10 genre categories in parallel (trending, top_rated, action, drama, comedy, horror, scifi, thriller, animation, romance)
 - `GET /api/movies/:id` — Movie details
+- `GET /api/movies/:id/details?lang=` — Full movie details with genres, director, cast, runtime
 - `GET /api/movies/search?query=&lang=` — Search movies
-- `GET /api/series?lang=es-MX` — Popular TV series
+- `GET /api/series?lang=` — Popular TV series
+- `GET /api/series/categories?lang=` — 8 genre categories (trending, top_rated, drama, crime, comedy, scifi, animation, documentary)
 - `GET /api/series/:id` — Series details with seasons
+- `GET /api/series/:id/details?lang=` — Full series details with genres, creators, cast
 - `GET /api/series/:id/episode?s=&e=&lang=` — Episode embed URLs
 - `GET /api/tv` — Live TV channels (static list)
 - `GET /api/player?video_id=&tmdb=1` — SuperEmbed proxy
+
+### Frontend Features
+- **Hero section** — auto-populated from first trending title
+- **Category carousels** — 10 genre rows for movies, 8 for series, each with left/right scroll arrows
+- **Info/synopsis modal** — poster, banner, genres, synopsis, director/creator, cast, TMDB rating, play button
+- **Search** — real-time search with debounce, shows results in grid
+- **TV grid** — live channels in card grid
+- **Accent color** — ice blue (#38bdf8 / sky-400)
 
 ### Video Embed Providers
 

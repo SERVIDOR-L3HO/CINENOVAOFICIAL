@@ -104,6 +104,50 @@ exports.getMovieById = async (req, res) => {
   }
 };
 
+exports.getMovieCategories = async (req, res) => {
+  try {
+    const lang = req.query.lang || 'es-ES';
+    const region = getRegion(lang);
+    const mapMovie = m => ({
+      id: m.id,
+      title: m.title,
+      overview: m.overview,
+      year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+      rating: m.vote_average,
+      poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
+      banner: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : null,
+    });
+    const params = (genre) => ({ language: lang, with_genres: genre, sort_by: 'popularity.desc', include_adult: false });
+    const [trending, topRated, action, drama, comedy, horror, scifi, thriller, animation, romance] = await Promise.all([
+      tmdb.get('/trending/movie/week', { params: { language: lang } }),
+      tmdb.get('/movie/top_rated', { params: { language: lang, region } }),
+      tmdb.get('/discover/movie', { params: params(28) }),
+      tmdb.get('/discover/movie', { params: params(18) }),
+      tmdb.get('/discover/movie', { params: params(35) }),
+      tmdb.get('/discover/movie', { params: params(27) }),
+      tmdb.get('/discover/movie', { params: params(878) }),
+      tmdb.get('/discover/movie', { params: params(53) }),
+      tmdb.get('/discover/movie', { params: params(16) }),
+      tmdb.get('/discover/movie', { params: params(10749) }),
+    ]);
+    res.json([
+      { id: 'trending', label: 'EN TENDENCIA', title: 'Tendencias', accent: '#38bdf8', items: trending.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'top_rated', label: 'TOP GLOBAL', title: 'Mejor Calificadas', accent: '#facc15', items: topRated.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'action', label: 'ADRENALINA', title: 'Acción & Aventura', accent: '#f97316', items: action.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'drama', label: 'EMOCIONES', title: 'Drama', accent: '#a78bfa', items: drama.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'comedy', label: 'ENTRETENIMIENTO', title: 'Comedia', accent: '#34d399', items: comedy.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'horror', label: 'OSCURIDAD', title: 'Terror & Horror', accent: '#f43f5e', items: horror.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'scifi', label: 'FUTURO', title: 'Ciencia Ficción', accent: '#22d3ee', items: scifi.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'thriller', label: 'SUSPENSO', title: 'Thriller', accent: '#fb923c', items: thriller.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'animation', label: 'ARTE EN MOVIMIENTO', title: 'Animación', accent: '#e879f9', items: animation.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'romance', label: 'AMOR & PASIÓN', title: 'Romance', accent: '#fb7185', items: romance.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+    ]);
+  } catch (error) {
+    console.error('Categories error:', error.message);
+    res.status(500).json({ error: 'Error al cargar categorías' });
+  }
+};
+
 exports.getMovieDetails = async (req, res) => {
   try {
     const { id } = req.params;
