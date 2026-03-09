@@ -4,7 +4,8 @@ const seriesController = require('../controllers/seriesController');
 
 router.get('/', seriesController.getAllSeries);
 router.get('/search', seriesController.searchSeries);
-router.get('/:id', seriesController.getSeriesById);
+router.get('/:id/details', seriesController.getSeriesDetails);
 router.get('/:id/episode', seriesController.getEpisodeEmbed);
+router.get('/:id', seriesController.getSeriesById);
 
 module.exports = router;

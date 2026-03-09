@@ -21,6 +21,61 @@
             .hero-title { font-size: 3.5rem !important; }
             .grid-container { padding: 1rem !important; }
         }
+
+        /* Info Modal */
+        #info-modal { animation: fadeInModal 0.3s ease; }
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #info-modal-card { animation: slideUpModal 0.35s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUpModal {
+            from { opacity: 0; transform: translateY(40px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .info-genre-badge {
+            background: rgba(220,38,38,0.12);
+            border: 1px solid rgba(220,38,38,0.3);
+            color: #ef4444;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .rating-star { color: #facc15; }
+        .info-meta-chip {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cast-pill {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 999px;
+            padding: 4px 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #d1d5db;
+            white-space: nowrap;
+        }
+        .info-poster-shadow { box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05); }
+        .shimmer-loader {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     </style>
 </head>
 <body class="antialiased">
@@ -77,8 +132,8 @@
                     <button id="hero-play-btn" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-2 md:gap-3 glow-red transition-all transform hover:scale-105 active:scale-95 tracking-widest">
                         <i class="fas fa-play"></i> REPRODUCIR
                     </button>
-                    <button class="flex-1 sm:flex-none bg-white/5 hover:bg-white/10 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs backdrop-blur-xl border border-white/10 transition-all tracking-widest">
-                        INFO
+                    <button id="hero-info-btn" class="flex-1 sm:flex-none bg-white/5 hover:bg-white/10 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs backdrop-blur-xl border border-white/10 transition-all tracking-widest flex items-center justify-center gap-2">
+                        <i class="fas fa-info-circle"></i> INFO
                     </button>
                 </div>
             </div>
@@ -97,6 +152,88 @@
             </div>
         </div>
     </main>
+
+    <!-- Info / Synopsis Modal -->
+    <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 md:p-8" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+        <div id="info-modal-card" class="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl md:rounded-3xl flex flex-col" style="background: #0e0e0e; border: 1px solid rgba(255,255,255,0.07);">
+            
+            <!-- Banner + Close -->
+            <div class="relative flex-shrink-0 h-48 md:h-72 overflow-hidden">
+                <img id="info-banner" src="" class="w-full h-full object-cover object-top" style="filter: brightness(0.55);">
+                <div class="absolute inset-0" style="background: linear-gradient(to bottom, transparent 40%, #0e0e0e 100%);"></div>
+                <button onclick="closeInfoModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+                <!-- TMDB Rating Badge on banner -->
+                <div id="info-rating-badge" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(250,204,21,0.3);">
+                    <span class="rating-star text-sm">★</span>
+                    <span id="info-rating-val" class="font-black text-sm text-yellow-400"></span>
+                    <span class="text-gray-500 text-[9px] font-bold uppercase tracking-widest">TMDB</span>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="overflow-y-auto flex-grow">
+                <div class="flex flex-col md:flex-row gap-6 px-5 md:px-8 pb-8 -mt-16 md:-mt-24 relative z-10">
+                    
+                    <!-- Poster -->
+                    <div class="flex-shrink-0 w-28 md:w-44 self-start">
+                        <img id="info-poster" src="" class="w-full rounded-xl md:rounded-2xl info-poster-shadow" style="aspect-ratio:2/3; object-fit:cover;">
+                    </div>
+
+                    <!-- Details -->
+                    <div class="flex-1 min-w-0 pt-4 md:pt-20">
+                        
+                        <!-- Genres -->
+                        <div id="info-genres" class="flex flex-wrap gap-2 mb-3"></div>
+
+                        <!-- Title -->
+                        <h2 id="info-title" class="font-black italic uppercase leading-none tracking-tighter mb-3" style="font-size: clamp(1.5rem, 5vw, 2.8rem);"></h2>
+
+                        <!-- Meta chips -->
+                        <div id="info-meta" class="flex flex-wrap gap-2 mb-5"></div>
+
+                        <!-- Synopsis -->
+                        <div class="mb-5">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-4 h-0.5 bg-red-600"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Sinopsis</span>
+                            </div>
+                            <p id="info-overview" class="text-gray-300 leading-relaxed" style="font-size: 13px; font-weight: 400;"></p>
+                        </div>
+
+                        <!-- Director / Creator -->
+                        <div id="info-director-block" class="mb-4 hidden">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-4 h-0.5 bg-red-600"></div>
+                                <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Director</span>
+                            </div>
+                            <p id="info-director" class="text-white font-bold" style="font-size: 13px;"></p>
+                        </div>
+
+                        <!-- Cast -->
+                        <div id="info-cast-block" class="mb-7 hidden">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-4 h-0.5 bg-red-600"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Reparto</span>
+                            </div>
+                            <div id="info-cast" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <button id="info-play-btn" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all glow-red hover:scale-105 active:scale-95" style="background: #dc2626;" onclick="playFromInfoModal()">
+                                <i class="fas fa-play"></i> REPRODUCIR AHORA
+                            </button>
+                            <button onclick="closeInfoModal()" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                                <i class="fas fa-chevron-left"></i> VOLVER
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Player View -->
     <div id="player-view" class="fixed inset-0 z-[200] bg-[#0a0a0a] hidden flex flex-col overflow-hidden">
@@ -218,7 +355,7 @@
                     if (!query && index === 0) updateHero(item);
                     const card = document.createElement('div');
                     card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
-                    card.onclick = () => openItem(item);
+                    card.onclick = () => openInfoModal(item);
                     card.innerHTML = `
                         <div class="aspect-[2/3] rounded-xl md:rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
                             <img src="${item.poster || 'https://placehold.co/500x750/000/fff?text=NO+IMAGE'}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125" loading="lazy">
@@ -250,7 +387,88 @@
             document.getElementById('hero-title').innerText = item.title;
             document.getElementById('hero-desc').innerText = item.overview;
             document.getElementById('hero-rating').innerText = `⭐ ${item.rating.toFixed(1)}`;
-            document.getElementById('hero-play-btn').onclick = () => openItem(item);
+            document.getElementById('hero-play-btn').onclick = () => openInfoModal(item);
+            document.getElementById('hero-info-btn').onclick = () => openInfoModal(item);
+        }
+
+        async function openInfoModal(item) {
+            if (currentCategory === 'tv') {
+                openItem(item);
+                return;
+            }
+            currentItem = item;
+            document.body.style.overflow = 'hidden';
+            const modal = document.getElementById('info-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('info-banner').src = item.banner || '';
+            document.getElementById('info-poster').src = item.poster || '';
+            document.getElementById('info-title').innerText = item.title || '';
+            document.getElementById('info-overview').innerText = 'Cargando información...';
+            document.getElementById('info-rating-val').innerText = item.rating ? item.rating.toFixed(1) : '';
+            document.getElementById('info-genres').innerHTML = '';
+            document.getElementById('info-meta').innerHTML = '';
+            document.getElementById('info-cast').innerHTML = '';
+            document.getElementById('info-director-block').classList.add('hidden');
+            document.getElementById('info-cast-block').classList.add('hidden');
+
+            const endpoint = currentCategory === 'series'
+                ? `/api/series/${item.id}/details?lang=${currentLang}`
+                : `/api/movies/${item.id}/details?lang=${currentLang}`;
+
+            try {
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                currentItem = data;
+
+                document.getElementById('info-banner').src = data.banner || item.banner || '';
+                document.getElementById('info-poster').src = data.poster || item.poster || '';
+                document.getElementById('info-title').innerText = data.title || '';
+                document.getElementById('info-overview').innerText = data.overview || 'Sin sinopsis disponible.';
+                document.getElementById('info-rating-val').innerText = data.rating ? data.rating.toFixed(1) : '';
+
+                const genresEl = document.getElementById('info-genres');
+                genresEl.innerHTML = (data.genres || []).map(g => `<span class="info-genre-badge">${g}</span>`).join('');
+
+                const metaEl = document.getElementById('info-meta');
+                const chips = [];
+                if (data.year) chips.push(`<span class="info-meta-chip"><i class="fas fa-calendar-alt text-red-600" style="font-size:9px"></i>${data.year}</span>`);
+                if (data.runtime) chips.push(`<span class="info-meta-chip"><i class="fas fa-clock text-red-600" style="font-size:9px"></i>${data.runtime} min</span>`);
+                if (data.seasons) chips.push(`<span class="info-meta-chip"><i class="fas fa-layer-group text-red-600" style="font-size:9px"></i>${data.seasons} temp.</span>`);
+                if (data.episodes) chips.push(`<span class="info-meta-chip"><i class="fas fa-play-circle text-red-600" style="font-size:9px"></i>${data.episodes} ep.</span>`);
+                metaEl.innerHTML = chips.join('');
+
+                if (data.director) {
+                    document.getElementById('info-director-label').innerText = 'Director';
+                    document.getElementById('info-director').innerText = data.director;
+                    document.getElementById('info-director-block').classList.remove('hidden');
+                } else if (data.creators && data.creators.length > 0) {
+                    document.getElementById('info-director-label').innerText = 'Creador';
+                    document.getElementById('info-director').innerText = data.creators.join(', ');
+                    document.getElementById('info-director-block').classList.remove('hidden');
+                }
+
+                if (data.cast && data.cast.length > 0) {
+                    document.getElementById('info-cast').innerHTML = data.cast.map(a => `<span class="cast-pill">${a}</span>`).join('');
+                    document.getElementById('info-cast-block').classList.remove('hidden');
+                }
+            } catch (err) {
+                document.getElementById('info-overview').innerText = item.overview || 'Sin sinopsis disponible.';
+                console.error('Error fetching details:', err);
+            }
+        }
+
+        function closeInfoModal() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function playFromInfoModal() {
+            closeInfoModal();
+            openItem(currentItem);
         }
 
         async function openItem(item) {

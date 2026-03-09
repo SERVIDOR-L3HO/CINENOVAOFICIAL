@@ -104,6 +104,38 @@ exports.getMovieById = async (req, res) => {
   }
 };
 
+exports.getMovieDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lang = req.query.lang || 'es-ES';
+    const [details, credits] = await Promise.all([
+      tmdb.get(`/movie/${id}`, { params: { language: lang } }),
+      tmdb.get(`/movie/${id}/credits`, { params: { language: lang } })
+    ]);
+    const m = details.data;
+    const director = credits.data.crew.find(p => p.job === 'Director');
+    const cast = credits.data.cast.slice(0, 8).map(a => a.name);
+    res.json({
+      id: m.id,
+      imdbId: m.imdb_id,
+      title: m.title,
+      overview: m.overview,
+      year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+      runtime: m.runtime,
+      rating: m.vote_average,
+      votes: m.vote_count,
+      genres: m.genres.map(g => g.name),
+      poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+      banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
+      director: director ? director.name : null,
+      cast: cast,
+      embeds: getEmbedUrls(m.imdb_id, m.id)
+    });
+  } catch (error) {
+    res.status(404).json({ error: 'Detalles no encontrados' });
+  }
+};
+
 exports.searchMovies = async (req, res) => {
   try {
     const { query, lang } = req.query;

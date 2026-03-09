@@ -96,6 +96,46 @@ exports.getSeriesById = async (req, res) => {
   }
 };
 
+exports.getSeriesDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lang = req.query.lang || 'es-ES';
+    const [details, credits, externalIds] = await Promise.all([
+      tmdb.get(`/tv/${id}`, { params: { language: lang } }),
+      tmdb.get(`/tv/${id}/credits`, { params: { language: lang } }),
+      tmdb.get(`/tv/${id}/external_ids`)
+    ]);
+    const s = details.data;
+    const imdbId = externalIds.data.imdb_id;
+    const creators = s.created_by && s.created_by.length > 0 ? s.created_by.map(c => c.name) : null;
+    const cast = credits.data.cast.slice(0, 8).map(a => a.name);
+    res.json({
+      id: s.id,
+      imdbId: imdbId,
+      title: s.name,
+      overview: s.overview,
+      year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+      seasons: s.number_of_seasons,
+      episodes: s.number_of_episodes,
+      rating: s.vote_average,
+      votes: s.vote_count,
+      genres: s.genres.map(g => g.name),
+      poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+      banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
+      creators: creators,
+      cast: cast,
+      type: 'series',
+      seasonsList: s.seasons.map(season => ({
+        number: season.season_number,
+        episodes: season.episode_count,
+        name: season.name
+      }))
+    });
+  } catch (error) {
+    res.status(404).json({ error: 'Detalles no encontrados' });
+  }
+};
+
 exports.searchSeries = async (req, res) => {
   try {
     const { query, lang } = req.query;
