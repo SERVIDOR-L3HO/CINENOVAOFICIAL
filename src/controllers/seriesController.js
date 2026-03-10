@@ -98,7 +98,7 @@ exports.getSeriesById = async (req, res) => {
 
 exports.getSeriesCategories = async (req, res) => {
   try {
-    const lang = req.query.lang || 'es-ES';
+    const lang = req.query.lang || 'es-MX';
     const mapSeries = s => ({
       id: s.id,
       title: s.name,
@@ -109,27 +109,37 @@ exports.getSeriesCategories = async (req, res) => {
       banner: s.backdrop_path ? `https://image.tmdb.org/t/p/original${s.backdrop_path}` : null,
       type: 'series'
     });
-    const params = (genre) => ({ language: lang, with_genres: genre, sort_by: 'popularity.desc', include_adult: false });
-    const [trending, topRated, drama, comedy, crime, scifi, animation, reality, documentary] = await Promise.all([
+    const base = { language: lang, sort_by: 'popularity.desc', include_adult: false };
+    const [
+      trending, topRated,
+      spanishOriginals, latinoNovelas, spanishCrime,
+      drama, comedy, crime, scifi, animation, documentary
+    ] = await Promise.all([
       tmdb.get('/trending/tv/week', { params: { language: lang } }),
       tmdb.get('/tv/top_rated', { params: { language: lang } }),
-      tmdb.get('/discover/tv', { params: params(18) }),
-      tmdb.get('/discover/tv', { params: params(35) }),
-      tmdb.get('/discover/tv', { params: params(80) }),
-      tmdb.get('/discover/tv', { params: params(10765) }),
-      tmdb.get('/discover/tv', { params: params(16) }),
-      tmdb.get('/discover/tv', { params: params(10764) }),
-      tmdb.get('/discover/tv', { params: params(99) }),
+      tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', sort_by: 'popularity.desc' } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', with_genres: 18, sort_by: 'vote_count.desc' } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', with_genres: 80 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 18 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 35 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 80 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 10765 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 16 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_genres: 99 } }),
     ]);
+    const filter = arr => arr.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries);
     res.json([
-      { id: 'trending', label: 'EN TENDENCIA', title: 'Series del Momento', accent: '#38bdf8', items: trending.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'top_rated', label: 'TOP GLOBAL', title: 'Mejor Calificadas', accent: '#facc15', items: topRated.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'drama', label: 'EMOCIONES', title: 'Drama', accent: '#a78bfa', items: drama.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'crime', label: 'MISTERIO', title: 'Crimen & Policíaca', accent: '#f43f5e', items: crime.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'comedy', label: 'ENTRETENIMIENTO', title: 'Comedia', accent: '#34d399', items: comedy.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'scifi', label: 'FUTURO', title: 'Ciencia Ficción', accent: '#22d3ee', items: scifi.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'animation', label: 'ARTE EN MOVIMIENTO', title: 'Animación', accent: '#e879f9', items: animation.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
-      { id: 'documentary', label: 'CONOCIMIENTO', title: 'Documental', accent: '#fb923c', items: documentary.data.results.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries) },
+      { id: 'trending',          label: 'EN TENDENCIA',       title: 'Series del Momento',         accent: '#38bdf8', items: filter(trending.data.results) },
+      { id: 'en_espanol',        label: '🇲🇽 PRODUCCIÓN LATINA', title: 'Series en Español',          accent: '#f97316', items: filter(spanishOriginals.data.results) },
+      { id: 'novelas',           label: '❤️ DRAMA LATINO',      title: 'Telenovelas & Drama',         accent: '#f43f5e', items: filter(latinoNovelas.data.results) },
+      { id: 'crimen_latino',     label: '🔫 SUSPENSO LATINO',   title: 'Crimen & Narco',              accent: '#dc2626', items: filter(spanishCrime.data.results) },
+      { id: 'top_rated',         label: 'TOP GLOBAL',          title: 'Mejor Calificadas',           accent: '#facc15', items: filter(topRated.data.results) },
+      { id: 'drama',             label: 'EMOCIONES',           title: 'Drama Internacional',         accent: '#a78bfa', items: filter(drama.data.results) },
+      { id: 'crime',             label: 'MISTERIO',            title: 'Crimen & Policíaca',          accent: '#fb7185', items: filter(crime.data.results) },
+      { id: 'comedy',            label: 'ENTRETENIMIENTO',     title: 'Comedia',                     accent: '#34d399', items: filter(comedy.data.results) },
+      { id: 'scifi',             label: 'FUTURO',              title: 'Ciencia Ficción',             accent: '#22d3ee', items: filter(scifi.data.results) },
+      { id: 'animation',         label: 'ARTE EN MOVIMIENTO',  title: 'Animación',                   accent: '#e879f9', items: filter(animation.data.results) },
+      { id: 'documentary',       label: 'CONOCIMIENTO',        title: 'Documental',                  accent: '#fb923c', items: filter(documentary.data.results) },
     ]);
   } catch (error) {
     console.error('Series categories error:', error.message);
@@ -190,7 +200,7 @@ exports.searchSeries = async (req, res) => {
   try {
     const { query, lang } = req.query;
     const response = await tmdb.get('/search/tv', {
-      params: { language: lang || 'es-MX', query: query, include_adult: false }
+      params: { language: lang || 'es-MX', query, include_adult: false }
     });
 
     const series = await Promise.all(response.data.results.map(async s => {

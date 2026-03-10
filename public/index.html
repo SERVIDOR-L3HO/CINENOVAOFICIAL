@@ -118,7 +118,7 @@
                 <a href="#" class="text-gray-400 hover:text-sky-400 transition" onclick="loadCategory('tv')">VIVO</a>
             </div>
             <div class="flex bg-white/5 rounded-full p-1 border border-white/10">
-                <button onclick="setLanguage('es-ES')" id="lang-es" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white">ESP</button>
+                <button onclick="setLanguage('es-MX')" id="lang-es" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white">ESP</button>
                 <button onclick="setLanguage('en-US')" id="lang-en" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400">ENG</button>
             </div>
         </div>
@@ -394,7 +394,7 @@
     <script>
         let currentCategory = 'movies';
         let currentItem = null;
-        let currentLang = 'es-ES';
+        let currentLang = 'es-MX';
         let currentAudioType = 'latino';
         let currentEmbeds = null;
         let currentSeriesId = null;
@@ -403,7 +403,7 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            document.getElementById('lang-es').className = lang === 'es-ES'
+            document.getElementById('lang-es').className = lang === 'es-MX'
                 ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white'
                 : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
             document.getElementById('lang-en').className = lang === 'en-US'
