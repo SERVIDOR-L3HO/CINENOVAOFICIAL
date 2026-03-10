@@ -200,6 +200,23 @@
                             <p id="info-overview" class="text-gray-300 leading-relaxed" style="font-size: 13px; font-weight: 400;"></p>
                         </div>
 
+                        <!-- Trailer -->
+                        <div id="info-trailer-block" class="mb-6 hidden">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-4 h-0.5 bg-sky-400"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Tráiler Oficial</span>
+                            </div>
+                            <div class="relative w-full rounded-xl overflow-hidden" style="aspect-ratio: 16/9; background: #000;">
+                                <iframe id="info-trailer-iframe"
+                                    class="absolute inset-0 w-full h-full"
+                                    frameborder="0"
+                                    allowfullscreen
+                                    allow="autoplay; encrypted-media; picture-in-picture"
+                                    src="">
+                                </iframe>
+                            </div>
+                        </div>
+
                         <!-- Director / Creator -->
                         <div id="info-director-block" class="mb-4 hidden">
                             <div class="flex items-center gap-2 mb-1.5">
@@ -633,6 +650,8 @@
             document.getElementById('info-cast').innerHTML = '';
             document.getElementById('info-director-block').classList.add('hidden');
             document.getElementById('info-cast-block').classList.add('hidden');
+            document.getElementById('info-trailer-block').classList.add('hidden');
+            document.getElementById('info-trailer-iframe').src = '';
 
             const endpoint = currentCategory === 'series'
                 ? `/api/series/${item.id}/details?lang=${currentLang}`
@@ -674,6 +693,11 @@
                     document.getElementById('info-cast').innerHTML = data.cast.map(a => `<span class="cast-pill">${a}</span>`).join('');
                     document.getElementById('info-cast-block').classList.remove('hidden');
                 }
+
+                if (data.trailerKey) {
+                    document.getElementById('info-trailer-iframe').src = `https://www.youtube.com/embed/${data.trailerKey}?rel=0&modestbranding=1`;
+                    document.getElementById('info-trailer-block').classList.remove('hidden');
+                }
             } catch (err) {
                 document.getElementById('info-overview').innerText = item.overview || 'Sin sinopsis disponible.';
                 console.error('Error fetching details:', err);
@@ -685,6 +709,8 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.body.style.overflow = 'auto';
+            document.getElementById('info-trailer-iframe').src = '';
+            document.getElementById('info-trailer-block').classList.add('hidden');
         }
 
         function playFromInfoModal() {

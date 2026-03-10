@@ -152,13 +152,21 @@ exports.getMovieDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const lang = req.query.lang || 'es-ES';
-    const [details, credits] = await Promise.all([
+    const [details, credits, videosLang, videosEn] = await Promise.all([
       tmdb.get(`/movie/${id}`, { params: { language: lang } }),
-      tmdb.get(`/movie/${id}/credits`, { params: { language: lang } })
+      tmdb.get(`/movie/${id}/credits`, { params: { language: lang } }),
+      tmdb.get(`/movie/${id}/videos`, { params: { language: lang } }),
+      tmdb.get(`/movie/${id}/videos`, { params: { language: 'en-US' } })
     ]);
     const m = details.data;
     const director = credits.data.crew.find(p => p.job === 'Director');
     const cast = credits.data.cast.slice(0, 8).map(a => a.name);
+
+    const allVideos = [...(videosLang.data.results || []), ...(videosEn.data.results || [])];
+    const trailer = allVideos.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+      || allVideos.find(v => v.site === 'YouTube');
+    const trailerKey = trailer ? trailer.key : null;
+
     res.json({
       id: m.id,
       imdbId: m.imdb_id,
@@ -173,6 +181,7 @@ exports.getMovieDetails = async (req, res) => {
       banner: `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
       director: director ? director.name : null,
       cast: cast,
+      trailerKey: trailerKey,
       embeds: getEmbedUrls(m.imdb_id, m.id)
     });
   } catch (error) {

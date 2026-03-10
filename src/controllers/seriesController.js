@@ -141,15 +141,23 @@ exports.getSeriesDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const lang = req.query.lang || 'es-ES';
-    const [details, credits, externalIds] = await Promise.all([
+    const [details, credits, externalIds, videosLang, videosEn] = await Promise.all([
       tmdb.get(`/tv/${id}`, { params: { language: lang } }),
       tmdb.get(`/tv/${id}/credits`, { params: { language: lang } }),
-      tmdb.get(`/tv/${id}/external_ids`)
+      tmdb.get(`/tv/${id}/external_ids`),
+      tmdb.get(`/tv/${id}/videos`, { params: { language: lang } }),
+      tmdb.get(`/tv/${id}/videos`, { params: { language: 'en-US' } })
     ]);
     const s = details.data;
     const imdbId = externalIds.data.imdb_id;
     const creators = s.created_by && s.created_by.length > 0 ? s.created_by.map(c => c.name) : null;
     const cast = credits.data.cast.slice(0, 8).map(a => a.name);
+
+    const allVideos = [...(videosLang.data.results || []), ...(videosEn.data.results || [])];
+    const trailer = allVideos.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+      || allVideos.find(v => v.site === 'YouTube');
+    const trailerKey = trailer ? trailer.key : null;
+
     res.json({
       id: s.id,
       imdbId: imdbId,
@@ -165,6 +173,7 @@ exports.getSeriesDetails = async (req, res) => {
       banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
       creators: creators,
       cast: cast,
+      trailerKey: trailerKey,
       type: 'series',
       seasonsList: s.seasons.map(season => ({
         number: season.season_number,
