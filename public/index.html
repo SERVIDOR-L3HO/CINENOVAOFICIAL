@@ -84,6 +84,28 @@
             border-radius: 8px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* Series Section */
+        .series-landscape-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
+        .series-landscape-card:hover { transform: translateY(-6px) scale(1.02); }
+        .series-spotlight-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
+        .series-spotlight-card:hover { transform: translateY(-8px); }
+        .series-badge {
+            font-size: 7px; font-weight: 900; letter-spacing: 2.5px; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 4px;
+        }
+        .series-scanline::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .series-landscape-card:hover .series-scanline::after,
+        .series-spotlight-card:hover .series-scanline::after { opacity: 1; }
+        .series-cat-header {
+            background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+            border-left: 3px solid;
+            border-radius: 0 8px 8px 0;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -380,9 +402,17 @@
                 const categories = await res.json();
                 if (categories[0]?.items[0]) updateHero(categories[0].items[0]);
                 area.innerHTML = '';
-                categories.forEach(cat => {
-                    if (cat.items.length > 0) area.appendChild(renderCarousel(cat));
-                });
+                if (category === 'series') {
+                    categories.forEach((cat, idx) => {
+                        if (cat.items.length > 0) {
+                            area.appendChild(idx === 0 ? renderSeriesSpotlight(cat) : renderSeriesCarousel(cat));
+                        }
+                    });
+                } else {
+                    categories.forEach(cat => {
+                        if (cat.items.length > 0) area.appendChild(renderCarousel(cat));
+                    });
+                }
             } catch (err) {
                 console.error('Error loading categories:', err);
                 area.innerHTML = '<div class="text-center py-20 text-gray-600 font-bold tracking-widest uppercase">Error al cargar contenido</div>';
@@ -461,6 +491,133 @@
         function scrollCarousel(id, dir) {
             const track = document.getElementById('carousel-' + id);
             if (track) track.scrollBy({ left: dir * (track.clientWidth * 0.75), behavior: 'smooth' });
+        }
+
+        function renderSeriesSpotlight(cat) {
+            const section = document.createElement('section');
+            section.className = 'mb-12 md:mb-16';
+            const featured = cat.items.slice(0, 3);
+            const rest = cat.items.slice(3);
+            section.innerHTML = `
+                <div class="px-4 md:px-12 mb-6">
+                    <div class="series-cat-header pl-4 py-2" style="border-color: ${cat.accent}">
+                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">&#9654; ${cat.label}</span>
+                        <h2 class="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none mt-0.5">${cat.title}</h2>
+                    </div>
+                </div>
+                <div class="px-4 md:px-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 mb-6">
+                    ${featured.map((item, i) => `
+                        <div class="series-spotlight-card cursor-pointer group" data-spotlight-idx="${i}">
+                            <div class="relative overflow-hidden rounded-2xl series-scanline" style="aspect-ratio:16/9; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+                                <img src="${item.banner || item.poster || ''}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108" loading="lazy" style="transition: transform 0.7s ease;">
+                                <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);"></div>
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-center justify-center">
+                                    <div class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-400" style="background: ${cat.accent}; box-shadow: 0 0 30px ${cat.accent}88;">
+                                        <i class="fas fa-play text-white ml-1 text-lg"></i>
+                                    </div>
+                                </div>
+                                <div class="absolute top-3 left-3 flex items-center gap-2">
+                                    <span class="series-badge" style="background:${cat.accent}; color:#000;">SERIE</span>
+                                    ${i === 0 ? `<span class="series-badge" style="background: rgba(250,204,21,0.15); color:#facc15; border:1px solid rgba(250,204,21,0.3);">DESTACADA</span>` : ''}
+                                </div>
+                                ${item.rating ? `<div class="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(0,0,0,0.65); border:1px solid rgba(250,204,21,0.2);">
+                                    <span style="color:#facc15; font-size:10px;">★</span>
+                                    <span class="font-black text-xs text-yellow-400">${item.rating.toFixed(1)}</span>
+                                </div>` : ''}
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <h3 class="font-black text-base md:text-lg uppercase italic tracking-tight leading-tight mb-2 line-clamp-2">${item.title}</h3>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-[9px] font-black tracking-widest" style="color:${cat.accent}">${item.year}</span>
+                                        <div class="w-1 h-1 rounded-full bg-white/30"></div>
+                                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Ver ahora</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`).join('')}
+                </div>
+                ${rest.length > 0 ? `
+                <div class="relative">
+                    <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
+                        ${rest.map((item, i) => renderSeriesLandscapeCard(item, i + 3, cat.accent, cat.id)).join('')}
+                    </div>
+                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to right, #050505, transparent)"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to left, #050505, transparent)"></div>
+                </div>` : ''}`;
+            section.querySelectorAll('.series-spotlight-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(cat.items[i]);
+            });
+            if (rest.length > 0) {
+                section.querySelectorAll('.series-landscape-card').forEach((card, i) => {
+                    card.onclick = () => openInfoModal(cat.items[i + 3]);
+                });
+            }
+            return section;
+        }
+
+        function renderSeriesCarousel(cat) {
+            const section = document.createElement('section');
+            section.className = 'mb-10 md:mb-14';
+            section.innerHTML = `
+                <div class="flex items-center justify-between px-4 md:px-12 mb-4 md:mb-5">
+                    <div class="series-cat-header pl-4 py-2 flex-1" style="border-color: ${cat.accent}">
+                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">&#9654; ${cat.label}</span>
+                        <div class="flex items-center gap-3 mt-0.5">
+                            <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter leading-none">${cat.title}</h2>
+                            <span class="text-[7px] font-black text-gray-600 tracking-widest hidden md:block">• ${cat.items.length} SERIES</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', -1)">
+                            <i class="fas fa-chevron-left" style="font-size:10px"></i>
+                        </button>
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', 1)">
+                            <i class="fas fa-chevron-right" style="font-size:10px"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
+                        ${cat.items.map((item, i) => renderSeriesLandscapeCard(item, i, cat.accent, cat.id)).join('')}
+                    </div>
+                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to right, #050505, transparent)"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to left, #050505, transparent)"></div>
+                </div>`;
+            section.querySelectorAll('.series-landscape-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(cat.items[i]);
+            });
+            return section;
+        }
+
+        function renderSeriesLandscapeCard(item, index, accent, catId) {
+            const banner = item.banner || item.poster || 'https://placehold.co/480x270/111/222?text=N/A';
+            const rating = item.rating ? item.rating.toFixed(1) : '—';
+            return `
+                <div class="series-landscape-card flex-shrink-0 w-52 md:w-72 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
+                    <div class="relative overflow-hidden rounded-xl md:rounded-2xl series-scanline" style="aspect-ratio:16/9; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 6px 24px rgba(0,0,0,0.5);">
+                        <img src="${banner}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                        <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.15) 55%, transparent 100%);"></div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-center justify-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-xl scale-75 group-hover:scale-100 transition-transform duration-400" style="background: ${accent}; box-shadow: 0 0 24px ${accent}77;">
+                                <i class="fas fa-play text-white ml-0.5 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-2 left-2">
+                            <span class="series-badge" style="background: rgba(0,0,0,0.65); color: ${accent}; border: 1px solid ${accent}55;">TV</span>
+                        </div>
+                        <div class="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.65);">
+                            <span style="color:#facc15; font-size:8px;">★</span>
+                            <span class="font-black text-[9px] text-yellow-400">${rating}</span>
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 p-2.5 md:p-3">
+                            <h4 class="font-black text-[9px] md:text-[11px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1.5">${item.title}</h4>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[8px] font-black" style="color:${accent}">${item.year}</span>
+                                <div class="w-0.5 h-0.5 rounded-full bg-white/30"></div>
+                                <span class="text-[8px] text-gray-500 font-bold">SERIE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
         }
 
         async function loadTvChannels() {
