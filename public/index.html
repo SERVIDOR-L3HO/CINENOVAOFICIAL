@@ -273,43 +273,70 @@
     </div>
 
     <!-- Player View -->
-    <div id="player-view" class="fixed inset-0 z-[200] bg-[#0a0a0a] hidden flex flex-col overflow-hidden">
+    <div id="player-view" class="fixed inset-0 z-[200] bg-[#070709] hidden flex flex-col overflow-hidden">
+
+        <!-- Top accent line -->
+        <div class="flex-shrink-0 h-0.5 w-full" style="background: linear-gradient(90deg, #38bdf8, #6366f1, transparent)"></div>
 
         <!-- Header -->
-        <div class="flex-shrink-0 px-4 py-3 flex justify-between items-center bg-black/80 border-b border-white/10">
-            <div class="flex items-center gap-3">
-                <img src="/assets/cinenova_icon.png" class="h-7">
-                <div>
-                    <h3 id="player-title" class="font-black italic uppercase text-sm tracking-tighter truncate max-w-[200px] md:max-w-md">CARGANDO...</h3>
-                    <p class="text-[9px] text-sky-300 font-bold tracking-widest uppercase opacity-70">FULL HD • LATINO / CASTELLANO</p>
+        <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(7,7,9,0.9) 100%); border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div class="flex items-center gap-3 min-w-0">
+                <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-sky-400/20 border border-white/10 hover:border-sky-400/50">
+                    <i class="fas fa-chevron-left text-xs text-gray-400 hover:text-sky-400"></i>
+                </button>
+                <img src="/assets/cinenova_icon.png" class="h-6 flex-shrink-0 opacity-80">
+                <div class="min-w-0">
+                    <h3 id="player-title" class="font-black italic uppercase text-sm md:text-base tracking-tighter truncate leading-none mb-0.5">CARGANDO...</h3>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse inline-block"></span>
+                            <span class="text-[8px] text-sky-400 font-black tracking-widest uppercase">REPRODUCIENDO</span>
+                        </span>
+                        <span class="text-gray-700 text-[8px]">•</span>
+                        <span class="text-[8px] text-gray-500 font-bold tracking-widest uppercase">FULL HD</span>
+                    </div>
                 </div>
             </div>
-            <button onclick="closePlayer()" class="w-9 h-9 flex items-center justify-center bg-white/10 hover:bg-sky-500 rounded-lg transition-all">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- Audio Selector -->
-        <div id="audio-selector-row" class="flex-shrink-0 px-4 py-3 bg-zinc-950 border-b border-white/5 flex items-center justify-between gap-3 flex-wrap">
-            <div class="flex items-center gap-2">
-                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest mr-1">Seleccionar Audio:</span>
-                <button id="btn-latino" onclick="setAudioType('latino')"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-sky-400 text-white border-2 border-sky-400">
-                    🇲🇽 LATINO <span class="bg-white/20 px-1.5 py-0.5 rounded text-[8px]">HD</span>
-                </button>
-                <button id="btn-castellano" onclick="setAudioType('castellano')"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-white/5 text-gray-300 border-2 border-white/10 hover:border-sky-400/50">
-                    🇪🇸 CASTELLANO <span class="bg-white/10 px-1.5 py-0.5 rounded text-[8px]">HD</span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8;">
+                    <i class="fas fa-shield-alt" style="font-size:7px"></i> HD PREMIUM
+                </span>
+                <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-red-500/20 border border-white/10 hover:border-red-500/40">
+                    <i class="fas fa-times text-xs text-gray-500 hover:text-red-400"></i>
                 </button>
             </div>
-            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black text-sky-300 uppercase tracking-widest bg-white/5 px-3 py-2 rounded-lg border border-sky-400/20 hover:bg-sky-400/10 transition">
-                <i class="fas fa-list mr-1"></i> EPISODIOS
+        </div>
+
+        <!-- Control Bar (Audio + Episodes) -->
+        <div id="audio-selector-row" class="flex-shrink-0 px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap" style="background: rgba(7,7,9,0.97); border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 mr-1">
+                    <i class="fas fa-headphones text-gray-600" style="font-size:9px"></i>
+                    <span class="text-[8px] font-black text-gray-600 uppercase tracking-[3px]">AUDIO</span>
+                </div>
+                <div class="flex bg-white/5 rounded-full p-0.5 border border-white/8 gap-0.5">
+                    <button id="btn-latino" onclick="setAudioType('latino')"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 bg-sky-400 text-black shadow-lg">
+                        🇲🇽 <span>LATINO</span> <span class="bg-black/20 px-1 py-0.5 rounded text-[7px] font-black">HD</span>
+                    </button>
+                    <button id="btn-castellano" onclick="setAudioType('castellano')"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 text-gray-400 hover:text-white">
+                        🇪🇸 <span>CAST.</span> <span class="bg-white/8 px-1 py-0.5 rounded text-[7px] font-black">HD</span>
+                    </button>
+                </div>
+            </div>
+            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-all border" style="color: #38bdf8; border-color: rgba(56,189,248,0.25); background: rgba(56,189,248,0.07);" onmouseover="this.style.background='rgba(56,189,248,0.15)'" onmouseout="this.style.background='rgba(56,189,248,0.07)'">
+                <i class="fas fa-th-list mr-1.5" style="font-size:8px"></i> EPISODIOS
             </button>
         </div>
 
         <!-- Server Tabs -->
-        <div class="flex-shrink-0 px-4 py-2 bg-zinc-950 border-b border-white/5">
-            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div class="flex-shrink-0 px-4 md:px-6 py-2" style="background: rgba(7,7,9,0.97); border-bottom: 1px solid rgba(255,255,255,0.04);">
+            <div class="flex items-center gap-1.5 mb-1.5">
+                <i class="fas fa-server text-gray-700" style="font-size:8px"></i>
+                <span class="text-[7px] font-black text-gray-700 uppercase tracking-[3px]">SERVIDOR</span>
+            </div>
+            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
                 <!-- Injected by JS -->
             </div>
         </div>
@@ -317,26 +344,49 @@
         <!-- Video iframe -->
         <div class="flex-grow relative bg-black min-h-0">
             <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
-            <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950">
-                <div class="w-14 h-14 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-gray-500 uppercase">CARGANDO SERVIDOR...</p>
+            <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background: #070709;">
+                <div class="relative mb-6">
+                    <div class="w-16 h-16 rounded-full border-2 border-sky-400/20 flex items-center justify-center">
+                        <div class="w-12 h-12 border-3 border-sky-400 border-t-transparent rounded-full animate-spin" style="border-width: 3px;"></div>
+                    </div>
+                    <div class="absolute inset-0 rounded-full animate-ping" style="background: rgba(56,189,248,0.05);"></div>
+                </div>
+                <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
+                <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
             </div>
         </div>
 
         <!-- Info bar -->
-        <div class="flex-shrink-0 px-4 py-2 bg-zinc-950 border-t border-white/5 flex items-center justify-between text-[9px] text-gray-500 font-bold">
-            <span>🎬 Si no carga, cambia de servidor o de audio</span>
-            <span class="text-sky-400 uppercase tracking-widest">Full HD 1080p</span>
+        <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background: rgba(7,7,9,0.97); border-top: 1px solid rgba(255,255,255,0.04);">
+            <div class="flex items-center gap-2 text-[8px] text-gray-600 font-bold">
+                <i class="fas fa-info-circle text-sky-400/40" style="font-size:9px"></i>
+                <span>Si no carga, cambia de servidor o idioma</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15);">
+                <span class="w-1 h-1 rounded-full bg-sky-400 inline-block"></span>
+                <span class="text-[8px] font-black tracking-widest uppercase text-sky-400">FULL HD 1080P</span>
+            </div>
         </div>
 
         <!-- Episodes Drawer (series only) -->
-        <div id="episodes-drawer" class="hidden flex-shrink-0 bg-zinc-900 border-t border-white/10 max-h-56 flex flex-col">
-            <div class="px-4 py-2 border-b border-white/5 flex items-center justify-between">
-                <select id="season-select" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:border-sky-400 flex-grow mr-3">
-                </select>
-                <button onclick="toggleEpisodesDrawer()" class="text-[9px] font-black text-gray-400 hover:text-white transition">✕</button>
+        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-60" style="background: #0d0d10; border-top: 1px solid rgba(56,189,248,0.15);">
+            <!-- Season selector header -->
+            <div class="px-4 md:px-6 pt-3 pb-2 flex items-center justify-between gap-3" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-4 rounded-full bg-sky-400 flex-shrink-0"></div>
+                    <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-400">TEMPORADA</span>
+                </div>
+                <div class="flex items-center gap-2 flex-1 overflow-x-auto mx-3" style="scrollbar-width:none;" id="season-pills-row">
+                    <!-- Season pills injected by JS -->
+                </div>
+                <button onclick="toggleEpisodesDrawer()" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-all hover:bg-white/10 border border-white/10">
+                    <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                </button>
             </div>
-            <div id="episode-list" class="overflow-y-auto p-3 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+            <!-- Hidden legacy select (used internally) -->
+            <select id="season-select" class="hidden"></select>
+            <!-- Episodes grid -->
+            <div id="episode-list" class="overflow-y-auto p-3 md:p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
             </div>
         </div>
     </div>
@@ -925,30 +975,42 @@
         }
 
         function renderAudioButtons(active) {
-            const activeClass = 'flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-sky-400 text-white border-2 border-sky-400';
-            const inactiveClass = 'flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all bg-white/5 text-gray-300 border-2 border-white/10 hover:border-sky-400/50';
+            const activeClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 bg-sky-400 text-black shadow-lg';
+            const inactiveClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 text-gray-400 hover:text-white';
             document.getElementById('btn-latino').className = active === 'latino' ? activeClass : inactiveClass;
             document.getElementById('btn-castellano').className = active === 'castellano' ? activeClass : inactiveClass;
         }
 
         function renderServerTabs(servers, activeIdx) {
             const tabs = document.getElementById('server-tabs');
-            tabs.innerHTML = servers.map((s, i) => `
-                <button id="tab-${i}" onclick="selectServerTab(${i})"
-                    class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-2 ${i === activeIdx ? 'bg-sky-400 text-white border-sky-400' : 'bg-white/5 text-gray-300 border-white/10 hover:border-sky-400/50'}">
+            tabs.innerHTML = servers.map((s, i) => {
+                const isActive = i === activeIdx;
+                return `<button id="tab-${i}" onclick="selectServerTab(${i})"
+                    class="flex-shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-300"
+                    style="${isActive
+                        ? 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.15);'
+                        : 'background: rgba(255,255,255,0.04); color: #9ca3af; border: 1px solid rgba(255,255,255,0.08);'}">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background: ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.2)'}"></span>
                     ${s.name}
-                    <span class="text-[8px] ${i === activeIdx ? 'bg-white/20' : 'bg-white/10'} px-1.5 py-0.5 rounded">${s.quality}</span>
-                </button>
-            `).join('');
+                    <span class="px-1.5 py-0.5 rounded text-[7px] font-black" style="${isActive ? 'background: rgba(56,189,248,0.25); color: #38bdf8;' : 'background: rgba(255,255,255,0.08); color: #6b7280;'}">${s.quality}</span>
+                </button>`;
+            }).join('');
             playFromServer(servers[activeIdx].url);
         }
 
         function selectServerTab(idx) {
             const servers = currentEmbeds[currentAudioType];
             document.querySelectorAll('#server-tabs button').forEach((btn, i) => {
-                btn.className = `flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-2 ${i === idx ? 'bg-sky-400 text-white border-sky-400' : 'bg-white/5 text-gray-300 border-white/10 hover:border-sky-400/50'}`;
-                const badge = btn.querySelector('span');
-                if (badge) badge.className = `text-[8px] ${i === idx ? 'bg-white/20' : 'bg-white/10'} px-1.5 py-0.5 rounded`;
+                const isActive = i === idx;
+                btn.style.cssText = isActive
+                    ? 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.15);'
+                    : 'background: rgba(255,255,255,0.04); color: #9ca3af; border: 1px solid rgba(255,255,255,0.08);';
+                const dot = btn.querySelector('span:first-child');
+                const badge = btn.querySelector('span:last-child');
+                if (dot) dot.style.background = isActive ? '#38bdf8' : 'rgba(255,255,255,0.2)';
+                if (badge) badge.style.cssText = isActive
+                    ? 'background: rgba(56,189,248,0.25); color: #38bdf8; padding: 1px 6px; border-radius: 4px; font-size: 7px; font-weight: 900;'
+                    : 'background: rgba(255,255,255,0.08); color: #6b7280; padding: 1px 6px; border-radius: 4px; font-size: 7px; font-weight: 900;';
             });
             playFromServer(servers[idx].url);
         }
@@ -968,15 +1030,28 @@
         async function loadSeriesDetails(id) {
             const res = await fetch(`/api/series/${id}`);
             const data = await res.json();
-            const seasonSelect = document.getElementById('season-select');
-            seasonSelect.innerHTML = data.seasons
-                .filter(s => s.number > 0)
-                .map(s => `<option value="${s.number}">${s.name}</option>`).join('');
-            seasonSelect.onchange = (e) => {
-                const season = data.seasons.find(s => s.number == e.target.value);
-                loadEpisodes(id, season.number, season.episodes);
-            };
-            const first = data.seasons.find(s => s.number > 0) || data.seasons[0];
+            const validSeasons = data.seasons.filter(s => s.number > 0);
+            const pillsRow = document.getElementById('season-pills-row');
+            pillsRow.innerHTML = validSeasons.map(s => `
+                <button class="season-pill flex-shrink-0 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200 border"
+                    data-season="${s.number}" data-episodes="${s.episodes}"
+                    style="border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #9ca3af;">
+                    T${s.number}
+                </button>`).join('');
+            pillsRow.querySelectorAll('.season-pill').forEach(pill => {
+                pill.onclick = () => {
+                    pillsRow.querySelectorAll('.season-pill').forEach(p => {
+                        p.style.cssText = 'border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #9ca3af; border-radius: 9999px;';
+                    });
+                    pill.style.cssText = 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 10px rgba(56,189,248,0.12); border-radius: 9999px;';
+                    loadEpisodes(id, parseInt(pill.dataset.season), parseInt(pill.dataset.episodes));
+                };
+            });
+            const firstPill = pillsRow.querySelector('.season-pill');
+            if (firstPill) {
+                firstPill.style.cssText = 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 10px rgba(56,189,248,0.12); border-radius: 9999px;';
+            }
+            const first = validSeasons[0] || data.seasons[0];
             loadEpisodes(id, first.number, first.episodes);
         }
 
@@ -986,16 +1061,23 @@
             list.innerHTML = '';
             for (let i = 1; i <= episodeCount; i++) {
                 const btn = document.createElement('button');
-                btn.className = 'episode-card p-2 rounded-lg border border-white/10 bg-white/5 text-center transition hover:border-sky-400 hover:bg-sky-400/10';
-                btn.innerHTML = `<span class="text-[9px] font-black uppercase tracking-widest block">EP ${i}</span>`;
+                btn.className = 'episode-card group relative flex flex-col items-center justify-center p-0 rounded-xl transition-all duration-200 overflow-hidden';
+                btn.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); aspect-ratio: 1; min-height: 44px;';
+                btn.innerHTML = `
+                    <span class="text-[8px] font-black tracking-widest text-gray-500 uppercase block group-hover:text-sky-400 transition-colors" style="font-size:7px; letter-spacing: 1px;">EP</span>
+                    <span class="font-black text-sm leading-none text-white" style="font-size: 15px;">${i}</span>`;
                 btn.onclick = () => {
-                    document.querySelectorAll('.episode-card').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+                    document.querySelectorAll('.episode-card').forEach(b => {
+                        b.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); aspect-ratio: 1; min-height: 44px; border-radius: 12px;';
+                        b.querySelector('span:last-child').style.color = '';
+                    });
+                    btn.style.cssText = 'background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.12); aspect-ratio: 1; min-height: 44px; border-radius: 12px;';
+                    btn.querySelector('span:last-child').style.color = '#38bdf8';
                     playEpisode(seriesId, seasonNum, i);
                 };
                 list.appendChild(btn);
             }
-            playEpisode(seriesId, seasonNum, 1);
+            if (list.firstChild) list.firstChild.click();
         }
 
         async function playEpisode(id, s, e) {
