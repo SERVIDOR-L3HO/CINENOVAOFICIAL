@@ -969,7 +969,8 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
             document.getElementById('info-trailer-iframe').src = '';
 
-            const endpoint = currentCategory === 'series'
+            const itemIsSeries = item._type === 'series' || item.type === 'series' || currentCategory === 'series';
+            const endpoint = itemIsSeries
                 ? `/api/series/${item.id}/details?lang=${currentLang}`
                 : `/api/movies/${item.id}/details?lang=${currentLang}`;
 
@@ -1047,7 +1048,10 @@
             const episodesDrawer = document.getElementById('episodes-drawer');
             const audioRow = document.getElementById('audio-selector-row');
 
-            if (currentCategory === 'tv') {
+            const openItemIsSeries = item._type === 'series' || item.type === 'series' || currentCategory === 'series';
+            const openItemIsLiveTV = currentCategory === 'tv' && !openItemIsSeries;
+
+            if (openItemIsLiveTV) {
                 episodesBtn.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
                 audioRow.classList.add('hidden');
@@ -1056,7 +1060,7 @@
                         📺 EN VIVO <span class="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">LIVE</span>
                     </button>`;
                 playFromServer(item.embeds.vip);
-            } else if (currentCategory === 'series') {
+            } else if (openItemIsSeries) {
                 episodesBtn.classList.remove('hidden');
                 episodesDrawer.classList.remove('hidden');
                 audioRow.classList.remove('hidden');
