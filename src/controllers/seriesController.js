@@ -213,6 +213,7 @@ exports.searchSeries = async (req, res) => {
           year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
           poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
           banner: `https://image.tmdb.org/t/p/original${s.backdrop_path}`,
+          popularity: s.popularity || 0,
           type: 'series'
         };
       } catch (e) {
@@ -221,6 +222,7 @@ exports.searchSeries = async (req, res) => {
           title: s.name,
           year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
           poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+          popularity: s.popularity || 0,
           type: 'series'
         };
       }

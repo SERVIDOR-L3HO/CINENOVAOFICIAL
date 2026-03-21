@@ -123,9 +123,20 @@
             </div>
         </div>
         <div class="flex items-center gap-4 md:gap-6">
-            <div class="relative group">
-                <input type="text" id="global-search" placeholder="BUSCAR..." class="bg-white/5 border border-white/10 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-[10px] md:text-xs focus:outline-none focus:border-sky-400 w-32 md:w-48 focus:md:w-64 transition-all duration-500 uppercase font-bold">
-                <i class="fas fa-search absolute right-4 top-2 md:top-2.5 text-gray-500 group-focus-within:text-sky-400 text-[10px] md:text-xs"></i>
+            <div class="relative" id="search-wrapper">
+                <input type="text" id="global-search" placeholder="BUSCAR..." autocomplete="off"
+                    class="bg-white/5 border border-white/10 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-[10px] md:text-xs focus:outline-none focus:border-sky-400 w-32 md:w-48 focus:w-52 md:focus:w-64 transition-all duration-500 uppercase font-bold">
+                <i class="fas fa-search absolute right-4 top-2 md:top-2.5 text-gray-500 text-[10px] md:text-xs pointer-events-none"></i>
+                <!-- History dropdown -->
+                <div id="search-history-dropdown"
+                    class="hidden absolute top-full mt-2 right-0 w-64 bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl z-[200] overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-2 border-b border-white/5">
+                        <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-500">HISTORIAL</span>
+                        <button id="clear-history-btn" class="text-[8px] font-black tracking-widest uppercase text-red-400 hover:text-red-300 transition">BORRAR</button>
+                    </div>
+                    <ul id="search-history-list" class="max-h-52 overflow-y-auto"></ul>
+                    <div id="search-history-empty" class="hidden px-4 py-4 text-center text-[9px] text-gray-600 font-bold uppercase tracking-widest">Sin historial</div>
+                </div>
             </div>
             <img src="/assets/cinenova_icon.png" alt="CINENOVA" class="h-6 md:h-8 grayscale hover:grayscale-0 transition duration-500">
         </div>
@@ -717,16 +728,83 @@
             }
         }
 
-        async function showSearchResults(category, query) {
+        // --- Search History ---
+        const HISTORY_KEY = 'cinenova_search_history';
+        const MAX_HISTORY = 10;
+
+        function getSearchHistory() {
+            try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+            catch { return []; }
+        }
+
+        function saveToHistory(query) {
+            let history = getSearchHistory().filter(q => q.toLowerCase() !== query.toLowerCase());
+            history.unshift(query);
+            if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        function clearHistory() {
+            localStorage.removeItem(HISTORY_KEY);
+            renderHistoryDropdown();
+        }
+
+        function renderHistoryDropdown() {
+            const history = getSearchHistory();
+            const list = document.getElementById('search-history-list');
+            const empty = document.getElementById('search-history-empty');
+            if (history.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+            } else {
+                empty.classList.add('hidden');
+                list.innerHTML = history.map(q => `
+                    <li class="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 cursor-pointer group transition"
+                        data-query="${q.replace(/"/g, '&quot;')}">
+                        <i class="fas fa-clock-rotate-left text-[9px] text-gray-600 group-hover:text-sky-400 transition"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-gray-300 group-hover:text-white transition truncate flex-1">${q}</span>
+                        <i class="fas fa-arrow-up-left text-[8px] text-gray-700 group-hover:text-sky-400 transition"></i>
+                    </li>`).join('');
+                list.querySelectorAll('li').forEach(li => {
+                    li.onclick = () => {
+                        const q = li.dataset.query;
+                        document.getElementById('global-search').value = q;
+                        hideHistoryDropdown();
+                        showSearchResults(q);
+                    };
+                });
+            }
+        }
+
+        function showHistoryDropdown() {
+            renderHistoryDropdown();
+            document.getElementById('search-history-dropdown').classList.remove('hidden');
+        }
+
+        function hideHistoryDropdown() {
+            document.getElementById('search-history-dropdown').classList.add('hidden');
+        }
+
+        // --- Search Results (movies + series combined) ---
+        async function showSearchResults(query) {
+            if (!query || query.length < 2) return;
+            saveToHistory(query);
             setHeroVisible(false);
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
                 <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
             </div>`;
-            const apiCategory = category === 'tv' ? 'movies' : category;
             try {
-                const res = await fetch(`/api/${apiCategory}/search?query=${encodeURIComponent(query)}&lang=${currentLang}`);
-                const data = await res.json();
+                const [moviesRes, seriesRes] = await Promise.all([
+                    fetch(`/api/movies/search?query=${encodeURIComponent(query)}&lang=${currentLang}`),
+                    fetch(`/api/series/search?query=${encodeURIComponent(query)}&lang=${currentLang}`)
+                ]);
+                const [moviesData, seriesData] = await Promise.all([moviesRes.json(), seriesRes.json()]);
+
+                const movies = (Array.isArray(moviesData) ? moviesData : []).map(i => ({ ...i, _type: 'movie' }));
+                const series = (Array.isArray(seriesData) ? seriesData : []).map(i => ({ ...i, _type: 'series' }));
+                const data = [...movies, ...series].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+
                 if (data.length === 0) {
                     area.innerHTML = `<div class="px-4 md:px-12 pt-8 pb-6 text-center">
                         <p class="text-gray-600 font-black uppercase tracking-widest text-sm">Sin resultados para "${query}"</p>
@@ -735,17 +813,22 @@
                 }
                 area.innerHTML = `
                     <div class="px-4 md:px-12 pt-8 pb-6">
-                        <div class="flex items-center gap-3 mb-7">
+                        <div class="flex items-center gap-3 mb-4">
                             <div class="h-10 w-1 rounded-full" style="background: linear-gradient(to bottom, #38bdf8, transparent)"></div>
                             <div>
                                 <span class="text-[8px] font-black tracking-[3px] uppercase text-sky-400">RESULTADOS DE BÚSQUEDA</span>
                                 <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter">"${query}"</h2>
-                                <p class="text-[9px] text-gray-600 font-bold">${data.length} títulos encontrados</p>
+                                <p class="text-[9px] text-gray-600 font-bold">${movies.length} películas · ${series.length} series · ${data.length} total</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 md:gap-4">
+                        <div class="flex gap-2 mb-6">
+                            <button id="filter-all" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-sky-400 text-white transition">TODO</button>
+                            <button id="filter-movies" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-white/5 text-gray-400 hover:text-white transition">CINE</button>
+                            <button id="filter-series" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-white/5 text-gray-400 hover:text-white transition">SERIES</button>
+                        </div>
+                        <div id="search-results-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 md:gap-4">
                             ${data.map((item, i) => `
-                                <div class="search-card cursor-pointer group" data-idx="${i}">
+                                <div class="search-card cursor-pointer group" data-idx="${i}" data-type="${item._type}">
                                     <div class="relative overflow-hidden rounded-xl border border-white/5 shadow-xl" style="aspect-ratio:2/3">
                                         <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
@@ -753,6 +836,9 @@
                                             <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#38bdf8">
                                                 <i class="fas fa-play text-white ml-0.5 text-xs"></i>
                                             </div>
+                                        </div>
+                                        <div class="absolute top-2 left-2">
+                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? 'bg-sky-400/90 text-white' : 'bg-violet-500/90 text-white'}">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
                                         </div>
                                         <div class="absolute bottom-0 left-0 right-0 p-2">
                                             <h4 class="font-black text-[8px] uppercase italic tracking-tight line-clamp-2 mb-1">${item.title}</h4>
@@ -762,9 +848,32 @@
                                 </div>`).join('')}
                         </div>
                     </div>`;
+
                 area.querySelectorAll('.search-card').forEach((card, i) => {
                     card.onclick = () => openInfoModal(data[i]);
                 });
+
+                // Filter buttons
+                function applyFilter(type) {
+                    area.querySelectorAll('.search-filter-btn').forEach(btn => {
+                        btn.classList.remove('bg-sky-400', 'text-white');
+                        btn.classList.add('bg-white/5', 'text-gray-400');
+                    });
+                    const active = area.querySelector(`#filter-${type}`);
+                    active.classList.add('bg-sky-400', 'text-white');
+                    active.classList.remove('bg-white/5', 'text-gray-400');
+                    area.querySelectorAll('.search-card').forEach(card => {
+                        if (type === 'all' || card.dataset.type === (type === 'movies' ? 'movie' : 'series')) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                }
+                area.querySelector('#filter-all').onclick = () => applyFilter('all');
+                area.querySelector('#filter-movies').onclick = () => applyFilter('movies');
+                area.querySelector('#filter-series').onclick = () => applyFilter('series');
+
             } catch (err) {
                 console.error('Search error:', err);
             }
@@ -1105,17 +1214,46 @@
         }
 
         let searchTimeout;
-        document.getElementById('global-search').oninput = (e) => {
+        const searchInput = document.getElementById('global-search');
+
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim().length === 0) showHistoryDropdown();
+        });
+
+        searchInput.addEventListener('blur', () => {
+            setTimeout(hideHistoryDropdown, 200);
+        });
+
+        document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+
+        searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             const val = e.target.value.trim();
+            if (val.length > 0) {
+                hideHistoryDropdown();
+            } else {
+                showHistoryDropdown();
+            }
             searchTimeout = setTimeout(() => {
-                if (val.length > 2) showSearchResults(currentCategory, val);
-                else if (val.length === 0) {
+                if (val.length > 2) {
+                    showSearchResults(val);
+                } else if (val.length === 0) {
                     if (currentCategory === 'tv') { setHeroVisible(false); loadTvChannels(); }
                     else { setHeroVisible(true); loadAndRenderCategories(currentCategory); }
                 }
             }, 600);
-        };
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = searchInput.value.trim();
+                if (val.length > 1) {
+                    clearTimeout(searchTimeout);
+                    hideHistoryDropdown();
+                    showSearchResults(val);
+                }
+            }
+        });
 
         loadCategory('movies');
     </script>

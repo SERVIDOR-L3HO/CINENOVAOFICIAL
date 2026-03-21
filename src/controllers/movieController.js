@@ -205,6 +205,7 @@ exports.searchMovies = async (req, res) => {
           title: m.title,
           year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+          popularity: m.popularity || 0,
           embeds: getEmbedUrls(details.data.imdb_id, m.id)
         };
       } catch (e) {
@@ -213,6 +214,7 @@ exports.searchMovies = async (req, res) => {
           title: m.title,
           year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
           poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+          popularity: m.popularity || 0,
           embeds: getEmbedUrls(null, m.id)
         };
       }
