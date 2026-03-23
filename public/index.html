@@ -1154,12 +1154,15 @@
             playFromServer(servers[idx].url);
         }
 
+        const AD_FREE_PROXY = 'https://ultragol-api-3.vercel.app/ultragol-l3ho?get=';
+
         function playFromServer(url) {
             const frame = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
-            setTimeout(() => { frame.src = url; }, 300);
+            const finalUrl = AD_FREE_PROXY + url;
+            setTimeout(() => { frame.src = finalUrl; }, 300);
         }
 
         function toggleEpisodesDrawer() {
