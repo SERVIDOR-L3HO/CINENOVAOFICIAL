@@ -1032,7 +1032,33 @@
 
         function playFromInfoModal() {
             closeInfoModal();
-            openItem(currentItem);
+            const isSeries = currentItem._type === 'series' || currentItem.type === 'series' || currentCategory === 'series';
+            if (currentCategory === 'tv') {
+                openItem(currentItem);
+                return;
+            }
+            const type = isSeries ? 'series' : 'movie';
+            const url = `${window.location.origin}/?id=${currentItem.id}&type=${type}`;
+            window.open(url, '_blank');
+        }
+
+        async function autoPlayFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const type = params.get('type');
+            if (!id || !type) return;
+            try {
+                const endpoint = type === 'series'
+                    ? `/api/series/${id}/details?lang=${currentLang}`
+                    : `/api/movies/${id}/details?lang=${currentLang}`;
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                if (data && data.id) {
+                    openItem(data);
+                }
+            } catch (err) {
+                console.error('Auto-play error:', err);
+            }
         }
 
         async function openItem(item) {
@@ -1260,6 +1286,7 @@
         });
 
         loadCategory('movies');
+        autoPlayFromUrl();
     </script>
 </body>
 </html>
