@@ -969,8 +969,7 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
             document.getElementById('info-trailer-iframe').src = '';
 
-            const itemIsSeries = item._type === 'series' || item.type === 'series' || currentCategory === 'series';
-            const endpoint = itemIsSeries
+            const endpoint = currentCategory === 'series'
                 ? `/api/series/${item.id}/details?lang=${currentLang}`
                 : `/api/movies/${item.id}/details?lang=${currentLang}`;
 
@@ -1030,45 +1029,9 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
         }
 
-        function openInNewTab(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
         function playFromInfoModal() {
             closeInfoModal();
-            const isSeries = currentItem._type === 'series' || currentItem.type === 'series' || currentCategory === 'series';
-            if (currentCategory === 'tv') {
-                openItem(currentItem);
-                return;
-            }
-            const type = isSeries ? 'series' : 'movie';
-            const url = `${window.location.origin}/?id=${currentItem.id}&type=${type}`;
-            openInNewTab(url);
-        }
-
-        async function autoPlayFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            const type = params.get('type');
-            if (!id || !type) return;
-            try {
-                const endpoint = type === 'series'
-                    ? `/api/series/${id}/details?lang=${currentLang}`
-                    : `/api/movies/${id}/details?lang=${currentLang}`;
-                const res = await fetch(endpoint);
-                const data = await res.json();
-                if (data && data.id) {
-                    openItem(data);
-                }
-            } catch (err) {
-                console.error('Auto-play error:', err);
-            }
+            openItem(currentItem);
         }
 
         async function openItem(item) {
@@ -1084,10 +1047,7 @@
             const episodesDrawer = document.getElementById('episodes-drawer');
             const audioRow = document.getElementById('audio-selector-row');
 
-            const openItemIsSeries = item._type === 'series' || item.type === 'series' || currentCategory === 'series';
-            const openItemIsLiveTV = currentCategory === 'tv' && !openItemIsSeries;
-
-            if (openItemIsLiveTV) {
+            if (currentCategory === 'tv') {
                 episodesBtn.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
                 audioRow.classList.add('hidden');
@@ -1096,7 +1056,7 @@
                         📺 EN VIVO <span class="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">LIVE</span>
                     </button>`;
                 playFromServer(item.embeds.vip);
-            } else if (openItemIsSeries) {
+            } else if (currentCategory === 'series') {
                 episodesBtn.classList.remove('hidden');
                 episodesDrawer.classList.remove('hidden');
                 audioRow.classList.remove('hidden');
@@ -1164,15 +1124,12 @@
             playFromServer(servers[idx].url);
         }
 
-        const AD_FREE_PROXY = 'https://ultragol-api-3.vercel.app/ultragol-l3ho?get=';
-
         function playFromServer(url) {
             const frame = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
-            const finalUrl = AD_FREE_PROXY + url;
-            setTimeout(() => { frame.src = finalUrl; }, 300);
+            setTimeout(() => { frame.src = url; }, 300);
         }
 
         function toggleEpisodesDrawer() {
@@ -1299,7 +1256,6 @@
         });
 
         loadCategory('movies');
-        autoPlayFromUrl();
     </script>
 </body>
 </html>
