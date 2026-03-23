@@ -1030,6 +1030,16 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
         }
 
+        function openInNewTab(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
         function playFromInfoModal() {
             closeInfoModal();
             const isSeries = currentItem._type === 'series' || currentItem.type === 'series' || currentCategory === 'series';
@@ -1039,7 +1049,7 @@
             }
             const type = isSeries ? 'series' : 'movie';
             const url = `${window.location.origin}/?id=${currentItem.id}&type=${type}`;
-            window.open(url, '_blank');
+            openInNewTab(url);
         }
 
         async function autoPlayFromUrl() {
