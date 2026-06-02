@@ -107,27 +107,53 @@
         #info-modal-card { animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(50px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .genre-badge {
-            background: rgba(249,115,22,0.12);
-            border: 1px solid rgba(249,115,22,0.28);
+            background: rgba(249,115,22,0.1);
+            border: 1px solid rgba(249,115,22,0.35);
             color: #fb923c;
-            font-size: 9px; font-weight: 900; letter-spacing: 2px;
-            text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
+            font-size: 8px; font-weight: 900; letter-spacing: 2.5px;
+            text-transform: uppercase; padding: 4px 11px; border-radius: 999px;
+            backdrop-filter: blur(8px);
+            text-shadow: 0 0 12px rgba(249,115,22,0.4);
         }
         .meta-chip {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px; padding: 5px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 5px 13px;
             font-size: 10px; font-weight: 800;
             letter-spacing: 1px; text-transform: uppercase;
             display: flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(8px);
         }
         .cast-pill {
-            background: rgba(249,115,22,0.07);
-            border: 1px solid rgba(249,115,22,0.15);
-            border-radius: 999px; padding: 3px 12px;
-            font-size: 10px; font-weight: 600; color: #d1d5db; white-space: nowrap;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 999px; padding: 5px 14px;
+            font-size: 10px; font-weight: 700; color: #e2e8f0;
+            white-space: nowrap; flex-shrink: 0;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+        .cast-pill:hover {
+            background: rgba(249,115,22,0.12);
+            border-color: rgba(249,115,22,0.3);
+            color: #fb923c;
         }
         .info-line { background: linear-gradient(90deg, var(--accent), var(--accent2)); height: 2px; border-radius: 2px; width: 20px; flex-shrink: 0; }
+
+        /* --- MODAL PREMIUM --- */
+        #info-modal-bg {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center;
+            filter: blur(55px) brightness(0.15) saturate(1.5);
+            transform: scale(1.2);
+        }
+        #info-modal-card::-webkit-scrollbar,
+        .modal-scroll::-webkit-scrollbar { width: 3px; }
+        #info-modal-card::-webkit-scrollbar-track,
+        .modal-scroll::-webkit-scrollbar-track { background: transparent; }
+        #info-modal-card::-webkit-scrollbar-thumb,
+        .modal-scroll::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.35); border-radius: 99px; }
+        #info-cast::-webkit-scrollbar { display: none; }
 
         /* --- SHIMMER --- */
         .shimmer {
@@ -269,85 +295,119 @@
     </main>
 
     <!-- Info / Synopsis Modal -->
-    <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 md:p-8" style="background:rgba(0,0,0,0.88); backdrop-filter:blur(10px);">
-        <div id="info-modal-card" class="glass-card relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl md:rounded-3xl flex flex-col" style="box-shadow:0 30px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(249,115,22,0.15);">
+    <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-3 md:p-6" style="background:rgba(0,0,0,0.65);">
+        <!-- Cinematic blurred backdrop -->
+        <div id="info-modal-bg"></div>
+        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.06) 0%, transparent 60%);"></div>
 
-            <!-- Banner -->
-            <div class="relative flex-shrink-0 h-48 md:h-72 overflow-hidden">
-                <img id="info-banner" src="" class="w-full h-full object-cover object-top" style="filter:brightness(0.5);">
-                <div class="absolute inset-0" style="background:linear-gradient(to bottom, transparent 30%, #0e0a06 100%);"></div>
-                <!-- Close -->
-                <button onclick="closeInfoModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all glass-panel hover:border-orange-500/50 hover:bg-orange-500/20">
-                    <i class="fas fa-times text-sm text-gray-300"></i>
+        <!-- CARD -->
+        <div id="info-modal-card" class="relative w-full max-w-4xl max-h-[95vh] rounded-2xl md:rounded-3xl overflow-hidden flex flex-col"
+            style="background:rgba(7,4,1,0.82); backdrop-filter:blur(40px) saturate(1.7); border:1px solid rgba(249,115,22,0.2); box-shadow:0 60px 160px rgba(0,0,0,0.98), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06);">
+
+            <!-- ═══ BANNER ═══ -->
+            <div class="relative flex-shrink-0 overflow-hidden" style="height:220px; min-height:180px;">
+                <img id="info-banner" src="" alt="" class="absolute inset-0 w-full h-full object-cover object-center" style="filter:brightness(0.45) saturate(1.2);">
+                <!-- Gradient layers -->
+                <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 15%, rgba(7,4,1,0.97) 100%);"></div>
+                <div class="absolute inset-0" style="background:linear-gradient(90deg, rgba(7,4,1,0.55) 0%, transparent 55%);"></div>
+                <!-- Orange ambient glow -->
+                <div class="absolute bottom-0 left-0 right-0" style="height:80px; background:radial-gradient(ellipse at 25% 100%, rgba(249,115,22,0.14) 0%, transparent 65%);"></div>
+                <!-- Top orange line accent -->
+                <div class="absolute top-0 left-0 right-0 h-px" style="background:linear-gradient(90deg, transparent, rgba(249,115,22,0.5), rgba(245,158,11,0.3), transparent);"></div>
+
+                <!-- Close button -->
+                <button onclick="closeInfoModal()" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full z-30 transition-all hover:scale-110 active:scale-90"
+                    style="background:rgba(0,0,0,0.6); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.14);">
+                    <i class="fas fa-times text-white" style="font-size:11px;"></i>
                 </button>
+
                 <!-- Rating badge -->
-                <div id="info-rating-badge" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full" style="background:rgba(0,0,0,0.65); border:1px solid rgba(250,204,21,0.3);">
-                    <span class="text-yellow-400 text-sm">★</span>
-                    <span id="info-rating-val" class="font-black text-sm text-yellow-400"></span>
-                    <span class="text-gray-500 text-[9px] font-bold uppercase tracking-widest">TMDB</span>
+                <div id="info-rating-badge" class="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full z-30"
+                    style="background:rgba(0,0,0,0.65); backdrop-filter:blur(14px); border:1px solid rgba(250,204,21,0.38); box-shadow:0 0 14px rgba(250,204,21,0.1);">
+                    <span class="text-yellow-400 font-black" style="font-size:13px; line-height:1;">★</span>
+                    <span id="info-rating-val" class="font-black text-yellow-400" style="font-size:14px; letter-spacing:-0.5px;"></span>
+                    <span class="font-black text-gray-500 tracking-widest uppercase" style="font-size:7px;">TMDB</span>
+                </div>
+
+                <!-- Poster (overlaps banner bottom) -->
+                <div class="absolute z-20" style="bottom:-48px; left:18px;">
+                    <div class="relative">
+                        <img id="info-poster" src="" alt="" class="rounded-xl block"
+                            style="width:88px; aspect-ratio:2/3; object-fit:cover; box-shadow:0 20px 60px rgba(0,0,0,0.95), 0 0 0 2px rgba(249,115,22,0.28), 0 0 30px rgba(249,115,22,0.1);">
+                        <!-- Orange left accent glow -->
+                        <div class="absolute inset-y-3 -left-px w-0.5 rounded-full" style="background:linear-gradient(180deg, transparent, var(--accent), transparent);"></div>
+                    </div>
+                </div>
+
+                <!-- Title + genres on banner (right of poster) -->
+                <div class="absolute z-20 flex flex-col justify-end gap-1.5" style="bottom:10px; left:118px; right:14px;">
+                    <div id="info-genres" class="flex flex-wrap gap-1.5"></div>
+                    <h2 id="info-title" class="font-black italic uppercase leading-none tracking-tighter text-white"
+                        style="font-size:clamp(1.2rem,4vw,2.4rem); text-shadow:0 2px 24px rgba(0,0,0,0.95);"></h2>
                 </div>
             </div>
 
-            <!-- Content -->
-            <div class="overflow-y-auto flex-grow" style="background:#0e0a06;">
-                <div class="flex flex-col md:flex-row gap-6 px-5 md:px-8 pb-8 -mt-16 md:-mt-24 relative z-10">
-                    <!-- Poster -->
-                    <div class="flex-shrink-0 w-28 md:w-44 self-start">
-                        <img id="info-poster" src="" class="w-full rounded-xl md:rounded-2xl" style="aspect-ratio:2/3; object-fit:cover; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(249,115,22,0.15);">
+            <!-- ═══ SCROLLABLE CONTENT ═══ -->
+            <div class="flex-1 overflow-y-auto modal-scroll" style="scrollbar-width:thin; scrollbar-color:rgba(249,115,22,0.3) transparent;">
+                <div class="px-5 md:px-7 pb-8" style="padding-top:58px;">
+
+                    <!-- Meta chips -->
+                    <div id="info-meta" class="flex flex-wrap gap-2 mb-5"></div>
+
+                    <!-- Glass divider -->
+                    <div class="mb-5 h-px" style="background:linear-gradient(90deg, rgba(249,115,22,0.25), rgba(245,158,11,0.1), transparent);"></div>
+
+                    <!-- Synopsis -->
+                    <div class="mb-6">
+                        <div class="flex items-center gap-2 mb-2.5">
+                            <div class="info-line"></div>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(249,115,22,0.65);">Sinopsis</span>
+                        </div>
+                        <p id="info-overview" class="leading-relaxed text-gray-300" style="font-size:13px;"></p>
                     </div>
-                    <!-- Details -->
-                    <div class="flex-1 min-w-0 pt-4 md:pt-20">
-                        <div id="info-genres" class="flex flex-wrap gap-2 mb-3"></div>
-                        <h2 id="info-title" class="font-black italic uppercase leading-none tracking-tighter mb-3" style="font-size:clamp(1.5rem,5vw,2.8rem);"></h2>
-                        <div id="info-meta" class="flex flex-wrap gap-2 mb-5"></div>
 
-                        <!-- Synopsis -->
-                        <div class="mb-5">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="info-line"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Sinopsis</span>
-                            </div>
-                            <p id="info-overview" class="text-gray-300 leading-relaxed" style="font-size:13px;"></p>
+                    <!-- Trailer -->
+                    <div id="info-trailer-block" class="mb-7 hidden">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="info-line"></div>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(249,115,22,0.65);">Tráiler Oficial</span>
                         </div>
+                        <div class="relative w-full rounded-xl md:rounded-2xl overflow-hidden"
+                            style="aspect-ratio:16/9; background:#000; border:1px solid rgba(249,115,22,0.15); box-shadow:0 10px 50px rgba(0,0,0,0.8);">
+                            <iframe id="info-trailer-iframe" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src=""></iframe>
+                        </div>
+                    </div>
 
-                        <!-- Trailer -->
-                        <div id="info-trailer-block" class="mb-6 hidden">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="info-line"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Tráiler Oficial</span>
-                            </div>
-                            <div class="relative w-full rounded-xl overflow-hidden" style="aspect-ratio:16/9; background:#000; border:1px solid rgba(249,115,22,0.12);">
-                                <iframe id="info-trailer-iframe" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src=""></iframe>
-                            </div>
+                    <!-- Director -->
+                    <div id="info-director-block" class="mb-5 hidden">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="info-line"></div>
+                            <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(249,115,22,0.65);">Director</span>
                         </div>
+                        <p id="info-director" class="text-white font-bold" style="font-size:13px;"></p>
+                    </div>
 
-                        <!-- Director -->
-                        <div id="info-director-block" class="mb-4 hidden">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <div class="info-line"></div>
-                                <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Director</span>
-                            </div>
-                            <p id="info-director" class="text-white font-bold" style="font-size:13px;"></p>
+                    <!-- Cast -->
+                    <div id="info-cast-block" class="mb-8 hidden">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="info-line"></div>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(249,115,22,0.65);">Reparto</span>
                         </div>
+                        <div id="info-cast" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none; -ms-overflow-style:none;"></div>
+                    </div>
 
-                        <!-- Cast -->
-                        <div id="info-cast-block" class="mb-7 hidden">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="info-line"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Reparto</span>
-                            </div>
-                            <div id="info-cast" class="flex flex-wrap gap-2"></div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex flex-wrap gap-3">
-                            <button id="info-play-btn" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));" onclick="playFromInfoModal()">
-                                <i class="fas fa-play"></i> REPRODUCIR AHORA
-                            </button>
-                            <button onclick="closeInfoModal()" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all glass-panel hover:border-orange-500/40">
-                                <i class="fas fa-chevron-left"></i> VOLVER
-                            </button>
-                        </div>
+                    <!-- Actions -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="info-play-btn" onclick="playFromInfoModal()"
+                            class="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-orange"
+                            style="background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 8px 30px rgba(249,115,22,0.35), inset 0 1px 0 rgba(255,255,255,0.15);">
+                            <i class="fas fa-play text-sm"></i> REPRODUCIR AHORA
+                        </button>
+                        <button onclick="closeInfoModal()"
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(12px);">
+                            <i class="fas fa-chevron-left text-xs"></i> VOLVER
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1116,7 +1176,10 @@
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
-            document.getElementById('info-banner').src = item.banner || '';
+            const bannerUrl = item.banner || '';
+            document.getElementById('info-banner').src = bannerUrl;
+            const bg = document.getElementById('info-modal-bg');
+            if (bg && bannerUrl) bg.style.backgroundImage = `url('${bannerUrl}')`;
             document.getElementById('info-poster').src = item.poster || '';
             document.getElementById('info-title').innerText = item.title || '';
             document.getElementById('info-overview').innerText = 'Cargando información...';
@@ -1138,7 +1201,10 @@
                 const data = await res.json();
                 currentItem = data;
 
-                document.getElementById('info-banner').src = data.banner || item.banner || '';
+                const newBanner = data.banner || item.banner || '';
+                document.getElementById('info-banner').src = newBanner;
+                if (bg && newBanner) bg.style.backgroundImage = `url('${newBanner}')`;
+
                 document.getElementById('info-poster').src = data.poster || item.poster || '';
                 document.getElementById('info-title').innerText = data.title || '';
                 document.getElementById('info-overview').innerText = data.overview || 'Sin sinopsis disponible.';
