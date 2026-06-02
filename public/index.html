@@ -6,274 +6,337 @@
     <title>CINENOVA - Premium Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Outfit', sans-serif; }
-        body { background-color: #050505; color: white; overflow-x: hidden; }
-        .glass { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .movie-card:hover { transform: translateY(-8px) scale(1.03); }
-        .hero-gradient { background: linear-gradient(0deg, #050505 5%, transparent 100%); }
-        .glow-red { box-shadow: 0 0 30px rgba(56, 189, 248, 0.3); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
-        .episode-card.active { background: #38bdf8; border-color: transparent; }
-        @media (max-width: 768px) {
-            .hero-title { font-size: 3.5rem !important; }
-            .grid-container { padding: 1rem !important; }
+        :root {
+            --accent: #f97316;
+            --accent2: #f59e0b;
+            --accent3: #facc15;
+            --bg: #080808;
+            --surface: #111111;
+            --glass: rgba(15, 10, 5, 0.82);
+            --glass-border: rgba(249, 115, 22, 0.15);
+        }
+        * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
+        body { background-color: var(--bg); color: white; overflow-x: hidden; }
+
+        /* --- GLASSMORPHISM --- */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .glass-card {
+            background: rgba(20, 14, 6, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(249,115,22,0.12);
+        }
+        .glass-panel {
+            background: rgba(249,115,22,0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(249,115,22,0.15);
         }
 
-        /* Carousels */
+        /* --- BACKGROUNDS & GRADIENTS --- */
+        .hero-gradient { background: linear-gradient(0deg, #080808 8%, rgba(8,8,8,0.6) 50%, transparent 100%); }
+        .hero-side { background: linear-gradient(90deg, #080808 20%, transparent 100%); }
+        body { background: radial-gradient(ellipse at 20% 80%, rgba(249,115,22,0.04) 0%, transparent 60%), #080808; }
+
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        /* --- GLOW EFFECTS --- */
+        .glow-orange { box-shadow: 0 0 28px rgba(249,115,22,0.4), 0 0 60px rgba(249,115,22,0.15); }
+        .glow-yellow { box-shadow: 0 0 20px rgba(250,204,21,0.35); }
+        .text-accent { color: var(--accent); }
+
+        /* --- CAROUSEL --- */
         .carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
         .carousel-track::-webkit-scrollbar { display: none; }
-        .carousel-card, .search-card, .tv-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
-        .carousel-card:hover, .search-card:hover, .tv-card:hover { transform: translateY(-8px) scale(1.03); }
-        .arrow-btn { transition: all 0.2s ease; }
-        .arrow-btn:hover { background: rgba(56,189,248,0.2) !important; border-color: rgba(56,189,248,0.5) !important; transform: scale(1.1); }
 
-        /* Info Modal */
-        #info-modal { animation: fadeInModal 0.3s ease; }
-        @keyframes fadeInModal {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        #info-modal-card { animation: slideUpModal 0.35s cubic-bezier(0.16,1,0.3,1); }
-        @keyframes slideUpModal {
-            from { opacity: 0; transform: translateY(40px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .info-genre-badge {
-            background: rgba(56,189,248,0.12);
-            border: 1px solid rgba(56,189,248,0.3);
-            color: #38bdf8;
-            font-size: 9px;
+        /* --- POSTER CARD (Modern List Style) --- */
+        .poster-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1); }
+        .poster-card:hover { transform: translateY(-10px) scale(1.04); }
+        .poster-card:hover .poster-overlay { opacity: 1 !important; }
+        .poster-card:hover .poster-play { opacity: 1 !important; transform: scale(1) !important; }
+        .poster-card:hover .poster-meta { opacity: 1 !important; transform: translateY(0) !important; }
+        .poster-card:hover .poster-img { transform: scale(1.08); }
+
+        /* --- LANDSCAPE CARD (Series) --- */
+        .land-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s ease; }
+        .land-card:hover { transform: translateY(-7px) scale(1.02); box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 20px rgba(249,115,22,0.12); }
+        .land-card:hover .land-overlay { opacity: 1 !important; }
+        .land-card:hover .land-play { opacity: 1 !important; transform: scale(1) !important; }
+        .land-card:hover .land-img { transform: scale(1.08); }
+
+        /* --- ARROW BUTTONS --- */
+        .arrow-btn { transition: all 0.2s ease; }
+        .arrow-btn:hover { background: rgba(249,115,22,0.2) !important; border-color: rgba(249,115,22,0.5) !important; transform: scale(1.12); box-shadow: 0 0 12px rgba(249,115,22,0.2); }
+
+        /* --- RANKING NUMBER --- */
+        .rank-num {
+            font-size: 6.5rem;
             font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 4px 10px;
-            border-radius: 999px;
+            line-height: 1;
+            background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+            position: absolute;
+            bottom: -10px;
+            left: -10px;
+            z-index: 0;
         }
-        .rating-star { color: #facc15; }
-        .info-meta-chip {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+
+        /* --- CATEGORY HEADER --- */
+        .cat-bar {
+            border-left: 3px solid var(--accent);
+            background: linear-gradient(90deg, rgba(249,115,22,0.07) 0%, transparent 80%);
+            border-radius: 0 8px 8px 0;
         }
-        .cast-pill {
+
+        /* --- INFO MODAL --- */
+        #info-modal { animation: fadeInBg 0.3s ease; }
+        @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        #info-modal-card { animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .genre-badge {
+            background: rgba(249,115,22,0.12);
+            border: 1px solid rgba(249,115,22,0.28);
+            color: #fb923c;
+            font-size: 9px; font-weight: 900; letter-spacing: 2px;
+            text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
+        }
+        .meta-chip {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 999px;
-            padding: 4px 12px;
-            font-size: 10px;
-            font-weight: 600;
-            color: #d1d5db;
-            white-space: nowrap;
+            border-radius: 8px; padding: 5px 12px;
+            font-size: 10px; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
         }
-        .info-poster-shadow { box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05); }
-        .shimmer-loader {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+        .cast-pill {
+            background: rgba(249,115,22,0.07);
+            border: 1px solid rgba(249,115,22,0.15);
+            border-radius: 999px; padding: 3px 12px;
+            font-size: 10px; font-weight: 600; color: #d1d5db; white-space: nowrap;
+        }
+        .info-line { background: linear-gradient(90deg, var(--accent), var(--accent2)); height: 2px; border-radius: 2px; width: 20px; flex-shrink: 0; }
+
+        /* --- SHIMMER --- */
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(249,115,22,0.05) 50%, rgba(255,255,255,0.03) 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
+            animation: shimmer 1.5s infinite; border-radius: 8px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        /* Series Section */
-        .series-landscape-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
-        .series-landscape-card:hover { transform: translateY(-6px) scale(1.02); }
-        .series-spotlight-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
-        .series-spotlight-card:hover { transform: translateY(-8px); }
-        .series-badge {
-            font-size: 7px; font-weight: 900; letter-spacing: 2.5px; text-transform: uppercase;
-            padding: 3px 8px; border-radius: 4px;
+        /* --- SPOTLIGHT CARD (Series featured) --- */
+        .spotlight-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
+        .spotlight-card:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(249,115,22,0.15); }
+        .spotlight-card:hover .sp-img { transform: scale(1.08); }
+        .spotlight-card:hover .sp-play { opacity: 1 !important; transform: scale(1) !important; }
+
+        /* --- NAV ACTIVE INDICATOR --- */
+        .nav-active { color: #f97316 !important; }
+
+        /* --- HERO BADGE --- */
+        .hero-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            box-shadow: 0 4px 14px rgba(249,115,22,0.5);
         }
-        .series-scanline::after {
-            content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
-            opacity: 0; transition: opacity 0.3s;
+
+        /* --- EPISODE & SEASON PILLS --- */
+        .episode-card.active { background: rgba(249,115,22,0.25) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+
+        /* --- SEARCH HISTORY --- */
+        .history-item:hover { background: rgba(249,115,22,0.08); }
+
+        /* --- LIVE BADGE --- */
+        .live-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 10px rgba(239,68,68,0.5);
+            animation: livePulse 2s infinite;
         }
-        .series-landscape-card:hover .series-scanline::after,
-        .series-spotlight-card:hover .series-scanline::after { opacity: 1; }
-        .series-cat-header {
-            background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 100%);
-            border-left: 3px solid;
-            border-radius: 0 8px 8px 0;
+        @keyframes livePulse { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.5)} 50%{box-shadow:0 0 18px rgba(239,68,68,0.8)} }
+
+        /* --- FILTER BUTTONS --- */
+        .filter-active { background: var(--accent) !important; color: white !important; box-shadow: 0 0 14px rgba(249,115,22,0.35); }
+
+        /* --- GRADIENT FADES FOR CAROUSELS --- */
+        .fade-left { background: linear-gradient(to right, var(--bg), transparent); }
+        .fade-right { background: linear-gradient(to left, var(--bg), transparent); }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3rem !important; }
         }
     </style>
 </head>
 <body class="antialiased">
-    <nav class="fixed w-full z-[100] glass px-4 md:px-8 py-3 flex justify-between items-center border-b border-white/5">
+
+    <!-- NAV -->
+    <nav class="fixed w-full z-[100] glass px-4 md:px-10 py-3 flex justify-between items-center">
         <div class="flex items-center gap-4 md:gap-10">
             <img src="/assets/cinenova_full_logo.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer" onclick="window.location.reload()">
-            <div class="hidden lg:flex gap-6 text-[10px] font-black tracking-[3px] uppercase italic">
-                <a href="#" class="text-white hover:text-sky-400 transition" onclick="loadCategory('movies')">CINE</a>
-                <a href="#" class="text-gray-400 hover:text-sky-400 transition" onclick="loadCategory('series')">SERIES</a>
-                <a href="#" class="text-gray-400 hover:text-sky-400 transition" onclick="loadCategory('tv')">VIVO</a>
+            <div class="hidden lg:flex gap-7 text-[10px] font-black tracking-[3px] uppercase italic">
+                <a href="#" id="nav-movies" class="text-accent transition hover:text-amber-400" onclick="loadCategory('movies')">CINE</a>
+                <a href="#" id="nav-series" class="text-gray-400 transition hover:text-accent" onclick="loadCategory('series')">SERIES</a>
+                <a href="#" id="nav-tv" class="text-gray-400 transition hover:text-accent" onclick="loadCategory('tv')">VIVO</a>
             </div>
-            <div class="flex bg-white/5 rounded-full p-1 border border-white/10">
-                <button onclick="setLanguage('es-MX')" id="lang-es" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white">ESP</button>
+            <!-- Language toggle -->
+            <div class="flex glass-panel rounded-full p-1 gap-0.5">
+                <button onclick="setLanguage('es-MX')" id="lang-es" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all" style="background:var(--accent); color:#fff;">ESP</button>
                 <button onclick="setLanguage('en-US')" id="lang-en" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400">ENG</button>
             </div>
         </div>
-        <div class="flex items-center gap-4 md:gap-6">
+        <div class="flex items-center gap-4 md:gap-5">
             <div class="relative" id="search-wrapper">
                 <input type="text" id="global-search" placeholder="BUSCAR..." autocomplete="off"
-                    class="bg-white/5 border border-white/10 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-[10px] md:text-xs focus:outline-none focus:border-sky-400 w-32 md:w-48 focus:w-52 md:focus:w-64 transition-all duration-500 uppercase font-bold">
-                <i class="fas fa-search absolute right-4 top-2 md:top-2.5 text-gray-500 text-[10px] md:text-xs pointer-events-none"></i>
+                    class="rounded-full px-4 md:px-6 py-2 text-[10px] md:text-xs focus:outline-none w-32 md:w-48 focus:w-56 md:focus:w-68 transition-all duration-500 uppercase font-bold"
+                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(249,115,22,0.2); color:white;">
+                <i class="fas fa-search absolute right-4 top-2.5 text-orange-500/50 text-xs pointer-events-none"></i>
                 <!-- History dropdown -->
                 <div id="search-history-dropdown"
-                    class="hidden absolute top-full mt-2 right-0 w-64 bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl z-[200] overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2 border-b border-white/5">
-                        <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-500">HISTORIAL</span>
+                    class="hidden absolute top-full mt-2 right-0 w-64 rounded-2xl shadow-2xl z-[200] overflow-hidden"
+                    style="background:#0e0a06; border:1px solid rgba(249,115,22,0.15);">
+                    <div class="flex items-center justify-between px-4 py-2.5" style="border-bottom:1px solid rgba(249,115,22,0.1)">
+                        <span class="text-[8px] font-black tracking-[3px] uppercase text-orange-500/60">HISTORIAL</span>
                         <button id="clear-history-btn" class="text-[8px] font-black tracking-widest uppercase text-red-400 hover:text-red-300 transition">BORRAR</button>
                     </div>
                     <ul id="search-history-list" class="max-h-52 overflow-y-auto"></ul>
                     <div id="search-history-empty" class="hidden px-4 py-4 text-center text-[9px] text-gray-600 font-bold uppercase tracking-widest">Sin historial</div>
                 </div>
             </div>
-            <img src="/assets/cinenova_icon.png" alt="CINENOVA" class="h-6 md:h-8 grayscale hover:grayscale-0 transition duration-500">
+            <img src="/assets/cinenova_icon.png" alt="" class="h-6 md:h-8 opacity-80 hover:opacity-100 transition duration-500 hover:drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]">
         </div>
     </nav>
 
     <!-- Mobile Bottom Nav -->
-    <div class="lg:hidden fixed bottom-0 w-full glass z-[100] flex justify-around py-4 border-t border-white/5">
-        <button onclick="loadCategory('movies')" class="text-xs font-black tracking-widest text-white flex flex-col items-center gap-1">
-            <i class="fas fa-film"></i> CINE
+    <div class="lg:hidden fixed bottom-0 w-full z-[100] flex justify-around py-4" style="background:rgba(8,6,3,0.95); border-top:1px solid rgba(249,115,22,0.15); backdrop-filter:blur(20px);">
+        <button onclick="loadCategory('movies')" id="mob-movies" class="text-xs font-black tracking-widest text-accent flex flex-col items-center gap-1">
+            <i class="fas fa-film text-base"></i> CINE
         </button>
-        <button onclick="loadCategory('series')" class="text-xs font-black tracking-widest text-gray-400 flex flex-col items-center gap-1">
-            <i class="fas fa-tv"></i> SERIES
+        <button onclick="loadCategory('series')" id="mob-series" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
+            <i class="fas fa-tv text-base"></i> SERIES
         </button>
-        <button onclick="loadCategory('tv')" class="text-xs font-black tracking-widest text-gray-400 flex flex-col items-center gap-1">
-            <i class="fas fa-broadcast-tower"></i> VIVO
+        <button onclick="loadCategory('tv')" id="mob-tv" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
+            <i class="fas fa-broadcast-tower text-base"></i> VIVO
         </button>
     </div>
 
     <main id="main-view" class="pb-24 lg:pb-0">
-        <!-- Hero Section -->
-        <div id="hero" class="relative h-[70vh] md:h-[85vh] w-full flex items-end p-6 md:p-12 overflow-hidden">
-            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-105" style="background-image: url('')"></div>
-            <div class="absolute inset-0 bg-black/40"></div>
+        <!-- Hero -->
+        <div id="hero" class="relative h-[72vh] md:h-[88vh] w-full flex items-end overflow-hidden">
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1200 scale-105" style="background-image:url('')"></div>
+            <div class="absolute inset-0 bg-black/50"></div>
             <div class="absolute inset-0 hero-gradient"></div>
-            
-            <div class="relative z-10 max-w-4xl w-full">
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="bg-sky-400 text-[8px] md:text-[10px] font-black px-2 py-1 rounded italic uppercase tracking-widest">EXCLUSIVE</span>
-                    <span id="hero-rating" class="text-yellow-400 font-black text-xs md:text-sm">⭐ 0.0</span>
+            <div class="absolute inset-0 hero-side"></div>
+
+            <div class="relative z-10 w-full px-6 md:px-14 pb-10 md:pb-16 max-w-5xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="hero-badge text-[8px] md:text-[9px] font-black px-3 py-1.5 rounded-full italic uppercase tracking-[2px]">✦ EXCLUSIVO</span>
+                    <span id="hero-rating" class="text-yellow-400 font-black text-xs md:text-sm drop-shadow">⭐ 0.0</span>
                 </div>
-                <h1 id="hero-title" class="hero-title text-4xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl">...</h1>
-                <p id="hero-desc" class="text-sm md:text-lg text-gray-200 mb-6 md:mb-10 line-clamp-2 md:line-clamp-3 leading-relaxed opacity-70 max-w-2xl font-light"></p>
-                <div class="flex flex-wrap gap-3 md:gap-5">
-                    <button id="hero-play-btn" class="flex-1 sm:flex-none bg-sky-400 hover:bg-sky-600 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-2 md:gap-3 glow-red transition-all transform hover:scale-105 active:scale-95 tracking-widest">
+                <h1 id="hero-title" class="hero-title text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl" style="text-shadow:0 4px 30px rgba(0,0,0,0.8)">...</h1>
+                <p id="hero-desc" class="text-sm md:text-base text-gray-300 mb-8 md:mb-10 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-2xl font-light opacity-85"></p>
+                <div class="flex flex-wrap gap-3 md:gap-4">
+                    <button id="hero-play-btn" class="flex-1 sm:flex-none px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-3 glow-orange transition-all transform hover:scale-105 active:scale-95 tracking-widest uppercase" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
                         <i class="fas fa-play"></i> REPRODUCIR
                     </button>
-                    <button id="hero-info-btn" class="flex-1 sm:flex-none bg-white/5 hover:bg-white/10 px-6 md:px-12 py-3 md:py-5 rounded-full font-black text-[10px] md:text-xs backdrop-blur-xl border border-white/10 transition-all tracking-widest flex items-center justify-center gap-2">
+                    <button id="hero-info-btn" class="flex-1 sm:flex-none glass-panel px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs transition-all tracking-widest flex items-center justify-center gap-3 uppercase hover:border-orange-500/40">
                         <i class="fas fa-info-circle"></i> INFO
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Dynamic Content Area (Carousels / Search / TV) -->
+        <!-- Content Area -->
         <div id="content-area" class="pb-10"></div>
     </main>
 
     <!-- Info / Synopsis Modal -->
-    <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 md:p-8" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
-        <div id="info-modal-card" class="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl md:rounded-3xl flex flex-col" style="background: #0e0e0e; border: 1px solid rgba(255,255,255,0.07);">
-            
-            <!-- Banner + Close -->
+    <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 md:p-8" style="background:rgba(0,0,0,0.88); backdrop-filter:blur(10px);">
+        <div id="info-modal-card" class="glass-card relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl md:rounded-3xl flex flex-col" style="box-shadow:0 30px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(249,115,22,0.15);">
+
+            <!-- Banner -->
             <div class="relative flex-shrink-0 h-48 md:h-72 overflow-hidden">
-                <img id="info-banner" src="" class="w-full h-full object-cover object-top" style="filter: brightness(0.55);">
-                <div class="absolute inset-0" style="background: linear-gradient(to bottom, transparent 40%, #0e0e0e 100%);"></div>
-                <button onclick="closeInfoModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='#38bdf8'" onmouseout="this.style.background='rgba(0,0,0,0.6)'">
-                    <i class="fas fa-times text-sm"></i>
+                <img id="info-banner" src="" class="w-full h-full object-cover object-top" style="filter:brightness(0.5);">
+                <div class="absolute inset-0" style="background:linear-gradient(to bottom, transparent 30%, #0e0a06 100%);"></div>
+                <!-- Close -->
+                <button onclick="closeInfoModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full transition-all glass-panel hover:border-orange-500/50 hover:bg-orange-500/20">
+                    <i class="fas fa-times text-sm text-gray-300"></i>
                 </button>
-                <!-- TMDB Rating Badge on banner -->
-                <div id="info-rating-badge" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(250,204,21,0.3);">
-                    <span class="rating-star text-sm">★</span>
+                <!-- Rating badge -->
+                <div id="info-rating-badge" class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full" style="background:rgba(0,0,0,0.65); border:1px solid rgba(250,204,21,0.3);">
+                    <span class="text-yellow-400 text-sm">★</span>
                     <span id="info-rating-val" class="font-black text-sm text-yellow-400"></span>
                     <span class="text-gray-500 text-[9px] font-bold uppercase tracking-widest">TMDB</span>
                 </div>
             </div>
 
             <!-- Content -->
-            <div class="overflow-y-auto flex-grow">
+            <div class="overflow-y-auto flex-grow" style="background:#0e0a06;">
                 <div class="flex flex-col md:flex-row gap-6 px-5 md:px-8 pb-8 -mt-16 md:-mt-24 relative z-10">
-                    
                     <!-- Poster -->
                     <div class="flex-shrink-0 w-28 md:w-44 self-start">
-                        <img id="info-poster" src="" class="w-full rounded-xl md:rounded-2xl info-poster-shadow" style="aspect-ratio:2/3; object-fit:cover;">
+                        <img id="info-poster" src="" class="w-full rounded-xl md:rounded-2xl" style="aspect-ratio:2/3; object-fit:cover; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(249,115,22,0.15);">
                     </div>
-
                     <!-- Details -->
                     <div class="flex-1 min-w-0 pt-4 md:pt-20">
-                        
-                        <!-- Genres -->
                         <div id="info-genres" class="flex flex-wrap gap-2 mb-3"></div>
-
-                        <!-- Title -->
-                        <h2 id="info-title" class="font-black italic uppercase leading-none tracking-tighter mb-3" style="font-size: clamp(1.5rem, 5vw, 2.8rem);"></h2>
-
-                        <!-- Meta chips -->
+                        <h2 id="info-title" class="font-black italic uppercase leading-none tracking-tighter mb-3" style="font-size:clamp(1.5rem,5vw,2.8rem);"></h2>
                         <div id="info-meta" class="flex flex-wrap gap-2 mb-5"></div>
 
                         <!-- Synopsis -->
                         <div class="mb-5">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-4 h-0.5 bg-sky-400"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Sinopsis</span>
+                                <div class="info-line"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Sinopsis</span>
                             </div>
-                            <p id="info-overview" class="text-gray-300 leading-relaxed" style="font-size: 13px; font-weight: 400;"></p>
+                            <p id="info-overview" class="text-gray-300 leading-relaxed" style="font-size:13px;"></p>
                         </div>
 
                         <!-- Trailer -->
                         <div id="info-trailer-block" class="mb-6 hidden">
                             <div class="flex items-center gap-2 mb-3">
-                                <div class="w-4 h-0.5 bg-sky-400"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Tráiler Oficial</span>
+                                <div class="info-line"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Tráiler Oficial</span>
                             </div>
-                            <div class="relative w-full rounded-xl overflow-hidden" style="aspect-ratio: 16/9; background: #000;">
-                                <iframe id="info-trailer-iframe"
-                                    class="absolute inset-0 w-full h-full"
-                                    frameborder="0"
-                                    allowfullscreen
-                                    allow="autoplay; encrypted-media; picture-in-picture"
-                                    src="">
-                                </iframe>
+                            <div class="relative w-full rounded-xl overflow-hidden" style="aspect-ratio:16/9; background:#000; border:1px solid rgba(249,115,22,0.12);">
+                                <iframe id="info-trailer-iframe" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src=""></iframe>
                             </div>
                         </div>
 
-                        <!-- Director / Creator -->
+                        <!-- Director -->
                         <div id="info-director-block" class="mb-4 hidden">
                             <div class="flex items-center gap-2 mb-1.5">
-                                <div class="w-4 h-0.5 bg-sky-400"></div>
-                                <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Director</span>
+                                <div class="info-line"></div>
+                                <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Director</span>
                             </div>
-                            <p id="info-director" class="text-white font-bold" style="font-size: 13px;"></p>
+                            <p id="info-director" class="text-white font-bold" style="font-size:13px;"></p>
                         </div>
 
                         <!-- Cast -->
                         <div id="info-cast-block" class="mb-7 hidden">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-4 h-0.5 bg-sky-400"></div>
-                                <span class="text-[9px] font-black tracking-[3px] uppercase text-gray-500">Reparto</span>
+                                <div class="info-line"></div>
+                                <span class="text-[9px] font-black tracking-[3px] uppercase text-orange-500/60">Reparto</span>
                             </div>
                             <div id="info-cast" class="flex flex-wrap gap-2"></div>
                         </div>
 
-                        <!-- Action Buttons -->
+                        <!-- Actions -->
                         <div class="flex flex-wrap gap-3">
-                            <button id="info-play-btn" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all glow-red hover:scale-105 active:scale-95" style="background: #38bdf8;" onclick="playFromInfoModal()">
+                            <button id="info-play-btn" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));" onclick="playFromInfoModal()">
                                 <i class="fas fa-play"></i> REPRODUCIR AHORA
                             </button>
-                            <button onclick="closeInfoModal()" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                            <button onclick="closeInfoModal()" class="flex items-center gap-3 px-8 py-3.5 rounded-full font-black text-xs tracking-widest uppercase transition-all glass-panel hover:border-orange-500/40">
                                 <i class="fas fa-chevron-left"></i> VOLVER
                             </button>
                         </div>
@@ -284,121 +347,111 @@
     </div>
 
     <!-- Player View -->
-    <div id="player-view" class="fixed inset-0 z-[200] bg-[#070709] hidden flex flex-col overflow-hidden">
-
+    <div id="player-view" class="fixed inset-0 z-[200] hidden flex flex-col overflow-hidden" style="background:#060402;">
         <!-- Top accent line -->
-        <div class="flex-shrink-0 h-0.5 w-full" style="background: linear-gradient(90deg, #38bdf8, #6366f1, transparent)"></div>
+        <div class="flex-shrink-0 h-0.5 w-full" style="background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)"></div>
 
-        <!-- Header -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(7,7,9,0.9) 100%); border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <!-- Player Header -->
+        <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background:rgba(6,4,2,0.97); border-bottom:1px solid rgba(249,115,22,0.1);">
             <div class="flex items-center gap-3 min-w-0">
-                <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-sky-400/20 border border-white/10 hover:border-sky-400/50">
-                    <i class="fas fa-chevron-left text-xs text-gray-400 hover:text-sky-400"></i>
+                <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:border-orange-500/50">
+                    <i class="fas fa-chevron-left text-xs text-gray-400"></i>
                 </button>
                 <img src="/assets/cinenova_icon.png" class="h-6 flex-shrink-0 opacity-80">
                 <div class="min-w-0">
                     <h3 id="player-title" class="font-black italic uppercase text-sm md:text-base tracking-tighter truncate leading-none mb-0.5">CARGANDO...</h3>
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse inline-block"></span>
-                            <span class="text-[8px] text-sky-400 font-black tracking-widest uppercase">REPRODUCIENDO</span>
-                        </span>
+                        <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:var(--accent); box-shadow:0 0 6px var(--accent); animation:livePulse 2s infinite;"></span>
+                        <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">REPRODUCIENDO</span>
                         <span class="text-gray-700 text-[8px]">•</span>
                         <span class="text-[8px] text-gray-500 font-bold tracking-widest uppercase">FULL HD</span>
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8;">
+                <span class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.25); color:var(--accent);">
                     <i class="fas fa-shield-alt" style="font-size:7px"></i> HD PREMIUM
                 </span>
-                <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-red-500/20 border border-white/10 hover:border-red-500/40">
+                <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:bg-red-500/20 hover:border-red-500/40">
                     <i class="fas fa-times text-xs text-gray-500 hover:text-red-400"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Control Bar (Audio + Episodes) -->
-        <div id="audio-selector-row" class="flex-shrink-0 px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap" style="background: rgba(7,7,9,0.97); border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <!-- Audio + Episodes Row -->
+        <div id="audio-selector-row" class="flex-shrink-0 px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(249,115,22,0.06);">
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-1.5 mr-1">
-                    <i class="fas fa-headphones text-gray-600" style="font-size:9px"></i>
-                    <span class="text-[8px] font-black text-gray-600 uppercase tracking-[3px]">AUDIO</span>
+                    <i class="fas fa-headphones text-orange-500/40" style="font-size:9px"></i>
+                    <span class="text-[8px] font-black text-orange-500/40 uppercase tracking-[3px]">AUDIO</span>
                 </div>
-                <div class="flex bg-white/5 rounded-full p-0.5 border border-white/8 gap-0.5">
+                <div class="flex rounded-full p-0.5 gap-0.5" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.12);">
                     <button id="btn-latino" onclick="setAudioType('latino')"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 bg-sky-400 text-black shadow-lg">
-                        🇲🇽 <span>LATINO</span> <span class="bg-black/20 px-1 py-0.5 rounded text-[7px] font-black">HD</span>
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300"
+                        style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">
+                        🇲🇽 <span>LATINO</span> <span class="px-1 py-0.5 rounded text-[7px] font-black" style="background:rgba(0,0,0,0.2)">HD</span>
                     </button>
                     <button id="btn-castellano" onclick="setAudioType('castellano')"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 text-gray-400 hover:text-white">
-                        🇪🇸 <span>CAST.</span> <span class="bg-white/8 px-1 py-0.5 rounded text-[7px] font-black">HD</span>
+                        🇪🇸 <span>CAST.</span>
                     </button>
                 </div>
             </div>
-            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-all border" style="color: #38bdf8; border-color: rgba(56,189,248,0.25); background: rgba(56,189,248,0.07);" onmouseover="this.style.background='rgba(56,189,248,0.15)'" onmouseout="this.style.background='rgba(56,189,248,0.07)'">
+            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-all glass-panel" style="color:var(--accent); border-color:rgba(249,115,22,0.25);" onmouseover="this.style.background='rgba(249,115,22,0.15)'" onmouseout="this.style.background='rgba(249,115,22,0.06)'">
                 <i class="fas fa-th-list mr-1.5" style="font-size:8px"></i> EPISODIOS
             </button>
         </div>
 
         <!-- Server Tabs -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-2" style="background: rgba(7,7,9,0.97); border-bottom: 1px solid rgba(255,255,255,0.04);">
+        <div class="flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(249,115,22,0.05);">
             <div class="flex items-center gap-1.5 mb-1.5">
-                <i class="fas fa-server text-gray-700" style="font-size:8px"></i>
-                <span class="text-[7px] font-black text-gray-700 uppercase tracking-[3px]">SERVIDOR</span>
+                <i class="fas fa-server text-orange-500/30" style="font-size:8px"></i>
+                <span class="text-[7px] font-black text-orange-500/30 uppercase tracking-[3px]">SERVIDOR</span>
             </div>
-            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
-                <!-- Injected by JS -->
-            </div>
+            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;"></div>
         </div>
 
         <!-- Video iframe -->
         <div class="flex-grow relative bg-black min-h-0">
             <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
-            <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background: #070709;">
+            <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
                 <div class="relative mb-6">
-                    <div class="w-16 h-16 rounded-full border-2 border-sky-400/20 flex items-center justify-center">
-                        <div class="w-12 h-12 border-3 border-sky-400 border-t-transparent rounded-full animate-spin" style="border-width: 3px;"></div>
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(249,115,22,0.2);">
+                        <div class="w-11 h-11 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
                     </div>
-                    <div class="absolute inset-0 rounded-full animate-ping" style="background: rgba(56,189,248,0.05);"></div>
+                    <div class="absolute inset-0 rounded-full animate-ping" style="background:rgba(249,115,22,0.06);"></div>
                 </div>
-                <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
+                <p class="text-[8px] font-black tracking-[5px] text-orange-500/40 uppercase mb-1">CARGANDO SERVIDOR</p>
                 <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
             </div>
         </div>
 
         <!-- Info bar -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background: rgba(7,7,9,0.97); border-top: 1px solid rgba(255,255,255,0.04);">
+        <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background:rgba(6,4,2,0.98); border-top:1px solid rgba(249,115,22,0.06);">
             <div class="flex items-center gap-2 text-[8px] text-gray-600 font-bold">
-                <i class="fas fa-info-circle text-sky-400/40" style="font-size:9px"></i>
+                <i class="fas fa-info-circle text-orange-500/30" style="font-size:9px"></i>
                 <span>Si no carga, cambia de servidor o idioma</span>
             </div>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15);">
-                <span class="w-1 h-1 rounded-full bg-sky-400 inline-block"></span>
-                <span class="text-[8px] font-black tracking-widest uppercase text-sky-400">FULL HD 1080P</span>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.18);">
+                <span class="w-1 h-1 rounded-full inline-block" style="background:var(--accent);"></span>
+                <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">FULL HD 1080P</span>
             </div>
         </div>
 
-        <!-- Episodes Drawer (series only) -->
-        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-60" style="background: #0d0d10; border-top: 1px solid rgba(56,189,248,0.15);">
-            <!-- Season selector header -->
-            <div class="px-4 md:px-6 pt-3 pb-2 flex items-center justify-between gap-3" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <!-- Episodes Drawer -->
+        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-64" style="background:#080604; border-top:1px solid rgba(249,115,22,0.18);">
+            <div class="px-4 md:px-6 pt-3 pb-2 flex items-center justify-between gap-3" style="border-bottom:1px solid rgba(255,255,255,0.04);">
                 <div class="flex items-center gap-2">
-                    <div class="w-1 h-4 rounded-full bg-sky-400 flex-shrink-0"></div>
+                    <div class="w-1 h-4 rounded-full flex-shrink-0" style="background:var(--accent);"></div>
                     <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-400">TEMPORADA</span>
                 </div>
-                <div class="flex items-center gap-2 flex-1 overflow-x-auto mx-3" style="scrollbar-width:none;" id="season-pills-row">
-                    <!-- Season pills injected by JS -->
-                </div>
-                <button onclick="toggleEpisodesDrawer()" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-all hover:bg-white/10 border border-white/10">
+                <div class="flex items-center gap-2 flex-1 overflow-x-auto mx-3" style="scrollbar-width:none;" id="season-pills-row"></div>
+                <button onclick="toggleEpisodesDrawer()" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-all glass-panel">
                     <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
                 </button>
             </div>
-            <!-- Hidden legacy select (used internally) -->
             <select id="season-select" class="hidden"></select>
-            <!-- Episodes grid -->
-            <div id="episode-list" class="overflow-y-auto p-3 md:p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-            </div>
+            <div id="episode-list" class="overflow-y-auto p-3 md:p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2"></div>
         </div>
     </div>
 
@@ -414,12 +467,11 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            document.getElementById('lang-es').className = lang === 'es-MX'
-                ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white'
-                : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
-            document.getElementById('lang-en').className = lang === 'en-US'
-                ? 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all bg-sky-400 text-white'
-                : 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all text-gray-400';
+            const acc = 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all';
+            document.getElementById('lang-es').className = acc;
+            document.getElementById('lang-en').className = acc;
+            document.getElementById('lang-es').style.cssText = lang === 'es-MX' ? 'background:var(--accent);color:#fff;' : 'color:#9ca3af;';
+            document.getElementById('lang-en').style.cssText = lang === 'en-US' ? 'background:var(--accent);color:#fff;' : 'color:#9ca3af;';
             loadCategory(currentCategory);
         }
 
@@ -428,14 +480,13 @@
         }
 
         function updateNavHighlight(category) {
-            document.querySelectorAll('nav a, div.lg\\:hidden button').forEach(el => {
-                const text = el.innerText.toLowerCase();
-                const match = category === 'movies' ? 'cine' : (category === 'series' ? 'series' : 'vivo');
-                if (text.includes(match)) {
-                    el.classList.add('text-white'); el.classList.remove('text-gray-400');
-                } else {
-                    el.classList.remove('text-white'); el.classList.add('text-gray-400');
-                }
+            const navMap = { movies: 'nav-movies', series: 'nav-series', tv: 'nav-tv' };
+            const mobMap = { movies: 'mob-movies', series: 'mob-series', tv: 'mob-tv' };
+            ['movies','series','tv'].forEach(c => {
+                const nav = document.getElementById(navMap[c]);
+                const mob = document.getElementById(mobMap[c]);
+                if (nav) { nav.style.color = c === category ? 'var(--accent)' : '#9ca3af'; }
+                if (mob) { mob.style.color = c === category ? 'var(--accent)' : '#6b7280'; }
             });
         }
 
@@ -443,6 +494,7 @@
             currentCategory = cat;
             updateNavHighlight(cat);
             document.getElementById('global-search').value = '';
+            hideSearchHistory();
             if (cat === 'tv') {
                 setHeroVisible(false);
                 loadTvChannels();
@@ -455,8 +507,8 @@
         async function loadAndRenderCategories(category) {
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
-                <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Cargando categorías...</p>
+                <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
+                <p class="text-[9px] font-black tracking-[4px] text-orange-500/40 uppercase">Cargando categorías...</p>
             </div>`;
             try {
                 const res = await fetch(`/api/${category}/categories?lang=${currentLang}`);
@@ -470,8 +522,10 @@
                         }
                     });
                 } else {
-                    categories.forEach(cat => {
-                        if (cat.items.length > 0) area.appendChild(renderCarousel(cat));
+                    categories.forEach((cat, idx) => {
+                        if (cat.items.length > 0) {
+                            area.appendChild(idx === 0 ? renderFeaturedCarousel(cat) : renderCarousel(cat));
+                        }
                     });
                 }
             } catch (err) {
@@ -480,71 +534,153 @@
             }
         }
 
+        /* ===================== FEATURED CAROUSEL (first row - bigger cards) ===================== */
+        function renderFeaturedCarousel(cat) {
+            const section = document.createElement('section');
+            section.className = 'mb-12 md:mb-16';
+            section.innerHTML = `
+                <div class="flex items-center justify-between px-4 md:px-12 mb-5 md:mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="cat-bar pl-4 py-2.5">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">${cat.label}</span>
+                                <span class="text-[7px] font-black text-gray-600 tracking-widest">• ${cat.items.length} TÍTULOS</span>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none">${cat.title}</h2>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.07); border:1px solid rgba(249,115,22,0.18);" onclick="scrollCarousel('${cat.id}', -1)">
+                            <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
+                        </button>
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.07); border:1px solid rgba(249,115,22,0.18);" onclick="scrollCarousel('${cat.id}', 1)">
+                            <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div id="carousel-${cat.id}" class="carousel-track flex gap-4 md:gap-5 overflow-x-auto px-4 md:px-12 pb-4">
+                        ${cat.items.map((item, i) => renderFeaturedCard(item, i, cat.accent, cat.id)).join('')}
+                    </div>
+                    <div class="absolute left-0 top-0 bottom-4 w-12 md:w-24 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-12 md:w-24 pointer-events-none fade-right"></div>
+                </div>`;
+            section.querySelectorAll('.poster-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(cat.items[i]);
+            });
+            return section;
+        }
+
+        function renderFeaturedCard(item, index, accent, catId) {
+            const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
+            const rating = item.rating ? item.rating.toFixed(1) : '—';
+            const rankNum = index + 1;
+            return `
+                <div class="poster-card flex-shrink-0 w-36 md:w-52 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
+                    <div class="relative overflow-hidden rounded-xl md:rounded-2xl" style="aspect-ratio:2/3; box-shadow:0 8px 30px rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.06);">
+                        <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                        <!-- Gradient overlay (always subtle) -->
+                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);"></div>
+                        <!-- Hover overlay -->
+                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(249,115,22,0.08); backdrop-filter:blur(1px);"></div>
+                        <!-- Play button -->
+                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.75);">
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                                <i class="fas fa-play text-white ml-1 text-base"></i>
+                            </div>
+                        </div>
+                        <!-- Top right rating -->
+                        <div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-1 rounded-full" style="background:rgba(0,0,0,0.72); border:1px solid rgba(250,204,21,0.2);">
+                            <span class="text-yellow-400" style="font-size:8px;">★</span>
+                            <span class="font-black text-[9px] text-yellow-400">${rating}</span>
+                        </div>
+                        <!-- Meta on hover -->
+                        <div class="poster-meta absolute bottom-0 left-0 right-0 p-3 opacity-0 transition-all duration-400" style="transform:translateY(6px);">
+                            <h4 class="font-black text-[10px] md:text-xs uppercase italic tracking-tight leading-tight line-clamp-2 mb-1.5">${item.title}</h4>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[8px] text-yellow-400 font-black">⭐ ${rating}</span>
+                                <span class="text-[8px] font-black" style="color:var(--accent)">${item.year}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Title below card (list-style) -->
+                    <div class="mt-2.5 px-0.5">
+                        <p class="text-[9px] md:text-[10px] text-gray-300 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[8px] font-black" style="color:var(--accent2)">${item.year || ''}</span>
+                            <span class="text-gray-700" style="font-size:8px;">•</span>
+                            <span class="text-[8px] text-gray-600 font-bold">⭐ ${rating}</span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        /* ===================== REGULAR CAROUSEL ===================== */
         function renderCarousel(cat) {
             const section = document.createElement('section');
             section.className = 'mb-10 md:mb-14';
             section.innerHTML = `
                 <div class="flex items-center justify-between px-4 md:px-12 mb-4 md:mb-5">
                     <div class="flex items-center gap-3">
-                        <div class="h-10 md:h-12 w-1 rounded-full flex-shrink-0" style="background: linear-gradient(to bottom, ${cat.accent}, transparent)"></div>
-                        <div>
+                        <div class="cat-bar pl-4 py-2">
                             <div class="flex items-center gap-2 mb-0.5">
-                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color: ${cat.accent}">${cat.label}</span>
+                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:${cat.accent}">${cat.label}</span>
                                 <span class="text-[7px] font-black text-gray-600 tracking-widest">• ${cat.items.length} TÍTULOS</span>
                             </div>
                             <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter leading-none">${cat.title}</h2>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', -1)">
-                            <i class="fas fa-chevron-left" style="font-size:10px"></i>
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.15);" onclick="scrollCarousel('${cat.id}', -1)">
+                            <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
                         </button>
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', 1)">
-                            <i class="fas fa-chevron-right" style="font-size:10px"></i>
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.15);" onclick="scrollCarousel('${cat.id}', 1)">
+                            <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
                         </button>
                     </div>
                 </div>
                 <div class="relative">
                     <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
-                        ${cat.items.map((item, i) => renderCarouselCard(item, i, cat.accent, cat.id)).join('')}
+                        ${cat.items.map((item, i) => renderPosterCard(item, i, cat.accent, cat.id)).join('')}
                     </div>
-                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to right, #050505, transparent)"></div>
-                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to left, #050505, transparent)"></div>
+                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-right"></div>
                 </div>`;
-            section.querySelectorAll('.carousel-card').forEach((card, i) => {
+            section.querySelectorAll('.poster-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
             return section;
         }
 
-        function renderCarouselCard(item, index, accent, catId) {
+        function renderPosterCard(item, index, accent, catId) {
             const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
             const rating = item.rating ? item.rating.toFixed(1) : '—';
             return `
-                <div class="carousel-card flex-shrink-0 w-32 md:w-44 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
-                    <div class="relative overflow-hidden rounded-xl md:rounded-2xl border border-white/5 shadow-2xl" style="aspect-ratio:2/3">
-                        <img src="${poster}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400">
-                            <div class="w-11 h-11 md:w-13 md:h-13 rounded-full flex items-center justify-center shadow-xl scale-75 group-hover:scale-100 transition-transform duration-400" style="background: ${accent}; box-shadow: 0 0 20px ${accent}66">
+                <div class="poster-card flex-shrink-0 w-28 md:w-40 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
+                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; box-shadow:0 6px 24px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.05);">
+                        <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.05) 55%, transparent 100%);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(249,115,22,0.07);"></div>
+                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 0 20px rgba(249,115,22,0.5);">
                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                             </div>
                         </div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5 translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400">
-                            <h4 class="font-black text-[9px] md:text-[10px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1.5">${item.title}</h4>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[8px] text-yellow-400 font-black">⭐ ${rating}</span>
-                                <span class="text-[8px] font-black" style="color:${accent}">${item.year}</span>
-                            </div>
+                        <div class="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.7);">
+                            <span class="text-yellow-400" style="font-size:7px;">★</span>
+                            <span class="font-black text-[8px] text-yellow-400">${rating}</span>
                         </div>
-                        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition duration-300">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1)">
-                                <i class="fas fa-info text-[8px] text-gray-300"></i>
+                        <div class="poster-meta absolute bottom-0 left-0 right-0 p-2.5 opacity-0 transition-all duration-400" style="transform:translateY(5px);">
+                            <h4 class="font-black text-[9px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1">${item.title}</h4>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[7px] text-yellow-400 font-black">⭐ ${rating}</span>
+                                <span class="text-[7px] font-black" style="color:${accent}">${item.year}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-2 px-0.5 opacity-0 group-hover:opacity-100 transition duration-300 translate-y-1 group-hover:translate-y-0">
-                        <p class="text-[8px] text-gray-500 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                    <div class="mt-2 px-0.5">
+                        <p class="text-[8px] md:text-[9px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                        <span class="text-[7px] font-black" style="color:var(--accent2)">${item.year || ''}</span>
                     </div>
                 </div>`;
         }
@@ -554,6 +690,7 @@
             if (track) track.scrollBy({ left: dir * (track.clientWidth * 0.75), behavior: 'smooth' });
         }
 
+        /* ===================== SERIES SPOTLIGHT ===================== */
         function renderSeriesSpotlight(cat) {
             const section = document.createElement('section');
             section.className = 'mb-12 md:mb-16';
@@ -561,28 +698,30 @@
             const rest = cat.items.slice(3);
             section.innerHTML = `
                 <div class="px-4 md:px-12 mb-6">
-                    <div class="series-cat-header pl-4 py-2" style="border-color: ${cat.accent}">
-                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">&#9654; ${cat.label}</span>
-                        <h2 class="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none mt-0.5">${cat.title}</h2>
+                    <div class="cat-bar pl-4 py-3" style="border-color:${cat.accent}">
+                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">▶ ${cat.label}</span>
+                        <h2 class="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none mt-1">${cat.title}</h2>
                     </div>
                 </div>
                 <div class="px-4 md:px-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 mb-6">
                     ${featured.map((item, i) => `
-                        <div class="series-spotlight-card cursor-pointer group" data-spotlight-idx="${i}">
-                            <div class="relative overflow-hidden rounded-2xl series-scanline" style="aspect-ratio:16/9; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
-                                <img src="${item.banner || item.poster || ''}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108" loading="lazy" style="transition: transform 0.7s ease;">
-                                <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);"></div>
-                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-center justify-center">
-                                    <div class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-400" style="background: ${cat.accent}; box-shadow: 0 0 30px ${cat.accent}88;">
+                        <div class="spotlight-card cursor-pointer group" data-spotlight-idx="${i}">
+                            <div class="relative overflow-hidden rounded-2xl" style="aspect-ratio:16/9; border:1px solid rgba(255,255,255,0.07); box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+                                <img src="${item.banner || item.poster || ''}" class="sp-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                                <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.25) 50%, transparent 100%);"></div>
+                                <!-- Hover glass overlay -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(249,115,22,0.07); backdrop-filter:blur(2px);"></div>
+                                <div class="sp-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                                    <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${cat.accent},var(--accent2)); box-shadow:0 0 30px rgba(249,115,22,0.5);">
                                         <i class="fas fa-play text-white ml-1 text-lg"></i>
                                     </div>
                                 </div>
                                 <div class="absolute top-3 left-3 flex items-center gap-2">
-                                    <span class="series-badge" style="background:${cat.accent}; color:#000;">SERIE</span>
-                                    ${i === 0 ? `<span class="series-badge" style="background: rgba(250,204,21,0.15); color:#facc15; border:1px solid rgba(250,204,21,0.3);">DESTACADA</span>` : ''}
+                                    <span class="text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest" style="background:${cat.accent}; color:#000;">SERIE</span>
+                                    ${i === 0 ? `<span class="text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest" style="background:rgba(250,204,21,0.15); color:#facc15; border:1px solid rgba(250,204,21,0.3);">DESTACADA</span>` : ''}
                                 </div>
                                 ${item.rating ? `<div class="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(0,0,0,0.65); border:1px solid rgba(250,204,21,0.2);">
-                                    <span style="color:#facc15; font-size:10px;">★</span>
+                                    <span class="text-yellow-400" style="font-size:10px;">★</span>
                                     <span class="font-black text-xs text-yellow-400">${item.rating.toFixed(1)}</span>
                                 </div>` : ''}
                                 <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -599,78 +738,80 @@
                 ${rest.length > 0 ? `
                 <div class="relative">
                     <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
-                        ${rest.map((item, i) => renderSeriesLandscapeCard(item, i + 3, cat.accent, cat.id)).join('')}
+                        ${rest.map((item, i) => renderLandscapeCard(item, i + 3, cat.accent, cat.id)).join('')}
                     </div>
-                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to right, #050505, transparent)"></div>
-                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to left, #050505, transparent)"></div>
+                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-right"></div>
                 </div>` : ''}`;
-            section.querySelectorAll('.series-spotlight-card').forEach((card, i) => {
+            section.querySelectorAll('.spotlight-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
             if (rest.length > 0) {
-                section.querySelectorAll('.series-landscape-card').forEach((card, i) => {
+                section.querySelectorAll('.land-card').forEach((card, i) => {
                     card.onclick = () => openInfoModal(cat.items[i + 3]);
                 });
             }
             return section;
         }
 
+        /* ===================== SERIES CAROUSEL ===================== */
         function renderSeriesCarousel(cat) {
             const section = document.createElement('section');
             section.className = 'mb-10 md:mb-14';
             section.innerHTML = `
                 <div class="flex items-center justify-between px-4 md:px-12 mb-4 md:mb-5">
-                    <div class="series-cat-header pl-4 py-2 flex-1" style="border-color: ${cat.accent}">
-                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">&#9654; ${cat.label}</span>
+                    <div class="cat-bar pl-4 py-2 flex-1" style="border-color:${cat.accent}">
+                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:${cat.accent}">▶ ${cat.label}</span>
                         <div class="flex items-center gap-3 mt-0.5">
                             <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter leading-none">${cat.title}</h2>
                             <span class="text-[7px] font-black text-gray-600 tracking-widest hidden md:block">• ${cat.items.length} SERIES</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0 ml-4">
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', -1)">
-                            <i class="fas fa-chevron-left" style="font-size:10px"></i>
+                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.15);" onclick="scrollCarousel('${cat.id}', -1)">
+                            <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
                         </button>
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);" onclick="scrollCarousel('${cat.id}', 1)">
-                            <i class="fas fa-chevron-right" style="font-size:10px"></i>
+                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.15);" onclick="scrollCarousel('${cat.id}', 1)">
+                            <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
                         </button>
                     </div>
                 </div>
                 <div class="relative">
                     <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
-                        ${cat.items.map((item, i) => renderSeriesLandscapeCard(item, i, cat.accent, cat.id)).join('')}
+                        ${cat.items.map((item, i) => renderLandscapeCard(item, i, cat.accent, cat.id)).join('')}
                     </div>
-                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to right, #050505, transparent)"></div>
-                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none" style="background: linear-gradient(to left, #050505, transparent)"></div>
+                    <div class="absolute left-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-10 md:w-20 pointer-events-none fade-right"></div>
                 </div>`;
-            section.querySelectorAll('.series-landscape-card').forEach((card, i) => {
+            section.querySelectorAll('.land-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
             return section;
         }
 
-        function renderSeriesLandscapeCard(item, index, accent, catId) {
+        function renderLandscapeCard(item, index, accent, catId) {
             const banner = item.banner || item.poster || 'https://placehold.co/480x270/111/222?text=N/A';
             const rating = item.rating ? item.rating.toFixed(1) : '—';
             return `
-                <div class="series-landscape-card flex-shrink-0 w-52 md:w-72 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
-                    <div class="relative overflow-hidden rounded-xl md:rounded-2xl series-scanline" style="aspect-ratio:16/9; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 6px 24px rgba(0,0,0,0.5);">
-                        <img src="${banner}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                        <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.15) 55%, transparent 100%);"></div>
-                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex items-center justify-center">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-xl scale-75 group-hover:scale-100 transition-transform duration-400" style="background: ${accent}; box-shadow: 0 0 24px ${accent}77;">
+                <div class="land-card flex-shrink-0 w-52 md:w-72 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
+                    <div class="relative overflow-hidden rounded-xl md:rounded-2xl" style="aspect-ratio:16/9; border:1px solid rgba(255,255,255,0.06); box-shadow:0 6px 24px rgba(0,0,0,0.5);">
+                        <img src="${banner}" class="land-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);"></div>
+                        <div class="land-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(249,115,22,0.06);"></div>
+                        <div class="land-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${accent},var(--accent2)); box-shadow:0 0 24px rgba(249,115,22,0.5);">
                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                             </div>
                         </div>
                         <div class="absolute top-2 left-2">
-                            <span class="series-badge" style="background: rgba(0,0,0,0.65); color: ${accent}; border: 1px solid ${accent}55;">TV</span>
+                            <span class="text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest" style="background:rgba(0,0,0,0.65); color:${accent}; border:1px solid ${accent}55;">TV</span>
                         </div>
-                        <div class="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.65);">
-                            <span style="color:#facc15; font-size:8px;">★</span>
-                            <span class="font-black text-[9px] text-yellow-400">${rating}</span>
+                        <div class="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.65);">
+                            <span class="text-yellow-400" style="font-size:7px;">★</span>
+                            <span class="font-black text-[8px] text-yellow-400">${rating}</span>
                         </div>
                         <div class="absolute bottom-0 left-0 right-0 p-2.5 md:p-3">
-                            <h4 class="font-black text-[9px] md:text-[11px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1.5">${item.title}</h4>
+                            <h4 class="font-black text-[9px] md:text-[11px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1">${item.title}</h4>
                             <div class="flex items-center gap-2">
                                 <span class="text-[8px] font-black" style="color:${accent}">${item.year}</span>
                                 <div class="w-0.5 h-0.5 rounded-full bg-white/30"></div>
@@ -678,14 +819,18 @@
                             </div>
                         </div>
                     </div>
+                    <div class="mt-2 px-0.5">
+                        <p class="text-[8px] md:text-[9px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                    </div>
                 </div>`;
         }
 
+        /* ===================== TV CHANNELS ===================== */
         async function loadTvChannels() {
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
-                <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Cargando canales...</p>
+                <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
+                <p class="text-[9px] font-black tracking-[4px] text-orange-500/40 uppercase">Cargando canales...</p>
             </div>`;
             try {
                 const res = await fetch(`/api/tv?lang=${currentLang}`);
@@ -693,48 +838,48 @@
                 area.innerHTML = `
                     <div class="px-4 md:px-12 pt-8 pb-6">
                         <div class="flex items-center gap-3 mb-8">
-                            <div class="h-10 w-1 rounded-full" style="background: linear-gradient(to bottom, #38bdf8, transparent)"></div>
-                            <div>
-                                <span class="text-[8px] font-black tracking-[3px] uppercase text-sky-400">TRANSMISIÓN EN DIRECTO</span>
+                            <div class="cat-bar pl-4 py-2.5">
+                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">TRANSMISIÓN EN DIRECTO</span>
                                 <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter">TV En Vivo</h2>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
                             ${data.map((ch, i) => `
-                                <div class="tv-card cursor-pointer group" data-idx="${i}">
-                                    <div class="relative overflow-hidden rounded-xl border border-white/5 shadow-xl" style="aspect-ratio:2/3">
-                                        <img src="${ch.poster || ''}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
-                                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-400">
-                                            <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background: #38bdf8; box-shadow: 0 0 20px #38bdf866">
+                                <div class="poster-card cursor-pointer group" data-idx="${i}">
+                                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(249,115,22,0.1); box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+                                        <img src="${ch.poster || ''}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);"></div>
+                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(249,115,22,0.08);"></div>
+                                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                                            <div class="w-12 h-12 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
                                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                                             </div>
                                         </div>
                                         <div class="absolute top-2 left-2">
-                                            <span class="text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest" style="background: #38bdf8; color: #000">LIVE</span>
+                                            <span class="live-badge text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest text-white">● LIVE</span>
                                         </div>
                                         <div class="absolute bottom-0 left-0 right-0 p-3">
                                             <h3 class="font-black text-xs uppercase italic tracking-tighter leading-tight">${ch.title}</h3>
                                         </div>
                                     </div>
+                                    <div class="mt-2 px-0.5">
+                                        <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${ch.title}</p>
+                                    </div>
                                 </div>`).join('')}
                         </div>
                     </div>`;
-                area.querySelectorAll('.tv-card').forEach((card, i) => {
+                area.querySelectorAll('.poster-card').forEach((card, i) => {
                     card.onclick = () => openItem(data[i]);
                 });
-            } catch (err) {
-                console.error('TV error:', err);
-            }
+            } catch (err) { console.error('TV error:', err); }
         }
 
-        // --- Search History ---
+        /* ===================== SEARCH HISTORY ===================== */
         const HISTORY_KEY = 'cinenova_search_history';
         const MAX_HISTORY = 10;
 
         function getSearchHistory() {
-            try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
-            catch { return []; }
+            try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; }
         }
 
         function saveToHistory(query) {
@@ -759,40 +904,51 @@
             } else {
                 empty.classList.add('hidden');
                 list.innerHTML = history.map(q => `
-                    <li class="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 cursor-pointer group transition"
-                        data-query="${q.replace(/"/g, '&quot;')}">
-                        <i class="fas fa-clock-rotate-left text-[9px] text-gray-600 group-hover:text-sky-400 transition"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-wide text-gray-300 group-hover:text-white transition truncate flex-1">${q}</span>
-                        <i class="fas fa-arrow-up-left text-[8px] text-gray-700 group-hover:text-sky-400 transition"></i>
+                    <li class="history-item flex items-center gap-3 px-4 py-2.5 cursor-pointer transition" onclick="doSearch('${q.replace(/'/g,"\\'")}')">
+                        <i class="fas fa-history text-orange-500/40" style="font-size:9px"></i>
+                        <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wide flex-1">${q}</span>
+                        <i class="fas fa-arrow-up-right text-gray-700" style="font-size:8px; transform:rotate(0deg)"></i>
                     </li>`).join('');
-                list.querySelectorAll('li').forEach(li => {
-                    li.onclick = () => {
-                        const q = li.dataset.query;
-                        document.getElementById('global-search').value = q;
-                        hideHistoryDropdown();
-                        showSearchResults(q);
-                    };
-                });
             }
         }
 
-        function showHistoryDropdown() {
+        function showSearchHistory() {
             renderHistoryDropdown();
-            document.getElementById('search-history-dropdown').classList.remove('hidden');
+            const dropdown = document.getElementById('search-history-dropdown');
+            const history = getSearchHistory();
+            if (history.length > 0) dropdown.classList.remove('hidden');
         }
 
-        function hideHistoryDropdown() {
+        function hideSearchHistory() {
             document.getElementById('search-history-dropdown').classList.add('hidden');
         }
 
-        // --- Search Results (movies + series combined) ---
-        async function showSearchResults(query) {
-            if (!query || query.length < 2) return;
-            saveToHistory(query);
+        function doSearch(query) {
+            hideSearchHistory();
+            document.getElementById('global-search').value = query;
+            performSearch(query);
+        }
+
+        document.getElementById('global-search').addEventListener('focus', showSearchHistory);
+        document.getElementById('global-search').addEventListener('blur', () => setTimeout(hideSearchHistory, 200));
+        document.getElementById('clear-history-btn').addEventListener('click', (e) => { e.stopPropagation(); clearHistory(); });
+
+        let searchDebounce = null;
+        document.getElementById('global-search').addEventListener('input', (e) => {
+            const q = e.target.value.trim();
+            hideSearchHistory();
+            clearTimeout(searchDebounce);
+            if (!q) { loadAndRenderCategories(currentCategory); return; }
+            if (q.length < 2) return;
+            searchDebounce = setTimeout(() => { saveToHistory(q); performSearch(q); }, 500);
+        });
+
+        async function performSearch(query) {
             setHeroVisible(false);
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
-                <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+                <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
+                <p class="text-[9px] font-black tracking-[4px] text-orange-500/40 uppercase">Buscando...</p>
             </div>`;
             try {
                 const [moviesRes, seriesRes] = await Promise.all([
@@ -800,7 +956,6 @@
                     fetch(`/api/series/search?query=${encodeURIComponent(query)}&lang=${currentLang}`)
                 ]);
                 const [moviesData, seriesData] = await Promise.all([moviesRes.json(), seriesRes.json()]);
-
                 const movies = (Array.isArray(moviesData) ? moviesData : []).map(i => ({ ...i, _type: 'movie' }));
                 const series = (Array.isArray(seriesData) ? seriesData : []).map(i => ({ ...i, _type: 'series' }));
                 const data = [...movies, ...series].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
@@ -813,143 +968,86 @@
                 }
                 area.innerHTML = `
                     <div class="px-4 md:px-12 pt-8 pb-6">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="h-10 w-1 rounded-full" style="background: linear-gradient(to bottom, #38bdf8, transparent)"></div>
-                            <div>
-                                <span class="text-[8px] font-black tracking-[3px] uppercase text-sky-400">RESULTADOS DE BÚSQUEDA</span>
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="cat-bar pl-4 py-2.5">
+                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">RESULTADOS DE BÚSQUEDA</span>
                                 <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter">"${query}"</h2>
-                                <p class="text-[9px] text-gray-600 font-bold">${movies.length} películas · ${series.length} series · ${data.length} total</p>
+                                <p class="text-[9px] text-gray-600 font-bold mt-0.5">${movies.length} películas · ${series.length} series · ${data.length} total</p>
                             </div>
                         </div>
                         <div class="flex gap-2 mb-6">
-                            <button id="filter-all" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-sky-400 text-white transition">TODO</button>
-                            <button id="filter-movies" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-white/5 text-gray-400 hover:text-white transition">CINE</button>
-                            <button id="filter-series" class="search-filter-btn px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase bg-white/5 text-gray-400 hover:text-white transition">SERIES</button>
+                            <button id="filter-all" class="search-filter-btn filter-active px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase transition-all" style="background:var(--accent);">TODO</button>
+                            <button id="filter-movies" class="search-filter-btn px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase glass-panel text-gray-400 hover:text-white transition-all">CINE</button>
+                            <button id="filter-series" class="search-filter-btn px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase glass-panel text-gray-400 hover:text-white transition-all">SERIES</button>
                         </div>
                         <div id="search-results-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 md:gap-4">
                             ${data.map((item, i) => `
-                                <div class="search-card cursor-pointer group" data-idx="${i}" data-type="${item._type}">
-                                    <div class="relative overflow-hidden rounded-xl border border-white/5 shadow-xl" style="aspect-ratio:2/3">
-                                        <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-                                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-400">
-                                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#38bdf8">
+                                <div class="poster-card cursor-pointer group" data-idx="${i}" data-type="${item._type}">
+                                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(255,255,255,0.05); box-shadow:0 6px 20px rgba(0,0,0,0.6);">
+                                        <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 55%);"></div>
+                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(249,115,22,0.08);"></div>
+                                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
                                                 <i class="fas fa-play text-white ml-0.5 text-xs"></i>
                                             </div>
                                         </div>
                                         <div class="absolute top-2 left-2">
-                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? 'bg-sky-400/90 text-white' : 'bg-violet-500/90 text-white'}">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
+                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? '' : ''}" style="background:${item._type === 'movie' ? 'rgba(249,115,22,0.85)' : 'rgba(139,92,246,0.85)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
                                         </div>
-                                        <div class="absolute bottom-0 left-0 right-0 p-2">
+                                        <div class="poster-meta absolute bottom-0 left-0 right-0 p-2 opacity-0 transition-all duration-400" style="transform:translateY(4px);">
                                             <h4 class="font-black text-[8px] uppercase italic tracking-tight line-clamp-2 mb-1">${item.title}</h4>
-                                            <span class="text-[7px] text-sky-400 font-black">${item.year || ''}</span>
+                                            <span class="text-[7px] font-black" style="color:var(--accent)">${item.year || ''}</span>
                                         </div>
+                                    </div>
+                                    <div class="mt-2 px-0.5">
+                                        <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
                                     </div>
                                 </div>`).join('')}
                         </div>
                     </div>`;
 
-                area.querySelectorAll('.search-card').forEach((card, i) => {
+                area.querySelectorAll('.poster-card').forEach((card, i) => {
                     card.onclick = () => openInfoModal(data[i]);
                 });
 
-                // Filter buttons
                 function applyFilter(type) {
                     area.querySelectorAll('.search-filter-btn').forEach(btn => {
-                        btn.classList.remove('bg-sky-400', 'text-white');
-                        btn.classList.add('bg-white/5', 'text-gray-400');
+                        btn.classList.remove('filter-active');
+                        btn.style.background = '';
+                        btn.style.boxShadow = '';
                     });
                     const active = area.querySelector(`#filter-${type}`);
-                    active.classList.add('bg-sky-400', 'text-white');
-                    active.classList.remove('bg-white/5', 'text-gray-400');
-                    area.querySelectorAll('.search-card').forEach(card => {
+                    active.classList.add('filter-active');
+                    active.style.background = 'var(--accent)';
+                    area.querySelectorAll('.poster-card').forEach(card => {
                         if (type === 'all' || card.dataset.type === (type === 'movies' ? 'movie' : 'series')) {
                             card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                        } else { card.style.display = 'none'; }
                     });
                 }
                 area.querySelector('#filter-all').onclick = () => applyFilter('all');
                 area.querySelector('#filter-movies').onclick = () => applyFilter('movies');
                 area.querySelector('#filter-series').onclick = () => applyFilter('series');
 
-            } catch (err) {
-                console.error('Search error:', err);
-            }
+            } catch (err) { console.error('Search error:', err); }
         }
 
-        async function loadContent(category = 'movies', query = '') {
-            currentCategory = category;
-
-            document.querySelectorAll('nav a, div.lg\\:hidden button').forEach(el => {
-                const text = el.innerText.toLowerCase();
-                if (text.includes(category === 'movies' ? 'cine' : category)) {
-                    el.classList.add('text-white'); el.classList.remove('text-gray-400');
-                } else {
-                    el.classList.remove('text-white'); el.classList.add('text-gray-400');
-                }
-            });
-
-            const endpoint = query
-                ? `/api/${category}/search?query=${query}&lang=${currentLang}`
-                : `/api/${category}?lang=${currentLang}`;
-            try {
-                const res = await fetch(endpoint);
-                const data = await res.json();
-                const grid = document.getElementById('content-grid');
-                grid.innerHTML = '';
-
-                if (data.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 font-bold uppercase tracking-widest">No se encontraron resultados</div>';
-                    return;
-                }
-
-                data.forEach((item, index) => {
-                    if (!query && index === 0) updateHero(item);
-                    const card = document.createElement('div');
-                    card.className = 'movie-card relative group cursor-pointer transition-all duration-700';
-                    card.onclick = () => openInfoModal(item);
-                    card.innerHTML = `
-                        <div class="aspect-[2/3] rounded-xl md:rounded-[2rem] overflow-hidden relative border border-white/5 shadow-2xl">
-                            <img src="${item.poster || 'https://placehold.co/500x750/000/fff?text=NO+IMAGE'}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-125" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500 backdrop-blur-[1px]">
-                                <div class="w-10 h-10 md:w-16 md:h-16 bg-sky-400 rounded-full flex items-center justify-center glow-red scale-50 group-hover:scale-100 transition duration-500">
-                                    <i class="fas fa-play text-white ml-1 text-sm md:text-xl"></i>
-                                </div>
-                            </div>
-                            <div class="absolute bottom-3 md:bottom-6 left-3 md:left-6 right-3 md:right-6">
-                                <h3 class="font-black text-[10px] md:text-sm uppercase italic tracking-tighter leading-none mb-1 md:mb-2 line-clamp-1">${item.title}</h3>
-                                <div class="flex items-center gap-2 md:gap-3">
-                                    <span class="text-[8px] md:text-[10px] text-sky-400 font-black tracking-widest uppercase">${item.year}</span>
-                                    <span class="text-[8px] md:text-[10px] text-yellow-500 font-black">⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}</span>
-                                </div>
-                            </div>
-                        </div>`;
-                    grid.appendChild(card);
-                });
-            } catch (err) {
-                console.error("Error al cargar contenido:", err);
-            }
-        }
-
+        /* ===================== HERO ===================== */
         function updateHero(item) {
             const bg = document.getElementById('hero-bg');
             bg.style.opacity = '0';
             setTimeout(() => { bg.style.backgroundImage = `url('${item.banner}')`; bg.style.opacity = '1'; }, 500);
             document.getElementById('hero-title').innerText = item.title;
             document.getElementById('hero-desc').innerText = item.overview;
-            document.getElementById('hero-rating').innerText = `⭐ ${item.rating.toFixed(1)}`;
+            document.getElementById('hero-rating').innerText = `⭐ ${item.rating ? item.rating.toFixed(1) : '0.0'}`;
             document.getElementById('hero-play-btn').onclick = () => openInfoModal(item);
             document.getElementById('hero-info-btn').onclick = () => openInfoModal(item);
         }
 
+        /* ===================== INFO MODAL ===================== */
         async function openInfoModal(item) {
-            if (currentCategory === 'tv') {
-                openItem(item);
-                return;
-            }
+            if (currentCategory === 'tv') { openItem(item); return; }
             currentItem = item;
             document.body.style.overflow = 'hidden';
             const modal = document.getElementById('info-modal');
@@ -984,16 +1082,14 @@
                 document.getElementById('info-overview').innerText = data.overview || 'Sin sinopsis disponible.';
                 document.getElementById('info-rating-val').innerText = data.rating ? data.rating.toFixed(1) : '';
 
-                const genresEl = document.getElementById('info-genres');
-                genresEl.innerHTML = (data.genres || []).map(g => `<span class="info-genre-badge">${g}</span>`).join('');
+                document.getElementById('info-genres').innerHTML = (data.genres || []).map(g => `<span class="genre-badge">${g}</span>`).join('');
 
-                const metaEl = document.getElementById('info-meta');
                 const chips = [];
-                if (data.year) chips.push(`<span class="info-meta-chip"><i class="fas fa-calendar-alt text-sky-400" style="font-size:9px"></i>${data.year}</span>`);
-                if (data.runtime) chips.push(`<span class="info-meta-chip"><i class="fas fa-clock text-sky-400" style="font-size:9px"></i>${data.runtime} min</span>`);
-                if (data.seasons) chips.push(`<span class="info-meta-chip"><i class="fas fa-layer-group text-sky-400" style="font-size:9px"></i>${data.seasons} temp.</span>`);
-                if (data.episodes) chips.push(`<span class="info-meta-chip"><i class="fas fa-play-circle text-sky-400" style="font-size:9px"></i>${data.episodes} ep.</span>`);
-                metaEl.innerHTML = chips.join('');
+                if (data.year) chips.push(`<span class="meta-chip"><i class="fas fa-calendar-alt" style="font-size:9px; color:var(--accent)"></i>${data.year}</span>`);
+                if (data.runtime) chips.push(`<span class="meta-chip"><i class="fas fa-clock" style="font-size:9px; color:var(--accent)"></i>${data.runtime} min</span>`);
+                if (data.seasons) chips.push(`<span class="meta-chip"><i class="fas fa-layer-group" style="font-size:9px; color:var(--accent)"></i>${data.seasons} temp.</span>`);
+                if (data.episodes) chips.push(`<span class="meta-chip"><i class="fas fa-play-circle" style="font-size:9px; color:var(--accent)"></i>${data.episodes} ep.</span>`);
+                document.getElementById('info-meta').innerHTML = chips.join('');
 
                 if (data.director) {
                     document.getElementById('info-director-label').innerText = 'Director';
@@ -1029,11 +1125,9 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
         }
 
-        function playFromInfoModal() {
-            closeInfoModal();
-            openItem(currentItem);
-        }
+        function playFromInfoModal() { closeInfoModal(); openItem(currentItem); }
 
+        /* ===================== PLAYER ===================== */
         async function openItem(item) {
             currentItem = item;
             currentAudioType = 'latino';
@@ -1052,8 +1146,8 @@
                 episodesDrawer.classList.add('hidden');
                 audioRow.classList.add('hidden');
                 document.getElementById('server-tabs').innerHTML = `
-                    <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-sky-400 text-white border-2 border-sky-400">
-                        📺 EN VIVO <span class="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">LIVE</span>
+                    <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">
+                        📺 EN VIVO <span class="text-[8px] px-1.5 py-0.5 rounded" style="background:rgba(0,0,0,0.2)">LIVE</span>
                     </button>`;
                 playFromServer(item.embeds.vip);
             } else if (currentCategory === 'series') {
@@ -1078,16 +1172,18 @@
         function setAudioType(type) {
             currentAudioType = type;
             renderAudioButtons(type);
-            if (currentEmbeds) {
-                renderServerTabs(currentEmbeds[type], 0);
-            }
+            if (currentEmbeds) renderServerTabs(currentEmbeds[type], 0);
         }
 
         function renderAudioButtons(active) {
-            const activeClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 bg-sky-400 text-black shadow-lg';
-            const inactiveClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 text-gray-400 hover:text-white';
-            document.getElementById('btn-latino').className = active === 'latino' ? activeClass : inactiveClass;
-            document.getElementById('btn-castellano').className = active === 'castellano' ? activeClass : inactiveClass;
+            const btnL = document.getElementById('btn-latino');
+            const btnC = document.getElementById('btn-castellano');
+            btnL.style.cssText = active === 'latino'
+                ? 'background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;'
+                : 'color:#9ca3af;';
+            btnC.style.cssText = active === 'castellano'
+                ? 'background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;'
+                : 'color:#9ca3af;';
         }
 
         function renderServerTabs(servers, activeIdx) {
@@ -1097,11 +1193,11 @@
                 return `<button id="tab-${i}" onclick="selectServerTab(${i})"
                     class="flex-shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-300"
                     style="${isActive
-                        ? 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.15);'
-                        : 'background: rgba(255,255,255,0.04); color: #9ca3af; border: 1px solid rgba(255,255,255,0.08);'}">
-                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background: ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.2)'}"></span>
+                        ? 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 12px rgba(249,115,22,0.15);'
+                        : 'background:rgba(255,255,255,0.04); color:#9ca3af; border:1px solid rgba(255,255,255,0.08);'}">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)'}"></span>
                     ${s.name}
-                    <span class="px-1.5 py-0.5 rounded text-[7px] font-black" style="${isActive ? 'background: rgba(56,189,248,0.25); color: #38bdf8;' : 'background: rgba(255,255,255,0.08); color: #6b7280;'}">${s.quality}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[7px] font-black" style="${isActive ? 'background:rgba(249,115,22,0.25); color:var(--accent);' : 'background:rgba(255,255,255,0.08); color:#6b7280;'}">${s.quality}</span>
                 </button>`;
             }).join('');
             playFromServer(servers[activeIdx].url);
@@ -1112,14 +1208,14 @@
             document.querySelectorAll('#server-tabs button').forEach((btn, i) => {
                 const isActive = i === idx;
                 btn.style.cssText = isActive
-                    ? 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.15);'
-                    : 'background: rgba(255,255,255,0.04); color: #9ca3af; border: 1px solid rgba(255,255,255,0.08);';
+                    ? 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 12px rgba(249,115,22,0.15); border-radius:9999px;'
+                    : 'background:rgba(255,255,255,0.04); color:#9ca3af; border:1px solid rgba(255,255,255,0.08); border-radius:9999px;';
                 const dot = btn.querySelector('span:first-child');
                 const badge = btn.querySelector('span:last-child');
-                if (dot) dot.style.background = isActive ? '#38bdf8' : 'rgba(255,255,255,0.2)';
+                if (dot) dot.style.background = isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
                 if (badge) badge.style.cssText = isActive
-                    ? 'background: rgba(56,189,248,0.25); color: #38bdf8; padding: 1px 6px; border-radius: 4px; font-size: 7px; font-weight: 900;'
-                    : 'background: rgba(255,255,255,0.08); color: #6b7280; padding: 1px 6px; border-radius: 4px; font-size: 7px; font-weight: 900;';
+                    ? 'background:rgba(249,115,22,0.25); color:var(--accent); padding:1px 6px; border-radius:4px; font-size:7px; font-weight:900;'
+                    : 'background:rgba(255,255,255,0.08); color:#6b7280; padding:1px 6px; border-radius:4px; font-size:7px; font-weight:900;';
             });
             playFromServer(servers[idx].url);
         }
@@ -1136,30 +1232,34 @@
             document.getElementById('episodes-drawer').classList.toggle('hidden');
         }
 
+        function closePlayer() {
+            document.getElementById('player-view').classList.add('hidden');
+            document.getElementById('video-frame').src = 'about:blank';
+            document.body.style.overflow = 'auto';
+        }
+
         async function loadSeriesDetails(id) {
             const res = await fetch(`/api/series/${id}`);
             const data = await res.json();
             const validSeasons = data.seasons.filter(s => s.number > 0);
             const pillsRow = document.getElementById('season-pills-row');
             pillsRow.innerHTML = validSeasons.map(s => `
-                <button class="season-pill flex-shrink-0 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200 border"
+                <button class="season-pill flex-shrink-0 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200"
                     data-season="${s.number}" data-episodes="${s.episodes}"
-                    style="border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #9ca3af;">
+                    style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#9ca3af;">
                     T${s.number}
                 </button>`).join('');
             pillsRow.querySelectorAll('.season-pill').forEach(pill => {
                 pill.onclick = () => {
                     pillsRow.querySelectorAll('.season-pill').forEach(p => {
-                        p.style.cssText = 'border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #9ca3af; border-radius: 9999px;';
+                        p.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:9999px;';
                     });
-                    pill.style.cssText = 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 10px rgba(56,189,248,0.12); border-radius: 9999px;';
+                    pill.style.cssText = 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 10px rgba(249,115,22,0.12); border-radius:9999px;';
                     loadEpisodes(id, parseInt(pill.dataset.season), parseInt(pill.dataset.episodes));
                 };
             });
             const firstPill = pillsRow.querySelector('.season-pill');
-            if (firstPill) {
-                firstPill.style.cssText = 'background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 10px rgba(56,189,248,0.12); border-radius: 9999px;';
-            }
+            if (firstPill) firstPill.style.cssText = 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 10px rgba(249,115,22,0.12); border-radius:9999px;';
             const first = validSeasons[0] || data.seasons[0];
             loadEpisodes(id, first.number, first.episodes);
         }
@@ -1171,91 +1271,44 @@
             for (let i = 1; i <= episodeCount; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'episode-card group relative flex flex-col items-center justify-center p-0 rounded-xl transition-all duration-200 overflow-hidden';
-                btn.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); aspect-ratio: 1; min-height: 44px;';
+                btn.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(249,115,22,0.1); aspect-ratio:1; min-height:44px;';
                 btn.innerHTML = `
-                    <span class="text-[8px] font-black tracking-widest text-gray-500 uppercase block group-hover:text-sky-400 transition-colors" style="font-size:7px; letter-spacing: 1px;">EP</span>
-                    <span class="font-black text-sm leading-none text-white" style="font-size: 15px;">${i}</span>`;
+                    <span class="text-[7px] font-black tracking-widest uppercase block text-gray-600 group-hover:text-orange-400 transition-colors">EP</span>
+                    <span class="font-black text-sm leading-none text-white">${i}</span>`;
                 btn.onclick = () => {
                     document.querySelectorAll('.episode-card').forEach(b => {
-                        b.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); aspect-ratio: 1; min-height: 44px; border-radius: 12px;';
-                        b.querySelector('span:last-child').style.color = '';
+                        b.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(249,115,22,0.1); aspect-ratio:1; min-height:44px; border-radius:.75rem;';
+                        b.classList.remove('active');
                     });
-                    btn.style.cssText = 'background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); box-shadow: 0 0 12px rgba(56,189,248,0.12); aspect-ratio: 1; min-height: 44px; border-radius: 12px;';
-                    btn.querySelector('span:last-child').style.color = '#38bdf8';
-                    playEpisode(seriesId, seasonNum, i);
+                    btn.style.cssText = 'background:rgba(249,115,22,0.22); border:1px solid var(--accent); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(249,115,22,0.2);';
+                    btn.classList.add('active');
+                    currentEpisode = i;
+                    loadEpisodeEmbed(seriesId, seasonNum, i);
                 };
                 list.appendChild(btn);
             }
-            if (list.firstChild) list.firstChild.click();
+            const firstBtn = list.querySelector('.episode-card');
+            if (firstBtn) {
+                firstBtn.style.cssText = 'background:rgba(249,115,22,0.22); border:1px solid var(--accent); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(249,115,22,0.2);';
+                firstBtn.classList.add('active');
+            }
+            currentEpisode = 1;
+            loadEpisodeEmbed(seriesId, seasonNum, 1);
         }
 
-        async function playEpisode(id, s, e) {
-            currentEpisode = e;
-            document.getElementById('video-frame').src = 'about:blank';
-            document.getElementById('player-loader').classList.remove('hidden');
+        async function loadEpisodeEmbed(seriesId, season, episode) {
             try {
-                const res = await fetch(`/api/series/${id}/episode?s=${s}&e=${e}&lang=${currentLang}`);
-                const data = await res.json();
-                currentEmbeds = data;
+                const res = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
+                const embeds = await res.json();
+                currentEmbeds = embeds;
                 renderAudioButtons(currentAudioType);
                 renderServerTabs(currentEmbeds[currentAudioType], 0);
-                document.getElementById('video-frame').onload = () =>
-                    document.getElementById('player-loader').classList.add('hidden');
-            } catch (err) {
-                console.error("Error al reproducir episodio:", err);
-            }
+            } catch (err) { console.error('Episode embed error:', err); }
         }
 
-        function closePlayer() {
-            document.getElementById('player-view').classList.add('hidden');
-            document.getElementById('video-frame').src = '';
-            document.body.style.overflow = 'auto';
-            currentEmbeds = null;
-        }
-
-        let searchTimeout;
-        const searchInput = document.getElementById('global-search');
-
-        searchInput.addEventListener('focus', () => {
-            if (searchInput.value.trim().length === 0) showHistoryDropdown();
-        });
-
-        searchInput.addEventListener('blur', () => {
-            setTimeout(hideHistoryDropdown, 200);
-        });
-
-        document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const val = e.target.value.trim();
-            if (val.length > 0) {
-                hideHistoryDropdown();
-            } else {
-                showHistoryDropdown();
-            }
-            searchTimeout = setTimeout(() => {
-                if (val.length > 2) {
-                    showSearchResults(val);
-                } else if (val.length === 0) {
-                    if (currentCategory === 'tv') { setHeroVisible(false); loadTvChannels(); }
-                    else { setHeroVisible(true); loadAndRenderCategories(currentCategory); }
-                }
-            }, 600);
-        });
-
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const val = searchInput.value.trim();
-                if (val.length > 1) {
-                    clearTimeout(searchTimeout);
-                    hideHistoryDropdown();
-                    showSearchResults(val);
-                }
-            }
-        });
-
+        /* ===================== INIT ===================== */
         loadCategory('movies');
+        setLanguage('es-MX');
     </script>
 </body>
 </html>
