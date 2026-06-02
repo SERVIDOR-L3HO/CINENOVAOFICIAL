@@ -54,6 +54,9 @@
         .glow-orange { box-shadow: 0 0 28px rgba(59,130,246,0.45), 0 0 60px rgba(59,130,246,0.18); }
         .glow-blue { box-shadow: 0 0 28px rgba(59,130,246,0.45), 0 0 60px rgba(59,130,246,0.18); }
         .glow-yellow { box-shadow: 0 0 20px rgba(250,204,21,0.35); }
+        .live-result-item:hover { background: rgba(59,130,246,0.09); }
+        .live-result-item:hover .live-item-title { color: #93c5fd; }
+        .live-result-item { transition: background 0.18s ease; }
         .text-accent { color: var(--accent); }
 
         /* --- CAROUSEL --- */
@@ -239,13 +242,27 @@
                 <!-- History dropdown -->
                 <div id="search-history-dropdown"
                     class="hidden absolute top-full mt-2 right-0 w-64 rounded-2xl shadow-2xl z-[200] overflow-hidden"
-                    style="background:#0e0a06; border:1px solid rgba(59,130,246,0.15);">
+                    style="background:#0d1117; border:1px solid rgba(59,130,246,0.15);">
                     <div class="flex items-center justify-between px-4 py-2.5" style="border-bottom:1px solid rgba(59,130,246,0.1)">
                         <span class="text-[8px] font-black tracking-[3px] uppercase text-blue-400/60">HISTORIAL</span>
                         <button id="clear-history-btn" class="text-[8px] font-black tracking-widest uppercase text-red-400 hover:text-red-300 transition">BORRAR</button>
                     </div>
                     <ul id="search-history-list" class="max-h-52 overflow-y-auto"></ul>
                     <div id="search-history-empty" class="hidden px-4 py-4 text-center text-[9px] text-gray-600 font-bold uppercase tracking-widest">Sin historial</div>
+                </div>
+                <!-- Live Search Results Dropdown -->
+                <div id="search-live-dropdown"
+                    class="hidden absolute top-full mt-2 right-0 rounded-2xl shadow-2xl z-[300] overflow-hidden"
+                    style="width:430px; max-width:calc(100vw - 1rem); background:rgba(6,10,22,0.97); border:1px solid rgba(59,130,246,0.3); backdrop-filter:blur(28px); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(59,130,246,0.1);">
+                    <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid rgba(59,130,246,0.1)">
+                        <span id="search-live-count" class="text-[8px] font-black tracking-[3px] uppercase text-blue-400/60">BUSCANDO...</span>
+                        <button id="search-live-all" class="text-[8px] font-black tracking-widest uppercase text-blue-400 hover:text-blue-300 transition flex items-center gap-1">VER TODOS <i class="fas fa-arrow-right text-[7px]"></i></button>
+                    </div>
+                    <ul id="search-live-list" class="overflow-y-auto" style="max-height:340px; scrollbar-width:thin; scrollbar-color:rgba(59,130,246,0.2) transparent;"></ul>
+                    <div id="search-live-empty" class="hidden px-4 py-8 text-center">
+                        <i class="fas fa-search text-2xl text-blue-400/20 mb-2 block"></i>
+                        <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Sin resultados</p>
+                    </div>
                 </div>
             </div>
             <img src="/assets/cinenova_icon.png" alt="" class="h-6 md:h-8 opacity-80 hover:opacity-100 transition duration-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
@@ -1028,8 +1045,72 @@
             performSearch(query);
         }
 
+        // Live search dropdown elements
+        const _liveEl = document.getElementById('search-live-dropdown');
+        const _liveList = document.getElementById('search-live-list');
+        const _liveCount = document.getElementById('search-live-count');
+        const _liveEmpty = document.getElementById('search-live-empty');
+
+        function hideLiveDropdown() { _liveEl.classList.add('hidden'); }
+        function showLiveDropdown() { _liveEl.classList.remove('hidden'); }
+
+        async function fetchLiveResults(query) {
+            _liveList.innerHTML = `<li class="flex items-center justify-center py-6 gap-3">
+                <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid var(--accent); border-top-color:transparent;"></div>
+                <span class="text-[8px] font-black tracking-[3px] text-blue-400/40 uppercase">Buscando...</span>
+            </li>`;
+            _liveEmpty.classList.add('hidden');
+            _liveCount.textContent = 'BUSCANDO...';
+            showLiveDropdown();
+            try {
+                const [mr, sr] = await Promise.all([
+                    fetch(`/api/movies/search?query=${encodeURIComponent(query)}&lang=${currentLang}`).then(r => r.json()),
+                    fetch(`/api/series/search?query=${encodeURIComponent(query)}&lang=${currentLang}`).then(r => r.json())
+                ]);
+                const movies = (Array.isArray(mr) ? mr : []).slice(0, 5).map(i => ({ ...i, _type: 'movie' }));
+                const series = (Array.isArray(sr) ? sr : []).slice(0, 5).map(i => ({ ...i, _type: 'series' }));
+                const items = [...movies, ...series].slice(0, 9);
+                const totalM = Array.isArray(mr) ? mr.length : 0;
+                const totalS = Array.isArray(sr) ? sr.length : 0;
+                _liveList.innerHTML = '';
+                if (items.length === 0) {
+                    _liveEmpty.classList.remove('hidden');
+                    _liveCount.textContent = 'SIN RESULTADOS';
+                    return;
+                }
+                _liveCount.textContent = `${totalM} películas · ${totalS} series`;
+                _liveList.innerHTML = items.map(item => `
+                    <li class="live-result-item flex items-center gap-3 px-4 py-2.5 cursor-pointer"
+                        style="border-bottom:1px solid rgba(255,255,255,0.03);"
+                        onclick="hideLiveDropdown(); openItem(${item.id}, '${item._type}');">
+                        <div class="flex-shrink-0 rounded-lg overflow-hidden" style="width:38px; height:57px; background:#0d1117; border:1px solid rgba(59,130,246,0.1);">
+                            <img src="${item.poster || ''}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.opacity='0'">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="live-item-title text-xs font-black uppercase italic tracking-tight truncate transition-colors duration-150">${item.title}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style="background:${item._type === 'movie' ? 'rgba(59,130,246,0.8)' : 'rgba(139,92,246,0.8)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
+                                ${item.year ? `<span class="text-[9px] text-gray-500 font-bold">${item.year}</span>` : ''}
+                                ${item.rating ? `<span class="text-[9px] text-yellow-400 font-black">⭐ ${Number(item.rating).toFixed(1)}</span>` : ''}
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-[9px] text-blue-400/25 flex-shrink-0"></i>
+                    </li>
+                `).join('');
+            } catch (err) {
+                _liveList.innerHTML = '';
+                _liveEmpty.classList.remove('hidden');
+                _liveCount.textContent = 'ERROR';
+            }
+        }
+
+        document.getElementById('search-live-all').addEventListener('click', () => {
+            const q = document.getElementById('global-search').value.trim();
+            if (q.length >= 2) { hideLiveDropdown(); saveToHistory(q); performSearch(q); }
+        });
+
         document.getElementById('global-search').addEventListener('focus', showSearchHistory);
-        document.getElementById('global-search').addEventListener('blur', () => setTimeout(hideSearchHistory, 200));
+        document.getElementById('global-search').addEventListener('blur', () => setTimeout(() => { hideSearchHistory(); hideLiveDropdown(); }, 220));
         document.getElementById('clear-history-btn').addEventListener('click', (e) => { e.stopPropagation(); clearHistory(); });
 
         let searchDebounce = null;
@@ -1037,9 +1118,17 @@
             const q = e.target.value.trim();
             hideSearchHistory();
             clearTimeout(searchDebounce);
-            if (!q) { loadAndRenderCategories(currentCategory); return; }
-            if (q.length < 2) return;
-            searchDebounce = setTimeout(() => { saveToHistory(q); performSearch(q); }, 500);
+            if (!q) { hideLiveDropdown(); loadAndRenderCategories(currentCategory); return; }
+            if (q.length < 2) { hideLiveDropdown(); return; }
+            searchDebounce = setTimeout(() => fetchLiveResults(q), 280);
+        });
+        document.getElementById('global-search').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = e.target.value.trim();
+                if (q.length >= 2) { hideLiveDropdown(); saveToHistory(q); performSearch(q); }
+            } else if (e.key === 'Escape') {
+                hideLiveDropdown(); e.target.blur();
+            }
         });
 
         async function performSearch(query) {
