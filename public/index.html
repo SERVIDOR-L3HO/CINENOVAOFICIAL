@@ -173,6 +173,14 @@
         .fade-left { background: linear-gradient(to right, var(--bg), transparent); }
         .fade-right { background: linear-gradient(to left, var(--bg), transparent); }
 
+        /* --- TOP 10 CARD HOVER --- */
+        .top10-card:hover .poster-img { transform: scale(1.1); }
+        .top10-card:hover .poster-overlay { opacity: 1 !important; }
+        .top10-card:hover .poster-play { opacity: 1 !important; transform: scale(1) !important; }
+        .top10-card .poster-img { transition: transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+        .top10-card .poster-overlay { transition: opacity 0.4s ease; }
+        .top10-card .poster-play { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1); }
+
         @media (max-width: 768px) {
             .hero-title { font-size: 3rem !important; }
         }
@@ -534,13 +542,13 @@
             }
         }
 
-        /* ===================== FEATURED CAROUSEL (first row - bigger cards) ===================== */
+        /* ===================== TOP 10 CAROUSEL (trending row with giant rank numbers) ===================== */
         function renderFeaturedCarousel(cat) {
             const section = document.createElement('section');
-            section.className = 'mb-12 md:mb-16';
+            section.className = 'mb-2 md:mb-4';
             section.innerHTML = `
                 <div class="flex items-center justify-between px-4 md:px-12 mb-5 md:mb-6">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-4">
                         <div class="cat-bar pl-4 py-2.5">
                             <div class="flex items-center gap-2 mb-0.5">
                                 <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">${cat.label}</span>
@@ -559,16 +567,70 @@
                     </div>
                 </div>
                 <div class="relative">
-                    <div id="carousel-${cat.id}" class="carousel-track flex gap-4 md:gap-5 overflow-x-auto px-4 md:px-12 pb-4">
-                        ${cat.items.map((item, i) => renderFeaturedCard(item, i, cat.accent, cat.id)).join('')}
+                    <div id="carousel-${cat.id}" class="carousel-track flex overflow-x-auto px-4 md:px-12 pb-6" style="gap:0;">
+                        ${cat.items.slice(0,10).map((item, i) => renderTop10Card(item, i, cat.id)).join('')}
                     </div>
-                    <div class="absolute left-0 top-0 bottom-4 w-12 md:w-24 pointer-events-none fade-left"></div>
-                    <div class="absolute right-0 top-0 bottom-4 w-12 md:w-24 pointer-events-none fade-right"></div>
+                    <div class="absolute left-0 top-0 bottom-6 w-12 md:w-24 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-6 w-12 md:w-24 pointer-events-none fade-right"></div>
                 </div>`;
-            section.querySelectorAll('.poster-card').forEach((card, i) => {
+            section.querySelectorAll('.top10-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
             return section;
+        }
+
+        function renderTop10Card(item, index, catId) {
+            const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
+            const rating = item.rating ? item.rating.toFixed(1) : '—';
+            const rank = index + 1;
+            const isTop3 = rank <= 3;
+            return `
+                <div class="top10-card flex-shrink-0 cursor-pointer group relative" data-idx="${index}" data-cat="${catId}"
+                     style="width: 140px; margin-right: -18px;">
+                    <!-- Giant rank number -->
+                    <div class="absolute left-0 bottom-8 z-0 select-none pointer-events-none" style="
+                        font-size: ${rank >= 10 ? '95px' : '110px'};
+                        font-weight: 900;
+                        line-height: 1;
+                        letter-spacing: -4px;
+                        font-style: italic;
+                        -webkit-text-stroke: 3px ${isTop3 ? 'var(--accent)' : 'rgba(255,255,255,0.22)'};
+                        color: transparent;
+                        text-shadow: ${isTop3 ? '0 0 40px rgba(249,115,22,0.25)' : 'none'};
+                        width: 80px;
+                        text-align: center;
+                    ">${rank}</div>
+                    <!-- Poster (offset right so number shows) -->
+                    <div class="relative overflow-hidden rounded-xl z-10" style="
+                        aspect-ratio: 2/3;
+                        width: 96px;
+                        margin-left: 44px;
+                        box-shadow: 0 8px 28px rgba(0,0,0,0.75);
+                        border: 1px solid rgba(255,255,255,0.07);
+                        transition: box-shadow 0.4s ease;
+                    ">
+                        <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.05) 55%, transparent 100%);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(249,115,22,0.1);"></div>
+                        <!-- Play on hover -->
+                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400" style="transform:scale(0.7);" onmouseenter="this.style.transform='scale(1)'" onmouseleave="this.style.transform='scale(0.7)'">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                                <i class="fas fa-play text-white ml-0.5 text-xs"></i>
+                            </div>
+                        </div>
+                        <!-- Rating top right -->
+                        <div class="absolute top-1.5 right-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.75); border:1px solid rgba(250,204,21,0.18);">
+                            <span class="text-yellow-400" style="font-size:7px;">★</span>
+                            <span class="font-black text-[8px] text-yellow-400">${rating}</span>
+                        </div>
+                        ${isTop3 ? `<div class="absolute top-1.5 left-1.5"><span class="text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">TOP ${rank}</span></div>` : ''}
+                    </div>
+                    <!-- Title below -->
+                    <div class="mt-2 pl-12 pr-1">
+                        <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                        <span class="text-[7px] font-black" style="color:var(--accent2)">${item.year || ''}</span>
+                    </div>
+                </div>`;
         }
 
         function renderFeaturedCard(item, index, accent, catId) {
