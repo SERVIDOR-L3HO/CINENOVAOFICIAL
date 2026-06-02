@@ -446,37 +446,13 @@
             </div>
         </div>
 
-        <!-- Audio + Episodes Row -->
-        <div id="audio-selector-row" class="flex-shrink-0 px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(249,115,22,0.06);">
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 mr-1">
-                    <i class="fas fa-headphones text-orange-500/40" style="font-size:9px"></i>
-                    <span class="text-[8px] font-black text-orange-500/40 uppercase tracking-[3px]">AUDIO</span>
-                </div>
-                <div class="flex rounded-full p-0.5 gap-0.5" style="background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.12);">
-                    <button id="btn-latino" onclick="setAudioType('latino')"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300"
-                        style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">
-                        🇲🇽 <span>LATINO</span> <span class="px-1 py-0.5 rounded text-[7px] font-black" style="background:rgba(0,0,0,0.2)">HD</span>
-                    </button>
-                    <button id="btn-castellano" onclick="setAudioType('castellano')"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all duration-300 text-gray-400 hover:text-white">
-                        🇪🇸 <span>CAST.</span>
-                    </button>
-                </div>
-            </div>
-            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()" class="hidden text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-all glass-panel" style="color:var(--accent); border-color:rgba(249,115,22,0.25);" onmouseover="this.style.background='rgba(249,115,22,0.15)'" onmouseout="this.style.background='rgba(249,115,22,0.06)'">
-                <i class="fas fa-th-list mr-1.5" style="font-size:8px"></i> EPISODIOS
+        <!-- Episodes row (series only) -->
+        <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(249,115,22,0.06);">
+            <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()"
+                class="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
+                style="background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.25); color:var(--accent);">
+                <i class="fas fa-th-list" style="font-size:9px"></i> EPISODIOS
             </button>
-        </div>
-
-        <!-- Server Tabs -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(249,115,22,0.05);">
-            <div class="flex items-center gap-1.5 mb-1.5">
-                <i class="fas fa-server text-orange-500/30" style="font-size:8px"></i>
-                <span class="text-[7px] font-black text-orange-500/30 uppercase tracking-[3px]">SERVIDOR</span>
-            </div>
-            <div id="server-tabs" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;"></div>
         </div>
 
         <!-- Video iframe -->
@@ -496,12 +472,12 @@
 
         <!-- Info bar -->
         <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background:rgba(6,4,2,0.98); border-top:1px solid rgba(249,115,22,0.06);">
-            <div class="flex items-center gap-2 text-[8px] text-gray-600 font-bold">
-                <i class="fas fa-info-circle text-orange-500/30" style="font-size:9px"></i>
-                <span>Si no carga, cambia de servidor o idioma</span>
+            <div class="flex items-center gap-2 text-[8px] text-gray-700 font-bold">
+                <i class="fas fa-shield-alt text-orange-500/25" style="font-size:9px"></i>
+                <span class="tracking-widest uppercase" style="letter-spacing:2px;">SUPERVIDEO</span>
             </div>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.18);">
-                <span class="w-1 h-1 rounded-full inline-block" style="background:var(--accent);"></span>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2);">
+                <span class="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style="background:var(--accent);"></span>
                 <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">FULL HD 1080P</span>
             </div>
         </div>
@@ -1258,94 +1234,33 @@
         /* ===================== PLAYER ===================== */
         async function openItem(item) {
             currentItem = item;
-            currentAudioType = 'latino';
             document.getElementById('player-title').innerText = item.title;
             document.getElementById('player-view').classList.remove('hidden');
             document.getElementById('player-loader').classList.remove('hidden');
             document.getElementById('video-frame').src = '';
             document.body.style.overflow = 'hidden';
 
-            const episodesBtn = document.getElementById('toggle-episodes-btn');
+            const episodesRow = document.getElementById('episodes-row');
             const episodesDrawer = document.getElementById('episodes-drawer');
-            const audioRow = document.getElementById('audio-selector-row');
 
             if (currentCategory === 'tv') {
-                episodesBtn.classList.add('hidden');
+                episodesRow.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
-                audioRow.classList.add('hidden');
-                document.getElementById('server-tabs').innerHTML = `
-                    <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">
-                        📺 EN VIVO <span class="text-[8px] px-1.5 py-0.5 rounded" style="background:rgba(0,0,0,0.2)">LIVE</span>
-                    </button>`;
                 playFromServer(item.embeds.vip);
             } else if (currentCategory === 'series') {
-                episodesBtn.classList.remove('hidden');
+                episodesRow.classList.remove('hidden');
                 episodesDrawer.classList.remove('hidden');
-                audioRow.classList.remove('hidden');
                 currentSeriesId = item.id;
                 await loadSeriesDetails(item.id);
             } else {
-                episodesBtn.classList.add('hidden');
+                episodesRow.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
-                audioRow.classList.remove('hidden');
                 currentEmbeds = item.embeds;
-                renderAudioButtons('latino');
-                renderServerTabs(currentEmbeds.latino, 0);
+                playFromServer(currentEmbeds.latino[0].url);
             }
 
             document.getElementById('video-frame').onload = () =>
                 document.getElementById('player-loader').classList.add('hidden');
-        }
-
-        function setAudioType(type) {
-            currentAudioType = type;
-            renderAudioButtons(type);
-            if (currentEmbeds) renderServerTabs(currentEmbeds[type], 0);
-        }
-
-        function renderAudioButtons(active) {
-            const btnL = document.getElementById('btn-latino');
-            const btnC = document.getElementById('btn-castellano');
-            btnL.style.cssText = active === 'latino'
-                ? 'background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;'
-                : 'color:#9ca3af;';
-            btnC.style.cssText = active === 'castellano'
-                ? 'background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;'
-                : 'color:#9ca3af;';
-        }
-
-        function renderServerTabs(servers, activeIdx) {
-            const tabs = document.getElementById('server-tabs');
-            tabs.innerHTML = servers.map((s, i) => {
-                const isActive = i === activeIdx;
-                return `<button id="tab-${i}" onclick="selectServerTab(${i})"
-                    class="flex-shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-300"
-                    style="${isActive
-                        ? 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 12px rgba(249,115,22,0.15);'
-                        : 'background:rgba(255,255,255,0.04); color:#9ca3af; border:1px solid rgba(255,255,255,0.08);'}">
-                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)'}"></span>
-                    ${s.name}
-                    <span class="px-1.5 py-0.5 rounded text-[7px] font-black" style="${isActive ? 'background:rgba(249,115,22,0.25); color:var(--accent);' : 'background:rgba(255,255,255,0.08); color:#6b7280;'}">${s.quality}</span>
-                </button>`;
-            }).join('');
-            playFromServer(servers[activeIdx].url);
-        }
-
-        function selectServerTab(idx) {
-            const servers = currentEmbeds[currentAudioType];
-            document.querySelectorAll('#server-tabs button').forEach((btn, i) => {
-                const isActive = i === idx;
-                btn.style.cssText = isActive
-                    ? 'background:rgba(249,115,22,0.18); color:var(--accent); border:1px solid rgba(249,115,22,0.45); box-shadow:0 0 12px rgba(249,115,22,0.15); border-radius:9999px;'
-                    : 'background:rgba(255,255,255,0.04); color:#9ca3af; border:1px solid rgba(255,255,255,0.08); border-radius:9999px;';
-                const dot = btn.querySelector('span:first-child');
-                const badge = btn.querySelector('span:last-child');
-                if (dot) dot.style.background = isActive ? 'var(--accent)' : 'rgba(255,255,255,0.2)';
-                if (badge) badge.style.cssText = isActive
-                    ? 'background:rgba(249,115,22,0.25); color:var(--accent); padding:1px 6px; border-radius:4px; font-size:7px; font-weight:900;'
-                    : 'background:rgba(255,255,255,0.08); color:#6b7280; padding:1px 6px; border-radius:4px; font-size:7px; font-weight:900;';
-            });
-            playFromServer(servers[idx].url);
         }
 
         function playFromServer(url) {
@@ -1429,8 +1344,7 @@
                 const res = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await res.json();
                 currentEmbeds = embeds;
-                renderAudioButtons(currentAudioType);
-                renderServerTabs(currentEmbeds[currentAudioType], 0);
+                playFromServer(currentEmbeds.latino[0].url);
             } catch (err) { console.error('Episode embed error:', err); }
         }
 
