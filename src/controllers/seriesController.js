@@ -110,36 +110,50 @@ exports.getSeriesCategories = async (req, res) => {
       type: 'series'
     });
     const base = { language: lang, sort_by: 'popularity.desc', include_adult: false };
+    const b2 = { ...base, page: 2 };
     const [
-      trending, topRated,
-      spanishOriginals, latinoNovelas, spanishCrime,
-      drama, comedy, crime, scifi, animation, documentary
+      t1, t2, tr1, tr2,
+      sp1, sp2, nv1, nv2, sc1, sc2,
+      dr1, dr2, co1, co2, cr1, cr2,
+      sf1, sf2, an1, an2, dc1, dc2
     ] = await Promise.all([
-      tmdb.get('/trending/tv/week', { params: { language: lang } }),
-      tmdb.get('/tv/top_rated', { params: { language: lang } }),
-      tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', sort_by: 'popularity.desc' } }),
+      tmdb.get('/trending/tv/week', { params: { language: lang, page: 1 } }),
+      tmdb.get('/trending/tv/week', { params: { language: lang, page: 2 } }),
+      tmdb.get('/tv/top_rated', { params: { language: lang, page: 1 } }),
+      tmdb.get('/tv/top_rated', { params: { language: lang, page: 2 } }),
+      tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es' } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_original_language: 'es' } }),
       tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', with_genres: 18, sort_by: 'vote_count.desc' } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_original_language: 'es', with_genres: 18, sort_by: 'vote_count.desc' } }),
       tmdb.get('/discover/tv', { params: { ...base, with_original_language: 'es', with_genres: 80 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_original_language: 'es', with_genres: 80 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 18 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 18 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 35 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 35 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 80 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 80 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 10765 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 10765 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 16 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 16 } }),
       tmdb.get('/discover/tv', { params: { ...base, with_genres: 99 } }),
+      tmdb.get('/discover/tv', { params: { ...b2,   with_genres: 99 } }),
     ]);
-    const filter = arr => arr.filter(s => s.poster_path && s.backdrop_path).slice(0, 20).map(mapSeries);
+    const merge = (r1, r2) => [...r1.data.results, ...r2.data.results]
+      .filter(s => s.poster_path && s.backdrop_path).map(mapSeries);
     res.json([
-      { id: 'trending',          label: 'EN TENDENCIA',       title: 'Series del Momento',         accent: '#38bdf8', items: filter(trending.data.results) },
-      { id: 'en_espanol',        label: '🇲🇽 PRODUCCIÓN LATINA', title: 'Series en Español',          accent: '#f97316', items: filter(spanishOriginals.data.results) },
-      { id: 'novelas',           label: '❤️ DRAMA LATINO',      title: 'Telenovelas & Drama',         accent: '#f43f5e', items: filter(latinoNovelas.data.results) },
-      { id: 'crimen_latino',     label: '🔫 SUSPENSO LATINO',   title: 'Crimen & Narco',              accent: '#dc2626', items: filter(spanishCrime.data.results) },
-      { id: 'top_rated',         label: 'TOP GLOBAL',          title: 'Mejor Calificadas',           accent: '#facc15', items: filter(topRated.data.results) },
-      { id: 'drama',             label: 'EMOCIONES',           title: 'Drama Internacional',         accent: '#a78bfa', items: filter(drama.data.results) },
-      { id: 'crime',             label: 'MISTERIO',            title: 'Crimen & Policíaca',          accent: '#fb7185', items: filter(crime.data.results) },
-      { id: 'comedy',            label: 'ENTRETENIMIENTO',     title: 'Comedia',                     accent: '#34d399', items: filter(comedy.data.results) },
-      { id: 'scifi',             label: 'FUTURO',              title: 'Ciencia Ficción',             accent: '#22d3ee', items: filter(scifi.data.results) },
-      { id: 'animation',         label: 'ARTE EN MOVIMIENTO',  title: 'Animación',                   accent: '#e879f9', items: filter(animation.data.results) },
-      { id: 'documentary',       label: 'CONOCIMIENTO',        title: 'Documental',                  accent: '#fb923c', items: filter(documentary.data.results) },
+      { id: 'trending',      label: 'EN TENDENCIA',        title: 'Series del Momento',    accent: '#38bdf8', items: merge(t1, t2) },
+      { id: 'en_espanol',    label: '🇲🇽 PRODUCCIÓN LATINA', title: 'Series en Español',     accent: '#3b82f6', items: merge(sp1, sp2) },
+      { id: 'novelas',       label: '❤️ DRAMA LATINO',     title: 'Telenovelas & Drama',    accent: '#f43f5e', items: merge(nv1, nv2) },
+      { id: 'crimen_latino', label: '🔫 SUSPENSO LATINO',  title: 'Crimen & Narco',         accent: '#dc2626', items: merge(sc1, sc2) },
+      { id: 'top_rated',     label: 'TOP GLOBAL',          title: 'Mejor Calificadas',      accent: '#facc15', items: merge(tr1, tr2) },
+      { id: 'drama',         label: 'EMOCIONES',           title: 'Drama Internacional',    accent: '#a78bfa', items: merge(dr1, dr2) },
+      { id: 'comedy',        label: 'ENTRETENIMIENTO',     title: 'Comedia',                accent: '#34d399', items: merge(co1, co2) },
+      { id: 'crime',         label: 'MISTERIO',            title: 'Crimen & Policíaca',     accent: '#fb7185', items: merge(cr1, cr2) },
+      { id: 'scifi',         label: 'FUTURO',              title: 'Ciencia Ficción',        accent: '#22d3ee', items: merge(sf1, sf2) },
+      { id: 'animation',     label: 'ARTE EN MOVIMIENTO',  title: 'Animación',              accent: '#e879f9', items: merge(an1, an2) },
+      { id: 'documentary',   label: 'CONOCIMIENTO',        title: 'Documental',             accent: '#60a5fa', items: merge(dc1, dc2) },
     ]);
   } catch (error) {
     console.error('Series categories error:', error.message);

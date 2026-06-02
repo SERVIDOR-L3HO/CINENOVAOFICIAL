@@ -117,30 +117,48 @@ exports.getMovieCategories = async (req, res) => {
       poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
       banner: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : null,
     });
-    const params = (genre) => ({ language: lang, with_genres: genre, sort_by: 'popularity.desc', include_adult: false });
-    const [trending, topRated, action, drama, comedy, horror, scifi, thriller, animation, romance] = await Promise.all([
-      tmdb.get('/trending/movie/week', { params: { language: lang } }),
-      tmdb.get('/movie/top_rated', { params: { language: lang, region } }),
-      tmdb.get('/discover/movie', { params: params(28) }),
-      tmdb.get('/discover/movie', { params: params(18) }),
-      tmdb.get('/discover/movie', { params: params(35) }),
-      tmdb.get('/discover/movie', { params: params(27) }),
-      tmdb.get('/discover/movie', { params: params(878) }),
-      tmdb.get('/discover/movie', { params: params(53) }),
-      tmdb.get('/discover/movie', { params: params(16) }),
-      tmdb.get('/discover/movie', { params: params(10749) }),
+    const p = (genre, page = 1) => ({ language: lang, with_genres: genre, sort_by: 'popularity.desc', include_adult: false, page });
+    const [
+      t1, t2, tr1, tr2,
+      a1, a2, d1, d2, c1, c2,
+      h1, h2, sf1, sf2, th1, th2,
+      an1, an2, ro1, ro2
+    ] = await Promise.all([
+      tmdb.get('/trending/movie/week', { params: { language: lang, page: 1 } }),
+      tmdb.get('/trending/movie/week', { params: { language: lang, page: 2 } }),
+      tmdb.get('/movie/top_rated', { params: { language: lang, region, page: 1 } }),
+      tmdb.get('/movie/top_rated', { params: { language: lang, region, page: 2 } }),
+      tmdb.get('/discover/movie', { params: p(28, 1) }),
+      tmdb.get('/discover/movie', { params: p(28, 2) }),
+      tmdb.get('/discover/movie', { params: p(18, 1) }),
+      tmdb.get('/discover/movie', { params: p(18, 2) }),
+      tmdb.get('/discover/movie', { params: p(35, 1) }),
+      tmdb.get('/discover/movie', { params: p(35, 2) }),
+      tmdb.get('/discover/movie', { params: p(27, 1) }),
+      tmdb.get('/discover/movie', { params: p(27, 2) }),
+      tmdb.get('/discover/movie', { params: p(878, 1) }),
+      tmdb.get('/discover/movie', { params: p(878, 2) }),
+      tmdb.get('/discover/movie', { params: p(53, 1) }),
+      tmdb.get('/discover/movie', { params: p(53, 2) }),
+      tmdb.get('/discover/movie', { params: p(16, 1) }),
+      tmdb.get('/discover/movie', { params: p(16, 2) }),
+      tmdb.get('/discover/movie', { params: p(10749, 1) }),
+      tmdb.get('/discover/movie', { params: p(10749, 2) }),
     ]);
+    const merge = (r1, r2) => [...r1.data.results, ...r2.data.results]
+      .filter(m => m.poster_path && m.backdrop_path)
+      .map(mapMovie);
     res.json([
-      { id: 'trending', label: 'EN TENDENCIA', title: 'Tendencias', accent: '#38bdf8', items: trending.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'top_rated', label: 'TOP GLOBAL', title: 'Mejor Calificadas', accent: '#facc15', items: topRated.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'action', label: 'ADRENALINA', title: 'Acción & Aventura', accent: '#f97316', items: action.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'drama', label: 'EMOCIONES', title: 'Drama', accent: '#a78bfa', items: drama.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'comedy', label: 'ENTRETENIMIENTO', title: 'Comedia', accent: '#34d399', items: comedy.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'horror', label: 'OSCURIDAD', title: 'Terror & Horror', accent: '#f43f5e', items: horror.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'scifi', label: 'FUTURO', title: 'Ciencia Ficción', accent: '#22d3ee', items: scifi.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'thriller', label: 'SUSPENSO', title: 'Thriller', accent: '#fb923c', items: thriller.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'animation', label: 'ARTE EN MOVIMIENTO', title: 'Animación', accent: '#e879f9', items: animation.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
-      { id: 'romance', label: 'AMOR & PASIÓN', title: 'Romance', accent: '#fb7185', items: romance.data.results.filter(m => m.poster_path && m.backdrop_path).slice(0, 20).map(mapMovie) },
+      { id: 'trending',   label: 'EN TENDENCIA',        title: 'Tendencias',          accent: '#38bdf8', items: merge(t1, t2) },
+      { id: 'top_rated',  label: 'TOP GLOBAL',           title: 'Mejor Calificadas',   accent: '#facc15', items: merge(tr1, tr2) },
+      { id: 'action',     label: 'ADRENALINA',           title: 'Acción & Aventura',   accent: '#3b82f6', items: merge(a1, a2) },
+      { id: 'drama',      label: 'EMOCIONES',            title: 'Drama',               accent: '#a78bfa', items: merge(d1, d2) },
+      { id: 'comedy',     label: 'ENTRETENIMIENTO',      title: 'Comedia',             accent: '#34d399', items: merge(c1, c2) },
+      { id: 'horror',     label: 'OSCURIDAD',            title: 'Terror & Horror',     accent: '#f43f5e', items: merge(h1, h2) },
+      { id: 'scifi',      label: 'FUTURO',               title: 'Ciencia Ficción',     accent: '#22d3ee', items: merge(sf1, sf2) },
+      { id: 'thriller',   label: 'SUSPENSO',             title: 'Thriller',            accent: '#60a5fa', items: merge(th1, th2) },
+      { id: 'animation',  label: 'ARTE EN MOVIMIENTO',   title: 'Animación',           accent: '#e879f9', items: merge(an1, an2) },
+      { id: 'romance',    label: 'AMOR & PASIÓN',         title: 'Romance',             accent: '#fb7185', items: merge(ro1, ro2) },
     ]);
   } catch (error) {
     console.error('Categories error:', error.message);
