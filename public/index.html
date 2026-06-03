@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CINENOVA">
+    <link rel="apple-touch-icon" href="/assets/cinenova_icon.png">
     <style>
         :root {
             --accent: #3b82f6;
@@ -761,6 +767,10 @@
             section.querySelectorAll('.poster-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
+            setTimeout(() => {
+                const track = section.querySelector('.carousel-track');
+                if (track) attachInfiniteScroll(track, cat.id, 'movies', cat.accent);
+            }, 0);
             return section;
         }
 
@@ -898,6 +908,10 @@
             section.querySelectorAll('.land-card').forEach((card, i) => {
                 card.onclick = () => openInfoModal(cat.items[i]);
             });
+            setTimeout(() => {
+                const track = section.querySelector('.carousel-track');
+                if (track) attachInfiniteScroll(track, cat.id, 'series', cat.accent);
+            }, 0);
             return section;
         }
 
@@ -1434,9 +1448,78 @@
             } catch (err) { console.error('Episode embed error:', err); }
         }
 
+        /* ===================== INFINITE SCROLL ===================== */
+        const _carouselState = {};
+
+        function attachInfiniteScroll(trackEl, catId, mediaType, accent) {
+            if (_carouselState[catId]) return;
+            _carouselState[catId] = { page: 3, loading: false, done: false, type: mediaType, accent: accent || 'var(--accent)' };
+
+            const sentinel = document.createElement('div');
+            sentinel.id = 'sentinel-' + catId;
+            sentinel.className = 'flex-shrink-0 flex items-center justify-center';
+            sentinel.style.cssText = 'width:56px; min-height:80px;';
+            trackEl.appendChild(sentinel);
+
+            trackEl.addEventListener('scroll', () => _handleCarouselScroll(trackEl, catId), { passive: true });
+        }
+
+        async function _handleCarouselScroll(trackEl, catId) {
+            const state = _carouselState[catId];
+            if (!state || state.loading || state.done) return;
+            if (trackEl.scrollLeft + trackEl.clientWidth < trackEl.scrollWidth - 320) return;
+
+            state.loading = true;
+            const sentinel = document.getElementById('sentinel-' + catId);
+            if (sentinel) sentinel.innerHTML = '<div class="w-5 h-5 rounded-full animate-spin" style="border:2px solid var(--accent);border-top-color:transparent;"></div>';
+
+            try {
+                const res = await fetch('/api/' + state.type + '/more?category=' + catId + '&page=' + state.page + '&lang=' + currentLang);
+                const items = await res.json();
+
+                if (!Array.isArray(items) || items.length === 0) {
+                    state.done = true;
+                    if (sentinel) sentinel.remove();
+                    return;
+                }
+
+                const existingCount = trackEl.querySelectorAll('.poster-card, .land-card').length;
+                items.forEach((item, i) => {
+                    const wrapper = document.createElement('div');
+                    if (state.type === 'series') {
+                        wrapper.innerHTML = renderLandscapeCard(item, existingCount + i, state.accent, catId);
+                    } else {
+                        wrapper.innerHTML = renderPosterCard(item, existingCount + i, state.accent, catId);
+                    }
+                    const card = wrapper.firstElementChild;
+                    card.onclick = () => openInfoModal(item);
+                    if (sentinel && sentinel.parentNode === trackEl) {
+                        trackEl.insertBefore(card, sentinel);
+                    } else {
+                        trackEl.appendChild(card);
+                    }
+                });
+
+                state.page++;
+            } catch (err) {
+                console.error('Infinite scroll fetch error:', err);
+            } finally {
+                state.loading = false;
+                const s = document.getElementById('sentinel-' + catId);
+                if (s) s.innerHTML = '';
+            }
+        }
+
         /* ===================== INIT ===================== */
         loadCategory('movies');
         setLanguage('es-MX');
+
+        /* ===================== PWA SERVICE WORKER ===================== */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>

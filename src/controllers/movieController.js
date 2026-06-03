@@ -207,6 +207,49 @@ exports.getMovieDetails = async (req, res) => {
   }
 };
 
+exports.getMoreByCategory = async (req, res) => {
+  try {
+    const { category, page, lang } = req.query;
+    const p = parseInt(page) || 3;
+    const l = lang || 'es-MX';
+    const region = getRegion(l);
+
+    const categoryMap = {
+      trending:  () => tmdb.get('/trending/movie/week',  { params: { language: l, page: p } }),
+      top_rated: () => tmdb.get('/movie/top_rated',      { params: { language: l, region, page: p } }),
+      action:    () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 28,    sort_by: 'popularity.desc', page: p } }),
+      drama:     () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 18,    sort_by: 'popularity.desc', page: p } }),
+      comedy:    () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 35,    sort_by: 'popularity.desc', page: p } }),
+      horror:    () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 27,    sort_by: 'popularity.desc', page: p } }),
+      scifi:     () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 878,   sort_by: 'popularity.desc', page: p } }),
+      thriller:  () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 53,    sort_by: 'popularity.desc', page: p } }),
+      animation: () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 16,    sort_by: 'popularity.desc', page: p } }),
+      romance:   () => tmdb.get('/discover/movie',       { params: { language: l, with_genres: 10749, sort_by: 'popularity.desc', page: p } }),
+    };
+
+    const fetcher = categoryMap[category];
+    if (!fetcher) return res.status(400).json({ error: 'Categoría inválida' });
+
+    const response = await fetcher();
+    const items = response.data.results
+      .filter(m => m.poster_path)
+      .map(m => ({
+        id: m.id,
+        title: m.title || m.name,
+        overview: m.overview,
+        year: m.release_date ? new Date(m.release_date).getFullYear() : 'N/A',
+        rating: m.vote_average,
+        poster: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
+        banner: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : null,
+      }));
+
+    res.json(items);
+  } catch (error) {
+    console.error('getMoreByCategory error:', error.message);
+    res.status(500).json({ error: 'Error al cargar más contenido' });
+  }
+};
+
 exports.searchMovies = async (req, res) => {
   try {
     const { query, lang } = req.query;

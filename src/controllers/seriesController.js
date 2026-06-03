@@ -248,6 +248,51 @@ exports.searchSeries = async (req, res) => {
   }
 };
 
+exports.getMoreByCategory = async (req, res) => {
+  try {
+    const { category, page, lang } = req.query;
+    const p = parseInt(page) || 3;
+    const l = lang || 'es-MX';
+    const base = { language: l, sort_by: 'popularity.desc', include_adult: false, page: p };
+
+    const categoryMap = {
+      trending:      () => tmdb.get('/trending/tv/week',  { params: { language: l, page: p } }),
+      top_rated:     () => tmdb.get('/tv/top_rated',      { params: { language: l, page: p } }),
+      en_espanol:    () => tmdb.get('/discover/tv',       { params: { ...base, with_original_language: 'es' } }),
+      novelas:       () => tmdb.get('/discover/tv',       { params: { ...base, with_original_language: 'es', with_genres: 18 } }),
+      crimen_latino: () => tmdb.get('/discover/tv',       { params: { ...base, with_original_language: 'es', with_genres: 80 } }),
+      drama:         () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 18 } }),
+      comedy:        () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 35 } }),
+      crime:         () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 80 } }),
+      scifi:         () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 10765 } }),
+      animation:     () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 16 } }),
+      documentary:   () => tmdb.get('/discover/tv',       { params: { ...base, with_genres: 99 } }),
+    };
+
+    const fetcher = categoryMap[category];
+    if (!fetcher) return res.status(400).json({ error: 'Categoría inválida' });
+
+    const response = await fetcher();
+    const items = response.data.results
+      .filter(s => s.poster_path)
+      .map(s => ({
+        id: s.id,
+        title: s.name,
+        overview: s.overview,
+        year: s.first_air_date ? new Date(s.first_air_date).getFullYear() : 'N/A',
+        rating: s.vote_average,
+        poster: `https://image.tmdb.org/t/p/w500${s.poster_path}`,
+        banner: s.backdrop_path ? `https://image.tmdb.org/t/p/original${s.backdrop_path}` : null,
+        type: 'series'
+      }));
+
+    res.json(items);
+  } catch (error) {
+    console.error('getMoreByCategory series error:', error.message);
+    res.status(500).json({ error: 'Error al cargar más contenido' });
+  }
+};
+
 exports.getEpisodeEmbed = async (req, res) => {
   try {
     const { id } = req.params;
