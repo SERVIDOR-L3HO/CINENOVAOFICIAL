@@ -8,20 +8,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#3b82f6">
+    <meta name="theme-color" content="#0c0c0c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CINENOVA">
     <link rel="apple-touch-icon" href="/assets/cinenova_icon.png">
     <style>
         :root {
-            --accent: #3b82f6;
-            --accent2: #60a5fa;
-            --accent3: #93c5fd;
-            --bg: #06080f;
-            --surface: #0d1117;
-            --glass: rgba(6, 10, 22, 0.85);
-            --glass-border: rgba(59, 130, 246, 0.18);
+            --accent: #d4d4d8;
+            --accent2: #a1a1aa;
+            --accent3: #71717a;
+            --bg: #0c0c0c;
+            --surface: #141414;
+            --glass: rgba(10, 10, 10, 0.92);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
         * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
         body { background-color: var(--bg); color: white; overflow-x: hidden; }
@@ -34,34 +34,34 @@
             border-bottom: 1px solid var(--glass-border);
         }
         .glass-card {
-            background: rgba(6, 12, 28, 0.78);
+            background: rgba(14, 14, 14, 0.88);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(59,130,246,0.14);
+            border: 1px solid rgba(255,255,255,0.07);
         }
         .glass-panel {
-            background: rgba(59,130,246,0.07);
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(59,130,246,0.18);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         /* --- BACKGROUNDS & GRADIENTS --- */
-        .hero-gradient { background: linear-gradient(0deg, #06080f 8%, rgba(6,8,15,0.6) 50%, transparent 100%); }
-        .hero-side { background: linear-gradient(90deg, #06080f 20%, transparent 100%); }
-        body { background: radial-gradient(ellipse at 20% 80%, rgba(59,130,246,0.06) 0%, transparent 60%), #06080f; }
+        .hero-gradient { background: linear-gradient(0deg, #0c0c0c 8%, rgba(12,12,12,0.6) 50%, transparent 100%); }
+        .hero-side { background: linear-gradient(90deg, #0c0c0c 20%, transparent 100%); }
+        body { background: #0c0c0c; }
 
         /* --- SCROLLBAR --- */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         /* --- GLOW EFFECTS --- */
-        .glow-orange { box-shadow: 0 0 28px rgba(59,130,246,0.45), 0 0 60px rgba(59,130,246,0.18); }
-        .glow-blue { box-shadow: 0 0 28px rgba(59,130,246,0.45), 0 0 60px rgba(59,130,246,0.18); }
+        .glow-orange { box-shadow: 0 0 28px rgba(255,255,255,0.15), 0 0 60px rgba(255,255,255,0.06); }
+        .glow-blue   { box-shadow: 0 0 28px rgba(255,255,255,0.15), 0 0 60px rgba(255,255,255,0.06); }
         .glow-yellow { box-shadow: 0 0 20px rgba(250,204,21,0.35); }
-        .live-result-item:hover { background: rgba(59,130,246,0.09); }
-        .live-result-item:hover .live-item-title { color: #93c5fd; }
+        .live-result-item:hover { background: rgba(255,255,255,0.05); }
+        .live-result-item:hover .live-item-title { color: #d4d4d8; }
         .live-result-item { transition: background 0.18s ease; }
         .text-accent { color: var(--accent); }
 
@@ -69,7 +69,7 @@
         .carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
         .carousel-track::-webkit-scrollbar { display: none; }
 
-        /* --- POSTER CARD (Modern List Style) --- */
+        /* --- POSTER CARD --- */
         .poster-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1); }
         .poster-card:hover { transform: translateY(-10px) scale(1.04); }
         .poster-card:hover .poster-overlay { opacity: 1 !important; }
@@ -79,35 +79,27 @@
 
         /* --- LANDSCAPE CARD (Series) --- */
         .land-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s ease; }
-        .land-card:hover { transform: translateY(-7px) scale(1.02); box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 20px rgba(59,130,246,0.12); }
+        .land-card:hover { transform: translateY(-7px) scale(1.02); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.05); }
         .land-card:hover .land-overlay { opacity: 1 !important; }
         .land-card:hover .land-play { opacity: 1 !important; transform: scale(1) !important; }
         .land-card:hover .land-img { transform: scale(1.08); }
 
         /* --- ARROW BUTTONS --- */
         .arrow-btn { transition: all 0.2s ease; }
-        .arrow-btn:hover { background: rgba(59,130,246,0.2) !important; border-color: rgba(59,130,246,0.5) !important; transform: scale(1.12); box-shadow: 0 0 12px rgba(59,130,246,0.2); }
+        .arrow-btn:hover { background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.3) !important; transform: scale(1.12); box-shadow: 0 0 12px rgba(255,255,255,0.08); }
 
         /* --- RANKING NUMBER --- */
         .rank-num {
-            font-size: 6.5rem;
-            font-weight: 900;
-            line-height: 1;
+            font-size: 6.5rem; font-weight: 900; line-height: 1;
             background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            user-select: none;
-            position: absolute;
-            bottom: -10px;
-            left: -10px;
-            z-index: 0;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            user-select: none; position: absolute; bottom: -10px; left: -10px; z-index: 0;
         }
 
         /* --- CATEGORY HEADER --- */
         .cat-bar {
             border-left: 3px solid var(--accent);
-            background: linear-gradient(90deg, rgba(59,130,246,0.07) 0%, transparent 80%);
+            background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 80%);
             border-radius: 0 8px 8px 0;
         }
 
@@ -117,93 +109,73 @@
         #info-modal-card { animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(50px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .genre-badge {
-            background: rgba(59,130,246,0.1);
-            border: 1px solid rgba(59,130,246,0.35);
-            color: #fb923c;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #d4d4d8;
             font-size: 8px; font-weight: 900; letter-spacing: 2.5px;
             text-transform: uppercase; padding: 4px 11px; border-radius: 999px;
             backdrop-filter: blur(8px);
-            text-shadow: 0 0 12px rgba(59,130,246,0.4);
         }
         .meta-chip {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; padding: 5px 13px;
-            font-size: 10px; font-weight: 800;
-            letter-spacing: 1px; text-transform: uppercase;
-            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 5px 13px; font-size: 10px; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;
             backdrop-filter: blur(8px);
         }
         .cast-pill {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 999px; padding: 5px 14px;
-            font-size: 10px; font-weight: 700; color: #e2e8f0;
-            white-space: nowrap; flex-shrink: 0;
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 999px; padding: 5px 14px; font-size: 10px; font-weight: 700; color: #e2e8f0;
+            white-space: nowrap; flex-shrink: 0; backdrop-filter: blur(8px); transition: all 0.2s ease;
         }
-        .cast-pill:hover {
-            background: rgba(59,130,246,0.12);
-            border-color: rgba(59,130,246,0.3);
-            color: #fb923c;
-        }
+        .cast-pill:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); color: #fff; }
         .info-line { background: linear-gradient(90deg, var(--accent), var(--accent2)); height: 2px; border-radius: 2px; width: 20px; flex-shrink: 0; }
 
         /* --- MODAL PREMIUM --- */
         #info-modal-bg {
-            position: absolute; inset: 0;
-            background-size: cover; background-position: center;
-            filter: blur(55px) brightness(0.15) saturate(1.5);
-            transform: scale(1.2);
+            position: absolute; inset: 0; background-size: cover; background-position: center;
+            filter: blur(55px) brightness(0.12) saturate(0.3); transform: scale(1.2);
         }
-        #info-modal-card::-webkit-scrollbar,
-        .modal-scroll::-webkit-scrollbar { width: 3px; }
-        #info-modal-card::-webkit-scrollbar-track,
-        .modal-scroll::-webkit-scrollbar-track { background: transparent; }
-        #info-modal-card::-webkit-scrollbar-thumb,
-        .modal-scroll::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.35); border-radius: 99px; }
+        #info-modal-card::-webkit-scrollbar, .modal-scroll::-webkit-scrollbar { width: 3px; }
+        #info-modal-card::-webkit-scrollbar-track, .modal-scroll::-webkit-scrollbar-track { background: transparent; }
+        #info-modal-card::-webkit-scrollbar-thumb, .modal-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
         #info-cast::-webkit-scrollbar { display: none; }
 
         /* --- SHIMMER --- */
         .shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(59,130,246,0.05) 50%, rgba(255,255,255,0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite; border-radius: 8px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
         /* --- SPOTLIGHT CARD (Series featured) --- */
         .spotlight-card { transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
-        .spotlight-card:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(59,130,246,0.15); }
+        .spotlight-card:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 30px rgba(255,255,255,0.05); }
         .spotlight-card:hover .sp-img { transform: scale(1.08); }
         .spotlight-card:hover .sp-play { opacity: 1 !important; transform: scale(1) !important; }
 
         /* --- NAV ACTIVE INDICATOR --- */
-        .nav-active { color: #f97316 !important; }
+        .nav-active { color: #ffffff !important; }
 
         /* --- HERO BADGE --- */
         .hero-badge {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            box-shadow: 0 4px 14px rgba(59,130,246,0.5);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: none;
+            color: #d4d4d8;
         }
 
         /* --- EPISODE & SEASON PILLS --- */
-        .episode-card.active { background: rgba(59,130,246,0.25) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+        .episode-card.active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.5) !important; color: #ffffff !important; }
 
         /* --- SEARCH HISTORY --- */
-        .history-item:hover { background: rgba(59,130,246,0.08); }
+        .history-item:hover { background: rgba(255,255,255,0.05); }
 
         /* --- LIVE BADGE --- */
-        .live-badge {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            box-shadow: 0 0 10px rgba(239,68,68,0.5);
-            animation: livePulse 2s infinite;
-        }
+        .live-badge { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 0 10px rgba(239,68,68,0.5); animation: livePulse 2s infinite; }
         @keyframes livePulse { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.5)} 50%{box-shadow:0 0 18px rgba(239,68,68,0.8)} }
 
         /* --- FILTER BUTTONS --- */
-        .filter-active { background: var(--accent) !important; color: white !important; box-shadow: 0 0 14px rgba(59,130,246,0.35); }
+        .filter-active { background: #ffffff !important; color: #0c0c0c !important; box-shadow: 0 0 14px rgba(255,255,255,0.2); }
 
         /* --- GRADIENT FADES FOR CAROUSELS --- */
         .fade-left { background: linear-gradient(to right, var(--bg), transparent); }
@@ -217,9 +189,7 @@
         .top10-card .poster-overlay { transition: opacity 0.4s ease; }
         .top10-card .poster-play { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1); }
 
-        @media (max-width: 768px) {
-            .hero-title { font-size: 3rem !important; }
-        }
+        @media (max-width: 768px) { .hero-title { font-size: 3rem !important; } }
     </style>
 </head>
 <body class="antialiased">
@@ -229,7 +199,7 @@
         <div class="flex items-center gap-4 md:gap-10">
             <img src="/assets/cinenova_full_logo.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer" onclick="window.location.reload()">
             <div class="hidden lg:flex gap-7 text-[10px] font-black tracking-[3px] uppercase italic">
-                <a href="#" id="nav-movies" class="text-accent transition hover:text-blue-300" onclick="loadCategory('movies')">CINE</a>
+                <a href="#" id="nav-movies" class="text-accent transition hover:text-white" onclick="loadCategory('movies')">CINE</a>
                 <a href="#" id="nav-series" class="text-gray-400 transition hover:text-accent" onclick="loadCategory('series')">SERIES</a>
             </div>
         </div>
@@ -237,14 +207,14 @@
             <div class="relative" id="search-wrapper">
                 <input type="text" id="global-search" placeholder="BUSCAR..." autocomplete="off"
                     class="rounded-full px-4 md:px-6 py-2 text-[10px] md:text-xs focus:outline-none w-32 md:w-48 focus:w-56 md:focus:w-68 transition-all duration-500 uppercase font-bold"
-                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(59,130,246,0.2); color:white;">
-                <i class="fas fa-search absolute right-4 top-2.5 text-blue-400/50 text-xs pointer-events-none"></i>
+                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
+                <i class="fas fa-search absolute right-4 top-2.5 text-gray-500 text-xs pointer-events-none"></i>
                 <!-- History dropdown -->
                 <div id="search-history-dropdown"
                     class="hidden absolute top-full mt-2 right-0 w-64 rounded-2xl shadow-2xl z-[200] overflow-hidden"
-                    style="background:#0d1117; border:1px solid rgba(59,130,246,0.15);">
-                    <div class="flex items-center justify-between px-4 py-2.5" style="border-bottom:1px solid rgba(59,130,246,0.1)">
-                        <span class="text-[8px] font-black tracking-[3px] uppercase text-blue-400/60">HISTORIAL</span>
+                    style="background:#141414; border:1px solid rgba(255,255,255,0.08);">
+                    <div class="flex items-center justify-between px-4 py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                        <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-500">HISTORIAL</span>
                         <button id="clear-history-btn" class="text-[8px] font-black tracking-widest uppercase text-red-400 hover:text-red-300 transition">BORRAR</button>
                     </div>
                     <ul id="search-history-list" class="max-h-52 overflow-y-auto"></ul>
@@ -253,24 +223,24 @@
                 <!-- Live Search Results Dropdown -->
                 <div id="search-live-dropdown"
                     class="hidden absolute top-full mt-2 right-0 rounded-2xl shadow-2xl z-[300] overflow-hidden"
-                    style="width:430px; max-width:calc(100vw - 1rem); background:rgba(6,10,22,0.97); border:1px solid rgba(59,130,246,0.3); backdrop-filter:blur(28px); box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(59,130,246,0.1);">
-                    <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid rgba(59,130,246,0.1)">
-                        <span id="search-live-count" class="text-[8px] font-black tracking-[3px] uppercase text-blue-400/60">BUSCANDO...</span>
-                        <button id="search-live-all" class="text-[8px] font-black tracking-widest uppercase text-blue-400 hover:text-blue-300 transition flex items-center gap-1">VER TODOS <i class="fas fa-arrow-right text-[7px]"></i></button>
+                    style="width:430px; max-width:calc(100vw - 1rem); background:rgba(10,10,10,0.97); border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(28px); box-shadow:0 20px 60px rgba(0,0,0,0.9);">
+                    <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                        <span id="search-live-count" class="text-[8px] font-black tracking-[3px] uppercase text-gray-500">BUSCANDO...</span>
+                        <button id="search-live-all" class="text-[8px] font-black tracking-widest uppercase text-gray-300 hover:text-white transition flex items-center gap-1">VER TODOS <i class="fas fa-arrow-right text-[7px]"></i></button>
                     </div>
-                    <ul id="search-live-list" class="overflow-y-auto" style="max-height:340px; scrollbar-width:thin; scrollbar-color:rgba(59,130,246,0.2) transparent;"></ul>
+                    <ul id="search-live-list" class="overflow-y-auto" style="max-height:340px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;"></ul>
                     <div id="search-live-empty" class="hidden px-4 py-8 text-center">
-                        <i class="fas fa-search text-2xl text-blue-400/20 mb-2 block"></i>
+                        <i class="fas fa-search text-2xl text-gray-600 mb-2 block"></i>
                         <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Sin resultados</p>
                     </div>
                 </div>
             </div>
-            <img src="/assets/cinenova_icon.png" alt="" class="h-6 md:h-8 opacity-80 hover:opacity-100 transition duration-500 hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">
+            <img src="/assets/cinenova_icon.png" alt="" class="h-6 md:h-8 opacity-80 hover:opacity-100 transition duration-500 hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
         </div>
     </nav>
 
     <!-- Mobile Bottom Nav -->
-    <div class="lg:hidden fixed bottom-0 w-full z-[100] flex justify-around py-4" style="background:rgba(8,6,3,0.95); border-top:1px solid rgba(59,130,246,0.15); backdrop-filter:blur(20px);">
+    <div class="lg:hidden fixed bottom-0 w-full z-[100] flex justify-around py-4" style="background:rgba(8,8,8,0.97); border-top:1px solid rgba(255,255,255,0.07); backdrop-filter:blur(20px);">
         <button onclick="loadCategory('movies')" id="mob-movies" class="text-xs font-black tracking-widest text-accent flex flex-col items-center gap-1">
             <i class="fas fa-film text-base"></i> CINE
         </button>
@@ -295,10 +265,10 @@
                 <h1 id="hero-title" class="hero-title text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-none italic uppercase tracking-tighter drop-shadow-2xl" style="text-shadow:0 4px 30px rgba(0,0,0,0.8)">...</h1>
                 <p id="hero-desc" class="text-sm md:text-base text-gray-300 mb-8 md:mb-10 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-2xl font-light opacity-85"></p>
                 <div class="flex flex-wrap gap-3 md:gap-4">
-                    <button id="hero-play-btn" class="flex-1 sm:flex-none px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-3 glow-orange transition-all transform hover:scale-105 active:scale-95 tracking-widest uppercase" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                    <button id="hero-play-btn" class="flex-1 sm:flex-none px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs flex items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 tracking-widest uppercase" style="background:#ffffff; color:#0c0c0c; box-shadow:0 0 20px rgba(255,255,255,0.15);">
                         <i class="fas fa-play"></i> REPRODUCIR
                     </button>
-                    <button id="hero-info-btn" class="flex-1 sm:flex-none glass-panel px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs transition-all tracking-widest flex items-center justify-center gap-3 uppercase hover:border-orange-500/40">
+                    <button id="hero-info-btn" class="flex-1 sm:flex-none px-7 md:px-14 py-3.5 md:py-5 rounded-full font-black text-[10px] md:text-xs transition-all tracking-widest flex items-center justify-center gap-3 uppercase" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:white;">
                         <i class="fas fa-info-circle"></i> INFO
                     </button>
                 </div>
@@ -313,22 +283,22 @@
     <div id="info-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-3 md:p-6" style="background:rgba(0,0,0,0.65);">
         <!-- Cinematic blurred backdrop -->
         <div id="info-modal-bg"></div>
-        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 60%);"></div>
+        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 60%);"></div>
 
         <!-- CARD -->
         <div id="info-modal-card" class="relative w-full max-w-4xl max-h-[95vh] rounded-2xl md:rounded-3xl overflow-hidden flex flex-col"
-            style="background:rgba(7,4,1,0.82); backdrop-filter:blur(40px) saturate(1.7); border:1px solid rgba(59,130,246,0.2); box-shadow:0 60px 160px rgba(0,0,0,0.98), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06);">
+            style="background:rgba(12,12,12,0.92); backdrop-filter:blur(40px) saturate(1.2); border:1px solid rgba(255,255,255,0.1); box-shadow:0 60px 160px rgba(0,0,0,0.98), inset 0 1px 0 rgba(255,255,255,0.05);">
 
             <!-- ═══ BANNER ═══ -->
             <div class="relative flex-shrink-0 overflow-hidden" style="height:220px; min-height:180px;">
                 <img id="info-banner" src="" alt="" class="absolute inset-0 w-full h-full object-cover object-center" style="filter:brightness(0.45) saturate(1.2);">
                 <!-- Gradient layers -->
-                <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 15%, rgba(7,4,1,0.97) 100%);"></div>
-                <div class="absolute inset-0" style="background:linear-gradient(90deg, rgba(7,4,1,0.55) 0%, transparent 55%);"></div>
+                <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 15%, rgba(12,12,12,0.97) 100%);"></div>
+                <div class="absolute inset-0" style="background:linear-gradient(90deg, rgba(0,0,0,0.55) 0%, transparent 55%);"></div>
                 <!-- Orange ambient glow -->
-                <div class="absolute bottom-0 left-0 right-0" style="height:80px; background:radial-gradient(ellipse at 25% 100%, rgba(59,130,246,0.14) 0%, transparent 65%);"></div>
+                <div class="absolute bottom-0 left-0 right-0" style="height:80px; background:radial-gradient(ellipse at 25% 100%, rgba(255,255,255,0.04) 0%, transparent 65%);"></div>
                 <!-- Top orange line accent -->
-                <div class="absolute top-0 left-0 right-0 h-px" style="background:linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(245,158,11,0.3), transparent);"></div>
+                <div class="absolute top-0 left-0 right-0 h-px" style="background:linear-gradient(90deg, transparent, rgba(255,255,255,0.25), rgba(245,158,11,0.3), transparent);"></div>
 
                 <!-- Close button -->
                 <button onclick="closeInfoModal()" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full z-30 transition-all hover:scale-110 active:scale-90"
@@ -348,7 +318,7 @@
                 <div class="absolute z-20" style="bottom:-48px; left:18px;">
                     <div class="relative">
                         <img id="info-poster" src="" alt="" class="rounded-xl block"
-                            style="width:88px; aspect-ratio:2/3; object-fit:cover; box-shadow:0 20px 60px rgba(0,0,0,0.95), 0 0 0 2px rgba(59,130,246,0.28), 0 0 30px rgba(59,130,246,0.1);">
+                            style="width:88px; aspect-ratio:2/3; object-fit:cover; box-shadow:0 20px 60px rgba(0,0,0,0.95), 0 0 0 2px rgba(255,255,255,0.1), 0 0 30px rgba(255,255,255,0.06);">
                         <!-- Orange left accent glow -->
                         <div class="absolute inset-y-3 -left-px w-0.5 rounded-full" style="background:linear-gradient(180deg, transparent, var(--accent), transparent);"></div>
                     </div>
@@ -363,20 +333,20 @@
             </div>
 
             <!-- ═══ SCROLLABLE CONTENT ═══ -->
-            <div class="flex-1 overflow-y-auto modal-scroll" style="scrollbar-width:thin; scrollbar-color:rgba(59,130,246,0.3) transparent;">
+            <div class="flex-1 overflow-y-auto modal-scroll" style="scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.12) transparent;">
                 <div class="px-5 md:px-7 pb-8" style="padding-top:58px;">
 
                     <!-- Meta chips -->
                     <div id="info-meta" class="flex flex-wrap gap-2 mb-5"></div>
 
                     <!-- Glass divider -->
-                    <div class="mb-5 h-px" style="background:linear-gradient(90deg, rgba(59,130,246,0.25), rgba(245,158,11,0.1), transparent);"></div>
+                    <div class="mb-5 h-px" style="background:linear-gradient(90deg, rgba(255,255,255,0.1), rgba(245,158,11,0.1), transparent);"></div>
 
                     <!-- Synopsis -->
                     <div class="mb-6">
                         <div class="flex items-center gap-2 mb-2.5">
                             <div class="info-line"></div>
-                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(59,130,246,0.65);">Sinopsis</span>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Sinopsis</span>
                         </div>
                         <p id="info-overview" class="leading-relaxed text-gray-300" style="font-size:13px;"></p>
                     </div>
@@ -385,10 +355,10 @@
                     <div id="info-trailer-block" class="mb-7 hidden">
                         <div class="flex items-center gap-2 mb-3">
                             <div class="info-line"></div>
-                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(59,130,246,0.65);">Tráiler Oficial</span>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Tráiler Oficial</span>
                         </div>
                         <div class="relative w-full rounded-xl md:rounded-2xl overflow-hidden"
-                            style="aspect-ratio:16/9; background:#000; border:1px solid rgba(59,130,246,0.15); box-shadow:0 10px 50px rgba(0,0,0,0.8);">
+                            style="aspect-ratio:16/9; background:#000; border:1px solid rgba(255,255,255,0.07); box-shadow:0 10px 50px rgba(0,0,0,0.8);">
                             <iframe id="info-trailer-iframe" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src=""></iframe>
                         </div>
                     </div>
@@ -397,7 +367,7 @@
                     <div id="info-director-block" class="mb-5 hidden">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="info-line"></div>
-                            <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(59,130,246,0.65);">Director</span>
+                            <span id="info-director-label" class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Director</span>
                         </div>
                         <p id="info-director" class="text-white font-bold" style="font-size:13px;"></p>
                     </div>
@@ -406,7 +376,7 @@
                     <div id="info-cast-block" class="mb-8 hidden">
                         <div class="flex items-center gap-2 mb-3">
                             <div class="info-line"></div>
-                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(59,130,246,0.65);">Reparto</span>
+                            <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Reparto</span>
                         </div>
                         <div id="info-cast" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none; -ms-overflow-style:none;"></div>
                     </div>
@@ -415,7 +385,7 @@
                     <div class="flex flex-col sm:flex-row gap-3">
                         <button id="info-play-btn" onclick="playFromInfoModal()"
                             class="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-orange"
-                            style="background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 8px 30px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15);">
+                            style="background:#ffffff; color:#0c0c0c; box-shadow:0 8px 30px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.15);">
                             <i class="fas fa-play text-sm"></i> REPRODUCIR AHORA
                         </button>
                         <button onclick="closeInfoModal()"
@@ -435,7 +405,7 @@
         <div class="flex-shrink-0 h-0.5 w-full" style="background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)"></div>
 
         <!-- Player Header -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background:rgba(6,4,2,0.97); border-bottom:1px solid rgba(59,130,246,0.1);">
+        <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background:rgba(10,10,10,0.98); border-bottom:1px solid rgba(255,255,255,0.06);">
             <div class="flex items-center gap-3 min-w-0">
                 <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:border-orange-500/50">
                     <i class="fas fa-chevron-left text-xs text-gray-400"></i>
@@ -452,7 +422,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); color:var(--accent);">
+                <span class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--accent);">
                     <i class="fas fa-shield-alt" style="font-size:7px"></i> HD PREMIUM
                 </span>
                 <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:bg-red-500/20 hover:border-red-500/40">
@@ -462,10 +432,10 @@
         </div>
 
         <!-- Episodes row (series only) -->
-        <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(6,4,2,0.98); border-bottom:1px solid rgba(59,130,246,0.06);">
+        <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
             <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()"
                 class="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
-                style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); color:var(--accent);">
+                style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--accent);">
                 <i class="fas fa-th-list" style="font-size:9px"></i> EPISODIOS
             </button>
         </div>
@@ -475,30 +445,30 @@
             <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
             <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
                 <div class="relative mb-6">
-                    <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(59,130,246,0.2);">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(255,255,255,0.08);">
                         <div class="w-11 h-11 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
                     </div>
-                    <div class="absolute inset-0 rounded-full animate-ping" style="background:rgba(59,130,246,0.06);"></div>
+                    <div class="absolute inset-0 rounded-full animate-ping" style="background:rgba(255,255,255,0.04);"></div>
                 </div>
-                <p class="text-[8px] font-black tracking-[5px] text-blue-400/40 uppercase mb-1">CARGANDO SERVIDOR</p>
+                <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
                 <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
             </div>
         </div>
 
         <!-- Info bar -->
-        <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background:rgba(6,4,2,0.98); border-top:1px solid rgba(59,130,246,0.06);">
+        <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center justify-between" style="background:rgba(10,10,10,0.99); border-top:1px solid rgba(255,255,255,0.04);">
             <div class="flex items-center gap-2 text-[8px] text-gray-700 font-bold">
-                <i class="fas fa-shield-alt text-blue-400/25" style="font-size:9px"></i>
+                <i class="fas fa-shield-alt text-gray-700" style="font-size:9px"></i>
                 <span class="tracking-widest uppercase" style="letter-spacing:2px;">SUPERVIDEO</span>
             </div>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2);">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);">
                 <span class="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style="background:var(--accent);"></span>
                 <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">FULL HD 1080P</span>
             </div>
         </div>
 
         <!-- Episodes Drawer -->
-        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-64" style="background:#080604; border-top:1px solid rgba(59,130,246,0.18);">
+        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-64" style="background:#0a0a0a; border-top:1px solid rgba(255,255,255,0.08);">
             <div class="px-4 md:px-6 pt-3 pb-2 flex items-center justify-between gap-3" style="border-bottom:1px solid rgba(255,255,255,0.04);">
                 <div class="flex items-center gap-2">
                     <div class="w-1 h-4 rounded-full flex-shrink-0" style="background:var(--accent);"></div>
@@ -562,7 +532,7 @@
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
                 <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-blue-400/40 uppercase">Cargando categorías...</p>
+                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Cargando categorías...</p>
             </div>`;
             try {
                 const res = await fetch(`/api/${category}/categories?lang=${currentLang}`);
@@ -604,10 +574,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.18);" onclick="scrollCarousel('${cat.id}', -1)">
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);" onclick="scrollCarousel('${cat.id}', -1)">
                             <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
                         </button>
-                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.18);" onclick="scrollCarousel('${cat.id}', 1)">
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);" onclick="scrollCarousel('${cat.id}', 1)">
                             <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
                         </button>
                     </div>
@@ -642,7 +612,7 @@
                         font-style: italic;
                         -webkit-text-stroke: 3px ${isTop3 ? 'var(--accent)' : 'rgba(255,255,255,0.22)'};
                         color: transparent;
-                        text-shadow: ${isTop3 ? '0 0 40px rgba(59,130,246,0.25)' : 'none'};
+                        text-shadow: ${isTop3 ? '0 0 40px rgba(255,255,255,0.1)' : 'none'};
                         width: 80px;
                         text-align: center;
                     ">${rank}</div>
@@ -657,10 +627,10 @@
                     ">
                         <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.05) 55%, transparent 100%);"></div>
-                        <div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(59,130,246,0.1);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(255,255,255,0.06);"></div>
                         <!-- Play on hover -->
                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400" style="transform:scale(0.7);" onmouseenter="this.style.transform='scale(1)'" onmouseleave="this.style.transform='scale(0.7)'">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center glow-orange" style="background:#ffffff; color:#0c0c0c;">
                                 <i class="fas fa-play text-white ml-0.5 text-xs"></i>
                             </div>
                         </div>
@@ -669,7 +639,7 @@
                             <span class="text-yellow-400" style="font-size:7px;">★</span>
                             <span class="font-black text-[8px] text-yellow-400">${rating}</span>
                         </div>
-                        ${isTop3 ? `<div class="absolute top-1.5 left-1.5"><span class="text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000;">TOP ${rank}</span></div>` : ''}
+                        ${isTop3 ? `<div class="absolute top-1.5 left-1.5"><span class="text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest" style="background:#ffffff; color:#0c0c0c; color:#000;">TOP ${rank}</span></div>` : ''}
                     </div>
                     <!-- Title below -->
                     <div class="mt-2 pl-12 pr-1">
@@ -690,10 +660,10 @@
                         <!-- Gradient overlay (always subtle) -->
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);"></div>
                         <!-- Hover overlay -->
-                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(59,130,246,0.08); backdrop-filter:blur(1px);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05); backdrop-filter:blur(1px);"></div>
                         <!-- Play button -->
                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.75);">
-                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center glow-orange" style="background:#ffffff; color:#0c0c0c;">
                                 <i class="fas fa-play text-white ml-1 text-base"></i>
                             </div>
                         </div>
@@ -739,10 +709,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);" onclick="scrollCarousel('${cat.id}', -1)">
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);" onclick="scrollCarousel('${cat.id}', -1)">
                             <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
                         </button>
-                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);" onclick="scrollCarousel('${cat.id}', 1)">
+                        <button class="arrow-btn w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);" onclick="scrollCarousel('${cat.id}', 1)">
                             <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
                         </button>
                     </div>
@@ -772,9 +742,9 @@
                     <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; box-shadow:0 6px 24px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.05);">
                         <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.05) 55%, transparent 100%);"></div>
-                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(59,130,246,0.07);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.04);"></div>
                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 0 20px rgba(59,130,246,0.5);">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:#ffffff; color:#0c0c0c; box-shadow:0 0 20px rgba(255,255,255,0.25);">
                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                             </div>
                         </div>
@@ -822,9 +792,9 @@
                                 <img src="${item.banner || item.poster || ''}" class="sp-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
                                 <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.25) 50%, transparent 100%);"></div>
                                 <!-- Hover glass overlay -->
-                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(59,130,246,0.07); backdrop-filter:blur(2px);"></div>
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400" style="background:rgba(255,255,255,0.04); backdrop-filter:blur(2px);"></div>
                                 <div class="sp-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                                    <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${cat.accent},var(--accent2)); box-shadow:0 0 30px rgba(59,130,246,0.5);">
+                                    <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${cat.accent},var(--accent2)); box-shadow:0 0 30px rgba(255,255,255,0.25);">
                                         <i class="fas fa-play text-white ml-1 text-lg"></i>
                                     </div>
                                 </div>
@@ -880,10 +850,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0 ml-4">
-                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);" onclick="scrollCarousel('${cat.id}', -1)">
+                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);" onclick="scrollCarousel('${cat.id}', -1)">
                             <i class="fas fa-chevron-left" style="font-size:10px; color:var(--accent)"></i>
                         </button>
-                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.15);" onclick="scrollCarousel('${cat.id}', 1)">
+                        <button class="arrow-btn w-8 h-8 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);" onclick="scrollCarousel('${cat.id}', 1)">
                             <i class="fas fa-chevron-right" style="font-size:10px; color:var(--accent)"></i>
                         </button>
                     </div>
@@ -913,9 +883,9 @@
                     <div class="relative overflow-hidden rounded-xl md:rounded-2xl" style="aspect-ratio:16/9; border:1px solid rgba(255,255,255,0.06); box-shadow:0 6px 24px rgba(0,0,0,0.5);">
                         <img src="${banner}" class="land-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);"></div>
-                        <div class="land-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(59,130,246,0.06);"></div>
+                        <div class="land-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.04);"></div>
                         <div class="land-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${accent},var(--accent2)); box-shadow:0 0 24px rgba(59,130,246,0.5);">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${accent},var(--accent2)); box-shadow:0 0 24px rgba(255,255,255,0.25);">
                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                             </div>
                         </div>
@@ -946,7 +916,7 @@
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
                 <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-blue-400/40 uppercase">Cargando canales...</p>
+                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Cargando canales...</p>
             </div>`;
             try {
                 const res = await fetch(`/api/tv?lang=${currentLang}`);
@@ -962,12 +932,12 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
                             ${data.map((ch, i) => `
                                 <div class="poster-card cursor-pointer group" data-idx="${i}">
-                                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(59,130,246,0.1); box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+                                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 24px rgba(0,0,0,0.6);">
                                         <img src="${ch.poster || ''}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
                                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);"></div>
-                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(59,130,246,0.08);"></div>
+                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05);"></div>
                                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                                            <div class="w-12 h-12 rounded-full flex items-center justify-center glow-orange" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                                            <div class="w-12 h-12 rounded-full flex items-center justify-center glow-orange" style="background:#ffffff; color:#0c0c0c;">
                                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                                             </div>
                                         </div>
@@ -1021,7 +991,7 @@
                 empty.classList.add('hidden');
                 list.innerHTML = history.map(q => `
                     <li class="history-item flex items-center gap-3 px-4 py-2.5 cursor-pointer transition" onclick="doSearch('${q.replace(/'/g,"\\'")}')">
-                        <i class="fas fa-history text-blue-400/40" style="font-size:9px"></i>
+                        <i class="fas fa-history text-gray-600" style="font-size:9px"></i>
                         <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wide flex-1">${q}</span>
                         <i class="fas fa-arrow-up-right text-gray-700" style="font-size:8px; transform:rotate(0deg)"></i>
                     </li>`).join('');
@@ -1057,7 +1027,7 @@
         async function fetchLiveResults(query) {
             _liveList.innerHTML = `<li class="flex items-center justify-center py-6 gap-3">
                 <div class="w-4 h-4 rounded-full animate-spin" style="border:2px solid var(--accent); border-top-color:transparent;"></div>
-                <span class="text-[8px] font-black tracking-[3px] text-blue-400/40 uppercase">Buscando...</span>
+                <span class="text-[8px] font-black tracking-[3px] text-gray-600 uppercase">Buscando...</span>
             </li>`;
             _liveEmpty.classList.add('hidden');
             _liveCount.textContent = 'BUSCANDO...';
@@ -1083,18 +1053,18 @@
                     <li class="live-result-item flex items-center gap-3 px-4 py-2.5 cursor-pointer"
                         style="border-bottom:1px solid rgba(255,255,255,0.03);"
                         onclick="hideLiveDropdown(); openItem(${item.id}, '${item._type}');">
-                        <div class="flex-shrink-0 rounded-lg overflow-hidden" style="width:38px; height:57px; background:#0d1117; border:1px solid rgba(59,130,246,0.1);">
+                        <div class="flex-shrink-0 rounded-lg overflow-hidden" style="width:38px; height:57px; background:#0d1117; border:1px solid rgba(255,255,255,0.06);">
                             <img src="${item.poster || ''}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.opacity='0'">
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="live-item-title text-xs font-black uppercase italic tracking-tight truncate transition-colors duration-150">${item.title}</p>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style="background:${item._type === 'movie' ? 'rgba(59,130,246,0.8)' : 'rgba(139,92,246,0.8)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
+                                <span class="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style="background:${item._type === 'movie' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
                                 ${item.year ? `<span class="text-[9px] text-gray-500 font-bold">${item.year}</span>` : ''}
                                 ${item.rating ? `<span class="text-[9px] text-yellow-400 font-black">⭐ ${Number(item.rating).toFixed(1)}</span>` : ''}
                             </div>
                         </div>
-                        <i class="fas fa-chevron-right text-[9px] text-blue-400/25 flex-shrink-0"></i>
+                        <i class="fas fa-chevron-right text-[9px] text-gray-700 flex-shrink-0"></i>
                     </li>
                 `).join('');
             } catch (err) {
@@ -1136,7 +1106,7 @@
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
                 <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
-                <p class="text-[9px] font-black tracking-[4px] text-blue-400/40 uppercase">Buscando...</p>
+                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Buscando...</p>
             </div>`;
             try {
                 const [moviesRes, seriesRes] = await Promise.all([
@@ -1174,14 +1144,14 @@
                                     <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(255,255,255,0.05); box-shadow:0 6px 20px rgba(0,0,0,0.6);">
                                         <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
                                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 55%);"></div>
-                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(59,130,246,0.08);"></div>
+                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05);"></div>
                                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#ffffff; color:#0c0c0c;">
                                                 <i class="fas fa-play text-white ml-0.5 text-xs"></i>
                                             </div>
                                         </div>
                                         <div class="absolute top-2 left-2">
-                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? '' : ''}" style="background:${item._type === 'movie' ? 'rgba(59,130,246,0.85)' : 'rgba(139,92,246,0.85)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
+                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? '' : ''}" style="background:${item._type === 'movie' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
                                         </div>
                                         <div class="poster-meta absolute bottom-0 left-0 right-0 p-2 opacity-0 transition-all duration-400" style="transform:translateY(4px);">
                                             <h4 class="font-black text-[8px] uppercase italic tracking-tight line-clamp-2 mb-1">${item.title}</h4>
@@ -1387,12 +1357,12 @@
                     pillsRow.querySelectorAll('.season-pill').forEach(p => {
                         p.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#9ca3af; border-radius:9999px;';
                     });
-                    pill.style.cssText = 'background:rgba(59,130,246,0.18); color:var(--accent); border:1px solid rgba(59,130,246,0.45); box-shadow:0 0 10px rgba(59,130,246,0.12); border-radius:9999px;';
+                    pill.style.cssText = 'background:rgba(255,255,255,0.08); color:var(--accent); border:1px solid rgba(255,255,255,0.2); box-shadow:0 0 10px rgba(255,255,255,0.06); border-radius:9999px;';
                     loadEpisodes(id, parseInt(pill.dataset.season), parseInt(pill.dataset.episodes));
                 };
             });
             const firstPill = pillsRow.querySelector('.season-pill');
-            if (firstPill) firstPill.style.cssText = 'background:rgba(59,130,246,0.18); color:var(--accent); border:1px solid rgba(59,130,246,0.45); box-shadow:0 0 10px rgba(59,130,246,0.12); border-radius:9999px;';
+            if (firstPill) firstPill.style.cssText = 'background:rgba(255,255,255,0.08); color:var(--accent); border:1px solid rgba(255,255,255,0.2); box-shadow:0 0 10px rgba(255,255,255,0.06); border-radius:9999px;';
             const first = validSeasons[0] || data.seasons[0];
             loadEpisodes(id, first.number, first.episodes);
         }
@@ -1404,16 +1374,16 @@
             for (let i = 1; i <= episodeCount; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'episode-card group relative flex flex-col items-center justify-center p-0 rounded-xl transition-all duration-200 overflow-hidden';
-                btn.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.1); aspect-ratio:1; min-height:44px;';
+                btn.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); aspect-ratio:1; min-height:44px;';
                 btn.innerHTML = `
                     <span class="text-[7px] font-black tracking-widest uppercase block text-gray-600 group-hover:text-orange-400 transition-colors">EP</span>
                     <span class="font-black text-sm leading-none text-white">${i}</span>`;
                 btn.onclick = () => {
                     document.querySelectorAll('.episode-card').forEach(b => {
-                        b.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.1); aspect-ratio:1; min-height:44px; border-radius:.75rem;';
+                        b.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); aspect-ratio:1; min-height:44px; border-radius:.75rem;';
                         b.classList.remove('active');
                     });
-                    btn.style.cssText = 'background:rgba(59,130,246,0.22); border:1px solid var(--accent); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(59,130,246,0.2);';
+                    btn.style.cssText = 'background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(255,255,255,0.08);';
                     btn.classList.add('active');
                     currentEpisode = i;
                     loadEpisodeEmbed(seriesId, seasonNum, i);
@@ -1422,7 +1392,7 @@
             }
             const firstBtn = list.querySelector('.episode-card');
             if (firstBtn) {
-                firstBtn.style.cssText = 'background:rgba(59,130,246,0.22); border:1px solid var(--accent); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(59,130,246,0.2);';
+                firstBtn.style.cssText = 'background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(255,255,255,0.08);';
                 firstBtn.classList.add('active');
             }
             currentEpisode = 1;
