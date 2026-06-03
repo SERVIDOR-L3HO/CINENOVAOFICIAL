@@ -1,7 +1,9 @@
-const CACHE_NAME = 'cinenova-v2';
+const CACHE_NAME = 'cinenova-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
+  '/assets/icon-192.png',
+  '/assets/icon-512.png',
   '/assets/cinenova_icon.png',
   '/assets/cinenova_full_logo.png'
 ];
