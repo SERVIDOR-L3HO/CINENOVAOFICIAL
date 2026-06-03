@@ -190,6 +190,13 @@
         .top10-card .poster-play { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1); }
 
         @media (max-width: 768px) { .hero-title { font-size: 3rem !important; } }
+
+        /* --- FAVORITES HEART BUTTON --- */
+        .fav-btn { position:absolute; top:6px; left:6px; z-index:20; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.15); opacity:0; transition:all 0.2s ease; cursor:pointer; }
+        .group:hover .fav-btn, .fav-btn.is-fav { opacity:1; }
+        .fav-btn.is-fav { background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.5); }
+        .fav-btn:hover { transform:scale(1.2); }
+        .fav-count { position:absolute; top:-5px; right:-5px; background:#ef4444; color:#fff; font-size:7px; font-weight:900; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height:1; }
     </style>
 </head>
 <body class="antialiased">
@@ -200,7 +207,8 @@
             <img src="/assets/cinenova_full_logo.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer" onclick="window.location.reload()">
             <div class="hidden lg:flex gap-7 text-[10px] font-black tracking-[3px] uppercase italic">
                 <a href="#" id="nav-movies" class="text-accent transition hover:text-white" onclick="loadCategory('movies')">CINE</a>
-                <a href="#" id="nav-series" class="text-gray-400 transition hover:text-accent" onclick="loadCategory('series')">SERIES</a>
+                <a href="#" id="nav-series" class="text-gray-400 transition hover:text-white" onclick="loadCategory('series')">SERIES</a>
+                <a href="#" id="nav-favorites" class="text-gray-400 transition hover:text-white relative" onclick="loadCategory('favorites')">FAVORITOS<span id="nav-fav-badge" class="fav-count hidden"></span></a>
             </div>
         </div>
         <div class="flex items-center gap-4 md:gap-5">
@@ -246,6 +254,10 @@
         </button>
         <button onclick="loadCategory('series')" id="mob-series" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
             <i class="fas fa-tv text-base"></i> SERIES
+        </button>
+        <button onclick="loadCategory('favorites')" id="mob-favorites" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1 relative">
+            <i class="fas fa-heart text-base"></i> MI LISTA
+            <span id="mob-fav-badge" class="fav-count hidden"></span>
         </button>
     </div>
 
@@ -504,9 +516,9 @@
         }
 
         function updateNavHighlight(category) {
-            const navMap = { movies: 'nav-movies', series: 'nav-series', tv: 'nav-tv' };
-            const mobMap = { movies: 'mob-movies', series: 'mob-series', tv: 'mob-tv' };
-            ['movies','series','tv'].forEach(c => {
+            const navMap = { movies: 'nav-movies', series: 'nav-series', tv: 'nav-tv', favorites: 'nav-favorites' };
+            const mobMap = { movies: 'mob-movies', series: 'mob-series', tv: 'mob-tv', favorites: 'mob-favorites' };
+            ['movies','series','tv','favorites'].forEach(c => {
                 const nav = document.getElementById(navMap[c]);
                 const mob = document.getElementById(mobMap[c]);
                 if (nav) { nav.style.color = c === category ? 'var(--accent)' : '#9ca3af'; }
@@ -522,6 +534,9 @@
             if (cat === 'tv') {
                 setHeroVisible(false);
                 loadTvChannels();
+            } else if (cat === 'favorites') {
+                setHeroVisible(false);
+                renderFavoritesView();
             } else {
                 setHeroVisible(true);
                 loadAndRenderCategories(cat);
@@ -650,29 +665,29 @@
         }
 
         function renderFeaturedCard(item, index, accent, catId) {
+            window._itemMap[item.id] = item;
             const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
             const rating = item.rating ? item.rating.toFixed(1) : '—';
             const rankNum = index + 1;
+            const fav = isFavorite(item.id);
             return `
                 <div class="poster-card flex-shrink-0 w-36 md:w-52 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
                     <div class="relative overflow-hidden rounded-xl md:rounded-2xl" style="aspect-ratio:2/3; box-shadow:0 8px 30px rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.06);">
                         <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
-                        <!-- Gradient overlay (always subtle) -->
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);"></div>
-                        <!-- Hover overlay -->
                         <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05); backdrop-filter:blur(1px);"></div>
-                        <!-- Play button -->
                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.75);">
-                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center glow-orange" style="background:#ffffff; color:#0c0c0c;">
-                                <i class="fas fa-play text-white ml-1 text-base"></i>
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center" style="background:#ffffff; color:#0c0c0c;">
+                                <i class="fas fa-play ml-1 text-base" style="color:#0c0c0c;"></i>
                             </div>
                         </div>
-                        <!-- Top right rating -->
+                        <button class="fav-btn ${fav ? 'is-fav' : ''}" data-id="${item.id}" onclick="event.stopPropagation(); toggleFavoriteById(event, ${item.id})">
+                            <i class="${fav ? 'fas' : 'far'} fa-heart" style="font-size:9px; ${fav ? 'color:#ef4444;' : 'color:rgba(255,255,255,0.7);'}"></i>
+                        </button>
                         <div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-1 rounded-full" style="background:rgba(0,0,0,0.72); border:1px solid rgba(250,204,21,0.2);">
                             <span class="text-yellow-400" style="font-size:8px;">★</span>
                             <span class="font-black text-[9px] text-yellow-400">${rating}</span>
                         </div>
-                        <!-- Meta on hover -->
                         <div class="poster-meta absolute bottom-0 left-0 right-0 p-3 opacity-0 transition-all duration-400" style="transform:translateY(6px);">
                             <h4 class="font-black text-[10px] md:text-xs uppercase italic tracking-tight leading-tight line-clamp-2 mb-1.5">${item.title}</h4>
                             <div class="flex items-center justify-between">
@@ -735,8 +750,10 @@
         }
 
         function renderPosterCard(item, index, accent, catId) {
+            window._itemMap[item.id] = item;
             const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
             const rating = item.rating ? item.rating.toFixed(1) : '—';
+            const fav = isFavorite(item.id);
             return `
                 <div class="poster-card flex-shrink-0 w-28 md:w-40 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
                     <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; box-shadow:0 6px 24px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.05);">
@@ -745,9 +762,12 @@
                         <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.04);"></div>
                         <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
                             <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:#ffffff; color:#0c0c0c; box-shadow:0 0 20px rgba(255,255,255,0.25);">
-                                <i class="fas fa-play text-white ml-0.5 text-sm"></i>
+                                <i class="fas fa-play ml-0.5 text-sm" style="color:#0c0c0c;"></i>
                             </div>
                         </div>
+                        <button class="fav-btn ${fav ? 'is-fav' : ''}" data-id="${item.id}" onclick="event.stopPropagation(); toggleFavoriteById(event, ${item.id})">
+                            <i class="${fav ? 'fas' : 'far'} fa-heart" style="font-size:9px; ${fav ? 'color:#ef4444;' : 'color:rgba(255,255,255,0.7);'}"></i>
+                        </button>
                         <div class="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.7);">
                             <span class="text-yellow-400" style="font-size:7px;">★</span>
                             <span class="font-black text-[8px] text-yellow-400">${rating}</span>
@@ -876,8 +896,10 @@
         }
 
         function renderLandscapeCard(item, index, accent, catId) {
+            window._itemMap[item.id] = item;
             const banner = item.banner || item.poster || 'https://placehold.co/480x270/111/222?text=N/A';
             const rating = item.rating ? item.rating.toFixed(1) : '—';
+            const fav = isFavorite(item.id);
             return `
                 <div class="land-card flex-shrink-0 w-52 md:w-72 cursor-pointer group" data-idx="${index}" data-cat="${catId}">
                     <div class="relative overflow-hidden rounded-xl md:rounded-2xl" style="aspect-ratio:16/9; border:1px solid rgba(255,255,255,0.06); box-shadow:0 6px 24px rgba(0,0,0,0.5);">
@@ -885,7 +907,7 @@
                         <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);"></div>
                         <div class="land-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.04);"></div>
                         <div class="land-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,${accent},var(--accent2)); box-shadow:0 0 24px rgba(255,255,255,0.25);">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style="background:rgba(255,255,255,0.15); box-shadow:0 0 24px rgba(255,255,255,0.2);">
                                 <i class="fas fa-play text-white ml-0.5 text-sm"></i>
                             </div>
                         </div>
@@ -896,6 +918,9 @@
                             <span class="text-yellow-400" style="font-size:7px;">★</span>
                             <span class="font-black text-[8px] text-yellow-400">${rating}</span>
                         </div>
+                        <button class="fav-btn ${fav ? 'is-fav' : ''}" data-id="${item.id}" style="top:auto; bottom:36px; left:6px;" onclick="event.stopPropagation(); toggleFavoriteById(event, ${item.id})">
+                            <i class="${fav ? 'fas' : 'far'} fa-heart" style="font-size:9px; ${fav ? 'color:#ef4444;' : 'color:rgba(255,255,255,0.7);'}"></i>
+                        </button>
                         <div class="absolute bottom-0 left-0 right-0 p-2.5 md:p-3">
                             <h4 class="font-black text-[9px] md:text-[11px] uppercase italic tracking-tight leading-tight line-clamp-2 mb-1">${item.title}</h4>
                             <div class="flex items-center gap-2">
@@ -1470,8 +1495,104 @@
             }
         }
 
+        /* ===================== FAVORITES ===================== */
+        window._itemMap = {};
+
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem('cn_favorites') || '[]'); } catch(e) { return []; }
+        }
+        function saveFavorites(favs) { localStorage.setItem('cn_favorites', JSON.stringify(favs)); }
+        function isFavorite(id) { return getFavorites().some(f => f.id === id); }
+
+        function toggleFavoriteById(e, id) {
+            e.stopPropagation();
+            const item = window._itemMap[id];
+            if (!item) return;
+            let favs = getFavorites();
+            const idx = favs.findIndex(f => f.id === item.id);
+            if (idx >= 0) { favs.splice(idx, 1); } else { favs.push(item); }
+            saveFavorites(favs);
+            const nowFav = idx < 0;
+            document.querySelectorAll(`.fav-btn[data-id="${id}"]`).forEach(b => {
+                b.classList.toggle('is-fav', nowFav);
+                const icon = b.querySelector('i');
+                icon.className = nowFav ? 'fas fa-heart' : 'far fa-heart';
+                icon.style.fontSize = '9px';
+                icon.style.color = nowFav ? '#ef4444' : 'rgba(255,255,255,0.7)';
+            });
+            updateFavCount();
+        }
+
+        function updateFavCount() {
+            const count = getFavorites().length;
+            ['nav-fav-badge', 'mob-fav-badge'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (count > 0) { el.textContent = count > 9 ? '9+' : count; el.classList.remove('hidden'); }
+                else { el.classList.add('hidden'); }
+            });
+        }
+
+        function renderFavCard(item) {
+            const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
+            const rating = item.rating ? item.rating.toFixed(1) : '—';
+            return `
+                <div class="fav-grid-card poster-card cursor-pointer group">
+                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; box-shadow:0 6px 24px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.05);">
+                        <img src="${poster}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                        <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.05) 55%,transparent 100%);"></div>
+                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.04);"></div>
+                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#ffffff;">
+                                <i class="fas fa-play ml-0.5" style="font-size:11px; color:#0c0c0c;"></i>
+                            </div>
+                        </div>
+                        <button class="fav-btn is-fav" data-id="${item.id}" onclick="event.stopPropagation(); toggleFavoriteById(event, ${item.id})">
+                            <i class="fas fa-heart" style="font-size:9px; color:#ef4444;"></i>
+                        </button>
+                        <div class="absolute top-2 right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.7);">
+                            <span class="text-yellow-400" style="font-size:7px;">★</span>
+                            <span class="font-black text-[8px] text-yellow-400">${rating}</span>
+                        </div>
+                    </div>
+                    <div class="mt-2 px-0.5">
+                        <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                        <span class="text-[7px] font-black" style="color:var(--accent2)">${item.year || ''}</span>
+                    </div>
+                </div>`;
+        }
+
+        function renderFavoritesView() {
+            const area = document.getElementById('content-area');
+            const favs = getFavorites();
+            if (favs.length === 0) {
+                area.innerHTML = `<div class="flex flex-col items-center justify-center py-32 gap-5">
+                    <i class="far fa-heart" style="font-size:3.5rem; color:#374151;"></i>
+                    <p class="text-xs font-black tracking-[4px] text-gray-600 uppercase">Tu lista está vacía</p>
+                    <p class="text-xs text-gray-700 font-medium">Toca ♥ en cualquier título para guardarlo aquí</p>
+                </div>`;
+                return;
+            }
+            favs.forEach(item => { window._itemMap[item.id] = item; });
+            area.innerHTML = `
+                <div class="px-4 md:px-12 pt-8 pb-10">
+                    <div class="cat-bar pl-4 py-3 mb-8">
+                        <span class="text-[8px] font-black tracking-[4px] uppercase" style="color:var(--accent2)">♥ MI LISTA</span>
+                        <h2 class="text-3xl md:text-4xl font-black italic uppercase tracking-tighter leading-none mt-1">FAVORITOS</h2>
+                        <span class="text-[9px] text-gray-600 font-bold mt-0.5 block">${favs.length} título${favs.length !== 1 ? 's' : ''} guardado${favs.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3 md:gap-4">
+                        ${favs.map(item => renderFavCard(item)).join('')}
+                    </div>
+                </div>`;
+            area.querySelectorAll('.fav-grid-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(favs[i]);
+            });
+        }
+
         /* ===================== INIT ===================== */
         loadCategory('movies');
+        updateFavCount();
         setLanguage('es-MX');
 
         /* ===================== PWA SERVICE WORKER ===================== */
