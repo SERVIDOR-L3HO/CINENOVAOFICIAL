@@ -526,11 +526,6 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            const acc = 'px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all';
-            document.getElementById('lang-es').className = acc;
-            document.getElementById('lang-en').className = acc;
-            document.getElementById('lang-es').style.cssText = lang === 'es-MX' ? 'background:var(--accent);color:#fff;' : 'color:#9ca3af;';
-            document.getElementById('lang-en').style.cssText = lang === 'en-US' ? 'background:var(--accent);color:#fff;' : 'color:#9ca3af;';
             loadCategory(currentCategory);
         }
 

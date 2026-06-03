@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinenova-v1';
+const CACHE_NAME = 'cinenova-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
