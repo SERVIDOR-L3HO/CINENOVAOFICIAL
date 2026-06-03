@@ -18,6 +18,43 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }));
 
+// Proxy de stream (oculta la fuente real al navegador)
+app.get('/api/stream', async (req, res) => {
+  try {
+    const { get } = req.query;
+    if (!get) return res.status(400).send('Parámetro requerido');
+
+    const upstreamUrl = `https://ultragol-api-3-six.vercel.app/ultragol-l3ho?get=${encodeURIComponent(get)}`;
+
+    const upstream = await axios.get(upstreamUrl, {
+      timeout: 15000,
+      responseType: 'stream',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://ultragol-api-3-six.vercel.app/',
+        'Origin': 'https://ultragol-api-3-six.vercel.app'
+      }
+    });
+
+    const contentType = upstream.headers['content-type'] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (upstream.headers['content-length']) {
+      res.setHeader('Content-Length', upstream.headers['content-length']);
+    }
+
+    upstream.data.pipe(res);
+
+    upstream.data.on('error', (err) => {
+      console.error('Stream error:', err.message);
+      if (!res.headersSent) res.status(500).send('Error en el stream');
+    });
+  } catch (err) {
+    console.error('Error in /api/stream:', err.message);
+    if (!res.headersSent) res.status(500).send('Error de conexión con la fuente');
+  }
+});
+
 // Proxy para el reproductor SuperVideo
 app.get('/api/player', async (req, res) => {
   try {
