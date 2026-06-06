@@ -1375,7 +1375,13 @@
             const loader = document.getElementById('player-loader');
             frame.src = 'about:blank';
             loader.classList.remove('hidden');
-            setTimeout(() => { frame.src = url; }, 300);
+
+            // Proveedores que inyectan anuncios — se cargan a través del proxy anti-ads
+            const adProviders = ['unlimplay.com', 'supervideo.tv', 'vaplayer.ru'];
+            const needsProxy = adProviders.some(p => url.includes(p));
+            const finalUrl = needsProxy ? `/api/proxy/embed?url=${encodeURIComponent(url)}` : url;
+
+            setTimeout(() => { frame.src = finalUrl; }, 300);
         }
 
         function renderServerButtons() {

@@ -55,6 +55,146 @@ app.get('/api/stream', async (req, res) => {
   }
 });
 
+// Proxy anti-anuncios para embeds de Castellano
+app.get('/api/proxy/embed', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('URL requerida');
+
+    const decodedUrl = decodeURIComponent(url);
+    const parsedUrl = new URL(decodedUrl);
+    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;
+
+    const upstream = await axios.get(decodedUrl, {
+      timeout: 20000,
+      responseType: 'text',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': baseUrl,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
+      }
+    });
+
+    let html = upstream.data;
+
+    // --- Eliminar scripts de redes publicitarias ---
+    const adDomains = [
+      'googlesyndication', 'doubleclick', 'exoclick', 'trafficjunky',
+      'adnxs', 'adskeeper', 'popads', 'popcash', 'propellerads',
+      'hilltopads', 'adcash', 'revcontent', 'taboola', 'outbrain',
+      'juicyads', 'zedo', 'undertone', 'clicktripz', 'adsterra',
+      'mgid', 'bidvertiser', 'yllix', 'adspyglass', 'ero-advertising',
+      'coinzilla', 'a-ads', 'ads.js', 'adserver', 'ad-network',
+      'sapphirebet', 'betsson', 'betway', 'apuesta', 'casino'
+    ];
+    adDomains.forEach(domain => {
+      html = html.replace(new RegExp(`<script[^>]*src=["'][^"']*${domain}[^"']*["'][^>]*>(?:.*?</script>)?`, 'gis'), '<!-- ad removed -->');
+    });
+
+    // Eliminar scripts inline sospechosos (popunders, redirects)
+    html = html.replace(/<script[^>]*>([\s\S]*?)(window\.open|pop(?:under|up)|\.redirect|location\.href\s*=(?!.*player))([\s\S]*?)<\/script>/gi, '<!-- ad script removed -->');
+
+    // Reescribir URLs relativas a absolutas para que los recursos carguen correctamente
+    html = html.replace(/(src|href|action)=["'](?!https?:\/\/|\/\/|data:|javascript:|blob:|#)([^"']+)["']/gi,
+      (match, attr, path) => {
+        const abs = path.startsWith('/') ? baseUrl + path : baseUrl + '/' + path;
+        return `${attr}="${abs}"`;
+      }
+    );
+    // Corregir URLs protocol-relative (//)
+    html = html.replace(/(src|href)=["']\/\/([^"']+)["']/gi,
+      (match, attr, rest) => `${attr}="${parsedUrl.protocol}//${rest}"`);
+
+    // --- Inyectar bloqueador de anuncios ---
+    const adBlockCode = `
+<style>
+  /* === CINENOVA Ad Blocker === */
+  [class*="ad-"],[class*="-ad "],[id*="ad-"],[id*="-ad"],
+  [class*="advert"],[id*="advert"],
+  .preroll,.midroll,.postroll,.vast-container,
+  .ima-ad-container,.video-ads,.ad-overlay,.overlay-ad,
+  [id*="VAST"],[class*="VAST"],
+  iframe[src*="googlesyndication"],iframe[src*="doubleclick"],
+  iframe[src*="exoclick"],iframe[src*="trafficjunky"],
+  iframe[src*="adnxs"],iframe[src*="popads"],
+  iframe[src*="sapphirebet"],iframe[src*="casino"],
+  .advertisement,.banner-ad,.sponsor-banner,
+  div[id*="banner"],div[class*="banner-container"],
+  .popup-overlay,.modal-ad,[class*="popup-ad"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    opacity: 0 !important;
+  }
+  video { display: block !important; opacity: 1 !important; }
+</style>
+<script>
+(function(){
+  // Bloquear ventanas emergentes
+  var _open = window.open;
+  window.open = function(){ return { focus: function(){}, blur: function(){} }; };
+
+  // Bloquear clicks que abren nuevas pestañas (anuncios)
+  document.addEventListener('click', function(e){
+    var link = e.target.closest('a[target]');
+    if(link && link.href && !link.href.startsWith(location.origin) &&
+       !e.target.closest('video, .jw-video, .plyr, button, .skip')){
+      e.preventDefault(); e.stopImmediatePropagation();
+    }
+  }, true);
+
+  // Saltar anuncios automáticamente
+  function skipAds(){
+    var skips = document.querySelectorAll('[class*="skip"],[id*="skip"],.ima-skip-button,.ytp-ad-skip-button');
+    skips.forEach(function(el){ try{ el.click(); }catch(e){} });
+
+    // Eliminar overlays de anuncios que no son el video
+    var adEls = document.querySelectorAll(
+      '.preroll,.midroll,.ad-overlay,.overlay-ad,.ima-ad-container,.video-ads,[class*="ad-container"],[id*="ad-container"]'
+    );
+    adEls.forEach(function(el){
+      if(!el.querySelector('video')) { el.style.display='none'; el.style.pointerEvents='none'; }
+    });
+
+    // Remover iframes de publicidad
+    document.querySelectorAll('iframe').forEach(function(f){
+      var src = f.src || f.getAttribute('src') || '';
+      var adKeywords = ['googlesyndication','doubleclick','exoclick','trafficjunky',
+        'popads','adnxs','sapphirebet','casino','apuesta','bet','ad.'];
+      if(adKeywords.some(function(k){ return src.includes(k); })){
+        f.remove();
+      }
+    });
+  }
+
+  setInterval(skipAds, 400);
+  document.addEventListener('DOMContentLoaded', skipAds);
+  window.addEventListener('load', skipAds);
+})();
+</script>`;
+
+    if (html.includes('</head>')) {
+      html = html.replace('</head>', adBlockCode + '\n</head>');
+    } else if (html.includes('<body')) {
+      html = html.replace('<body', adBlockCode + '\n<body');
+    } else {
+      html = adBlockCode + html;
+    }
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('X-Frame-Options', 'ALLOWALL');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.removeHeader('X-Frame-Options');
+    res.send(html);
+  } catch (err) {
+    console.error('Proxy embed error:', err.message);
+    res.status(500).send(`<html><body style="background:#111;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><p>⚠️ No se pudo cargar el servidor. Intenta con otro.</p></body></html>`);
+  }
+});
+
 // Proxy para el reproductor SuperVideo
 app.get('/api/player', async (req, res) => {
   try {
