@@ -8,6 +8,7 @@ router.get('/more', seriesController.getMoreByCategory);
 router.get('/categories', seriesController.getSeriesCategories);
 router.get('/:id/details', seriesController.getSeriesDetails);
 router.get('/:id/episode', seriesController.getEpisodeEmbed);
+router.get('/:id/season/:season', seriesController.getSeasonEpisodes);
 router.get('/:id', seriesController.getSeriesById);
 
 module.exports = router;

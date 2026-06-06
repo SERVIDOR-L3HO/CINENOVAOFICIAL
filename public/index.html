@@ -455,11 +455,16 @@
         </div>
 
         <!-- Episodes row (series only) -->
-        <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
+        <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-2" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
             <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()"
                 class="flex items-center gap-2 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
                 style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--accent);">
                 <i class="fas fa-th-list" style="font-size:9px"></i> EPISODIOS
+            </button>
+            <button onclick="nextEpisode()"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#9ca3af;">
+                <i class="fas fa-forward" style="font-size:9px"></i> SIGUIENTE
             </button>
         </div>
 
@@ -491,10 +496,10 @@
         </div>
 
         <!-- Episodes Drawer -->
-        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col max-h-64" style="background:#0a0a0a; border-top:1px solid rgba(255,255,255,0.08);">
-            <div class="px-4 md:px-6 pt-3 pb-2 flex items-center justify-between gap-3" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col" style="background:#0a0a0a; border-top:1px solid rgba(255,255,255,0.08); max-height:220px;">
+            <div class="px-4 md:px-6 pt-2.5 pb-2 flex items-center justify-between gap-3 flex-shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.04);">
                 <div class="flex items-center gap-2">
-                    <div class="w-1 h-4 rounded-full flex-shrink-0" style="background:var(--accent);"></div>
+                    <div class="w-1 h-3.5 rounded-full flex-shrink-0" style="background:var(--accent);"></div>
                     <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-400">TEMPORADA</span>
                 </div>
                 <div class="flex items-center gap-2 flex-1 overflow-x-auto mx-3" style="scrollbar-width:none;" id="season-pills-row"></div>
@@ -503,7 +508,7 @@
                 </button>
             </div>
             <select id="season-select" class="hidden"></select>
-            <div id="episode-list" class="overflow-y-auto p-3 md:p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2"></div>
+            <div id="episode-list" class="flex gap-3 overflow-x-auto px-4 py-3 flex-shrink-0" style="scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;"></div>
         </div>
     </div>
 
@@ -512,6 +517,7 @@
         let currentItem = null;
         let currentLang = 'es-MX';
         let currentAudioType = 'castellano';
+        let currentSeasonEpisodes = [];
         let currentEmbeds = null;
         let currentSeriesId = null;
         let currentSeason = 1;
@@ -1446,36 +1452,73 @@
             loadEpisodes(id, first.number, first.episodes);
         }
 
-        function loadEpisodes(seriesId, seasonNum, episodeCount) {
+        async function loadEpisodes(seriesId, seasonNum, episodeCount) {
             currentSeason = seasonNum;
             const list = document.getElementById('episode-list');
-            list.innerHTML = '';
-            for (let i = 1; i <= episodeCount; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'episode-card group relative flex flex-col items-center justify-center p-0 rounded-xl transition-all duration-200 overflow-hidden';
-                btn.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); aspect-ratio:1; min-height:44px;';
-                btn.innerHTML = `
-                    <span class="text-[7px] font-black tracking-widest uppercase block text-gray-600 group-hover:text-orange-400 transition-colors">EP</span>
-                    <span class="font-black text-sm leading-none text-white">${i}</span>`;
-                btn.onclick = () => {
-                    document.querySelectorAll('.episode-card').forEach(b => {
-                        b.style.cssText = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); aspect-ratio:1; min-height:44px; border-radius:.75rem;';
-                        b.classList.remove('active');
-                    });
-                    btn.style.cssText = 'background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(255,255,255,0.08);';
-                    btn.classList.add('active');
-                    currentEpisode = i;
-                    loadEpisodeEmbed(seriesId, seasonNum, i);
-                };
-                list.appendChild(btn);
+            list.innerHTML = `<div class="flex items-center gap-2 py-4 px-2">
+                <div class="w-5 h-5 rounded-full animate-spin flex-shrink-0" style="border:2px solid var(--accent); border-top-color:transparent;"></div>
+                <span class="text-[9px] text-gray-500 font-bold tracking-widest uppercase">Cargando episodios...</span>
+            </div>`;
+
+            let episodes = [];
+            try {
+                const res = await fetch(`/api/series/${seriesId}/season/${seasonNum}?lang=${currentLang}`);
+                episodes = await res.json();
+                if (!Array.isArray(episodes) || episodes.length === 0) throw new Error('empty');
+            } catch(e) {
+                episodes = Array.from({length: episodeCount}, (_, i) => ({
+                    number: i + 1, name: `Episodio ${i + 1}`, thumbnail: null, runtime: null
+                }));
             }
-            const firstBtn = list.querySelector('.episode-card');
-            if (firstBtn) {
-                firstBtn.style.cssText = 'background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); aspect-ratio:1; min-height:44px; border-radius:.75rem; box-shadow:0 0 12px rgba(255,255,255,0.08);';
-                firstBtn.classList.add('active');
+
+            currentSeasonEpisodes = episodes;
+
+            list.innerHTML = episodes.map(ep => `
+                <div class="ep-card flex-shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all duration-200"
+                     id="ep-card-${ep.number}"
+                     onclick="selectEpisode(${seriesId}, ${seasonNum}, ${ep.number})"
+                     style="width:158px; border:1px solid rgba(255,255,255,0.07); background:#111;">
+                    <div class="relative" style="aspect-ratio:16/9; background:#0d0d0d;">
+                        ${ep.thumbnail
+                            ? `<img src="${ep.thumbnail}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center\\'><i class=\\'fas fa-film\\' style=\\'color:#333; font-size:1.5rem;\\'></i></div>'">`
+                            : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-film" style="color:#333; font-size:1.5rem;"></i></div>`}
+                        <div class="absolute inset-0" style="background:linear-gradient(to bottom, transparent 45%, rgba(0,0,0,0.55))"></div>
+                        <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[8px] font-black" style="background:var(--accent); color:#000; letter-spacing:.04em;">EP ${ep.number}</span>
+                        ${ep.runtime ? `<span class="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(0,0,0,0.72); color:#fff; border:1px solid rgba(255,255,255,0.1);">${ep.runtime}m</span>` : ''}
+                    </div>
+                    <div class="px-2.5 py-2">
+                        <p class="text-white font-bold truncate" style="font-size:10px; line-height:1.3;">${ep.name || `Episodio ${ep.number}`}</p>
+                    </div>
+                </div>`).join('');
+
+            selectEpisode(seriesId, seasonNum, episodes[0]?.number || 1, true);
+        }
+
+        function selectEpisode(seriesId, seasonNum, episodeNum, autoScroll = false) {
+            currentEpisode = episodeNum;
+            document.querySelectorAll('.ep-card').forEach(card => {
+                card.style.border = '1px solid rgba(255,255,255,0.07)';
+                card.style.boxShadow = 'none';
+                card.style.transform = 'scale(1)';
+            });
+            const active = document.getElementById(`ep-card-${episodeNum}`);
+            if (active) {
+                active.style.border = `1px solid var(--accent)`;
+                active.style.boxShadow = `0 0 14px rgba(56,189,248,0.25)`;
+                if (autoScroll) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
             }
-            currentEpisode = 1;
-            loadEpisodeEmbed(seriesId, seasonNum, 1);
+            loadEpisodeEmbed(seriesId, seasonNum, episodeNum);
+        }
+
+        function nextEpisode() {
+            if (!currentSeasonEpisodes.length) return;
+            const nums = currentSeasonEpisodes.map(e => e.number);
+            const idx = nums.indexOf(currentEpisode);
+            if (idx >= 0 && idx < nums.length - 1) {
+                selectEpisode(currentSeriesId, currentSeason, nums[idx + 1]);
+                const next = document.getElementById(`ep-card-${nums[idx + 1]}`);
+                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         }
 
         async function loadEpisodeEmbed(seriesId, season, episode) {

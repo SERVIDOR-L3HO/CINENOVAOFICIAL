@@ -286,6 +286,25 @@ exports.getMoreByCategory = async (req, res) => {
   }
 };
 
+exports.getSeasonEpisodes = async (req, res) => {
+  try {
+    const { id, season } = req.params;
+    const lang = req.query.lang || 'es-MX';
+    const response = await tmdb.get(`/tv/${id}/season/${season}`, { params: { language: lang } });
+    const episodes = (response.data.episodes || []).map(ep => ({
+      number: ep.episode_number,
+      name: ep.name,
+      overview: ep.overview,
+      runtime: ep.runtime,
+      thumbnail: ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : null,
+      airDate: ep.air_date
+    }));
+    res.json(episodes);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener episodios de la temporada' });
+  }
+};
+
 exports.getEpisodeEmbed = async (req, res) => {
   try {
     const { id } = req.params;
