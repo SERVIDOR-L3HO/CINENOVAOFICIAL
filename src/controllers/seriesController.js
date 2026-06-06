@@ -13,7 +13,7 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
   return {
     latino: [
       {
-        name: 'SUPERVIDEO',
+        name: 'Servidor 1',
         url: useImdb
           ? `https://multiembed.mov/?video_id=${imdbId}&s=${season}&e=${episode}`
           : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`,
@@ -21,10 +21,10 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
       }
     ],
     castellano: [
-      { name: 'UNLIMPLAY', url: `https://unlimplay.com/play/embed/tv/${tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' }
+      { name: 'Servidor 2', url: `https://unlimplay.com/play/embed/tv/${tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' }
     ],
     original: [
-      { name: 'VAPLAYER', url: `https://vaplayer.ru/embed/tv/${imdbId || tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: 'HD' }
+      { name: 'Servidor 3', url: `https://vaplayer.ru/embed/tv/${imdbId || tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: 'HD' }
     ]
   };
 };

@@ -446,8 +446,8 @@
         <!-- Server / Audio Row -->
         <div id="server-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-3 flex-wrap" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
             <div class="flex items-center gap-1.5" id="audio-tabs">
-                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);">🎙 LATINO</button>
-                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🇪🇸 CASTELLANO</button>
+                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);">🇪🇸 CASTELLANO</button>
+                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🎙 LATINO</button>
                 <button onclick="switchAudioType('original')" id="tab-original" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🌐 ORIGINAL</button>
             </div>
             <div class="w-px h-5 hidden md:block" style="background:rgba(255,255,255,0.1);"></div>
@@ -511,7 +511,7 @@
         let currentCategory = 'movies';
         let currentItem = null;
         let currentLang = 'es-MX';
-        let currentAudioType = 'latino';
+        let currentAudioType = 'castellano';
         let currentEmbeds = null;
         let currentSeriesId = null;
         let currentSeason = 1;
@@ -1355,9 +1355,9 @@
                 episodesDrawer.classList.add('hidden');
                 document.getElementById('server-row').classList.remove('hidden');
                 currentEmbeds = item.embeds;
-                currentAudioType = 'latino';
+                currentAudioType = 'castellano';
                 renderServerButtons();
-                playFromServer(currentEmbeds.latino[0].url);
+                playFromServer(currentEmbeds.castellano[0].url);
             }
 
             document.getElementById('video-frame').onload = () =>
@@ -1483,9 +1483,9 @@
                 const res = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await res.json();
                 currentEmbeds = embeds;
-                currentAudioType = 'latino';
+                currentAudioType = 'castellano';
                 renderServerButtons();
-                playFromServer(currentEmbeds.latino[0].url);
+                playFromServer(currentEmbeds.castellano[0].url);
             } catch (err) { console.error('Episode embed error:', err); }
         }
 
