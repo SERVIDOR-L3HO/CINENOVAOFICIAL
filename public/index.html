@@ -443,6 +443,17 @@
             </div>
         </div>
 
+        <!-- Server / Audio Row -->
+        <div id="server-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-3 flex-wrap" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div class="flex items-center gap-1.5" id="audio-tabs">
+                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);">🎙 LATINO</button>
+                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🇪🇸 CASTELLANO</button>
+                <button onclick="switchAudioType('original')" id="tab-original" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🌐 ORIGINAL</button>
+            </div>
+            <div class="w-px h-5 hidden md:block" style="background:rgba(255,255,255,0.1);"></div>
+            <div class="flex items-center gap-1.5 flex-wrap" id="server-buttons"></div>
+        </div>
+
         <!-- Episodes row (series only) -->
         <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
             <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()"
@@ -1331,16 +1342,21 @@
             if (currentCategory === 'tv') {
                 episodesRow.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
+                document.getElementById('server-row').classList.add('hidden');
                 playFromServer(item.embeds.vip);
             } else if (currentCategory === 'series') {
                 episodesRow.classList.remove('hidden');
                 episodesDrawer.classList.remove('hidden');
+                document.getElementById('server-row').classList.remove('hidden');
                 currentSeriesId = item.id;
                 await loadSeriesDetails(item.id);
             } else {
                 episodesRow.classList.add('hidden');
                 episodesDrawer.classList.add('hidden');
+                document.getElementById('server-row').classList.remove('hidden');
                 currentEmbeds = item.embeds;
+                currentAudioType = 'latino';
+                renderServerButtons();
                 playFromServer(currentEmbeds.latino[0].url);
             }
 
@@ -1356,6 +1372,43 @@
             setTimeout(() => { frame.src = url; }, 300);
         }
 
+        function renderServerButtons() {
+            const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
+            const container = document.getElementById('server-buttons');
+            if (!container) return;
+            container.innerHTML = servers.map((s, i) => `
+                <button onclick="switchServer(${i})" id="srv-btn-${i}"
+                    class="srv-btn px-2.5 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all"
+                    style="${i === 0 ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);' : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;'}">
+                    ${s.name}
+                </button>`).join('');
+            ['latino','castellano','original'].forEach(type => {
+                const tab = document.getElementById(`tab-${type}`);
+                if (!tab) return;
+                tab.style.cssText = type === currentAudioType
+                    ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent); border-radius:9999px;'
+                    : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280; border-radius:9999px;';
+            });
+        }
+
+        function switchAudioType(type) {
+            if (!currentEmbeds || !currentEmbeds[type] || currentEmbeds[type].length === 0) return;
+            currentAudioType = type;
+            renderServerButtons();
+            playFromServer(currentEmbeds[type][0].url);
+        }
+
+        function switchServer(index) {
+            const servers = currentEmbeds && currentEmbeds[currentAudioType];
+            if (!servers || !servers[index]) return;
+            document.querySelectorAll('.srv-btn').forEach((btn, i) => {
+                btn.style.cssText = i === index
+                    ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent); border-radius:9999px;'
+                    : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280; border-radius:9999px;';
+            });
+            playFromServer(servers[index].url);
+        }
+
         function toggleEpisodesDrawer() {
             document.getElementById('episodes-drawer').classList.toggle('hidden');
         }
@@ -1363,6 +1416,7 @@
         function closePlayer() {
             document.getElementById('player-view').classList.add('hidden');
             document.getElementById('video-frame').src = 'about:blank';
+            document.getElementById('server-row').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
 
@@ -1429,6 +1483,8 @@
                 const res = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await res.json();
                 currentEmbeds = embeds;
+                currentAudioType = 'latino';
+                renderServerButtons();
                 playFromServer(currentEmbeds.latino[0].url);
             } catch (err) { console.error('Episode embed error:', err); }
         }
