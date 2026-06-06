@@ -16,6 +16,7 @@ const getEmbedUrls = (imdbId, tmdbId) => {
       { name: 'VIDLINK', url: `https://vidlink.pro/movie/${tmdbId}`, quality: '4K' }
     ],
     castellano: [
+      { name: 'UNLIMPLAY', url: `https://unlimplay.com/play/embed/movie/${tmdbId}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' },
       { name: 'SUPERVIDEO', url: `https://verhdlink.cam/movie/${imdbId || tmdbId}`, quality: '1080p' },
       { name: 'VIDSRC', url: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`, quality: '1080p' },
       { name: '2EMBED', url: `https://2embed.org/embed/movie/${tmdbId}`, quality: 'HD' }

@@ -29,6 +29,7 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
       }
     ],
     castellano: [
+      { name: 'UNLIMPLAY', url: `https://unlimplay.com/play/embed/tv/${tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' },
       { name: 'VIDSRC+', url: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}`, quality: '1080p' },
       { name: 'AUTOEMBED', url: `https://player.autoembed.cc/embed/tv/${tmdbId}/${season}/${episode}`, quality: 'HD' },
       { name: 'VIDAPI', url: `https://moviesapi.club/tv/${tmdbId}-${season}-${episode}`, quality: 'HD' }
