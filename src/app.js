@@ -282,6 +282,124 @@ app.get('/api/proxy/embed', async (req, res) => {
   }
 });
 
+// ── Obtiene el embed directo (sin anuncios) desde la API interna de unlimplay ──
+// La página /play/embed/ muestra anuncios preroll. La API /play.php/embed/?api=1
+// devuelve la URL del embed interno que se carga DESPUÉS de los anuncios.
+// Cargando esa URL directamente en el iframe saltamos toda la publicidad.
+app.get('/api/proxy/extract', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'URL requerida' });
+
+    const unlimUrl = decodeURIComponent(url);
+    const parsedUnlim = new URL(unlimUrl);
+
+    // Convertir  /play/embed/movie/ID  →  /play.php/embed/movie/ID?api=1&background=1
+    const apiPath = parsedUnlim.pathname.replace('/play/embed/', '/play.php/embed/');
+    const apiUrl  = `${parsedUnlim.origin}${apiPath}?api=1&background=1&t=${Date.now()}`;
+
+    const resp = await axios.get(apiUrl, {
+      timeout: 20000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': unlimUrl,
+        'Accept': 'application/json, text/plain, */*',
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    });
+
+    const data = resp.data;
+    if (!data || !data.success || !Array.isArray(data.data)) {
+      return res.json({ embedUrl: null, error: 'Respuesta inesperada de la API de unlimplay' });
+    }
+
+    // Buscar primero "espanol" (castellano), luego "latino" como fallback
+    const entry =
+      data.data.find(d => d.language === 'espanol') ||
+      data.data.find(d => d.language === 'latino')  ||
+      data.data[0];
+
+    if (!entry || !entry.embed_url) {
+      return res.json({ embedUrl: null, error: 'No se encontró embed_url en la API' });
+    }
+
+    res.json({ embedUrl: entry.embed_url, language: entry.language });
+
+  } catch (err) {
+    console.error('Extract error:', err.message);
+    res.json({ embedUrl: null, error: err.message });
+  }
+});
+
+// ── Proxy HLS: reescribe m3u8 y sirve segmentos .ts ──
+app.get('/api/proxy/hls', async (req, res) => {
+  try {
+    const { url, ref } = req.query;
+    if (!url) return res.status(400).send('URL requerida');
+
+    const decodedUrl = decodeURIComponent(url);
+    const referer    = ref ? decodeURIComponent(ref) : 'https://supervideo.tv/';
+    const parsedUrl  = new URL(decodedUrl);
+    const baseUrl    = `${parsedUrl.protocol}//${parsedUrl.host}`;
+    // base de directorios para URLs relativas en el m3u8
+    const basePath   = decodedUrl.substring(0, decodedUrl.lastIndexOf('/') + 1);
+
+    const isM3u8 = decodedUrl.includes('.m3u8') || decodedUrl.includes('m3u8');
+
+    const upstream = await axios.get(decodedUrl, {
+      timeout: 20000,
+      responseType: isM3u8 ? 'text' : 'stream',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': referer,
+        'Origin': new URL(referer).origin,
+      }
+    });
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+
+    if (isM3u8) {
+      // Reescribir URLs dentro del m3u8 para que pasen por nuestro proxy
+      let content = upstream.data;
+      const encodedRef = encodeURIComponent(referer);
+
+      content = content.split('\n').map(line => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) return line; // comentarios M3U8, sin cambios
+
+        // Construir URL absoluta del segmento
+        let absUrl;
+        if (/^https?:\/\//i.test(trimmed)) {
+          absUrl = trimmed;
+        } else if (trimmed.startsWith('/')) {
+          absUrl = `${baseUrl}${trimmed}`;
+        } else {
+          absUrl = `${basePath}${trimmed}`;
+        }
+
+        return `/api/proxy/hls?url=${encodeURIComponent(absUrl)}&ref=${encodedRef}`;
+      }).join('\n');
+
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+      return res.send(content);
+    }
+
+    // Segmento binario (.ts, .aac, etc.) — stream directo
+    const ct = upstream.headers['content-type'] || 'video/MP2T';
+    res.setHeader('Content-Type', ct);
+    if (upstream.headers['content-length']) {
+      res.setHeader('Content-Length', upstream.headers['content-length']);
+    }
+    upstream.data.pipe(res);
+    upstream.data.on('error', () => { if (!res.headersSent) res.status(500).end(); });
+
+  } catch (err) {
+    console.error('HLS proxy error:', err.message);
+    if (!res.headersSent) res.status(500).send('Error en proxy HLS');
+  }
+});
+
 // Proxy para el reproductor SuperVideo
 app.get('/api/player', async (req, res) => {
   try {

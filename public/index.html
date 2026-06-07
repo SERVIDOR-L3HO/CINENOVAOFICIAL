@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CINENOVA - Premium Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
@@ -468,9 +469,10 @@
             </button>
         </div>
 
-        <!-- Video iframe -->
+        <!-- Video iframe / HLS player -->
         <div class="flex-grow relative bg-black min-h-0">
             <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+            <video id="hls-video" class="w-full h-full hidden" controls autoplay playsinline style="background:#000; position:absolute; inset:0;"></video>
             <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
                 <div class="relative mb-6">
                     <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(255,255,255,0.08);">
@@ -1370,18 +1372,60 @@
                 document.getElementById('player-loader').classList.add('hidden');
         }
 
-        function playFromServer(url) {
-            const frame = document.getElementById('video-frame');
+        let hlsInstance = null;
+
+        function showIframe() {
+            document.getElementById('video-frame').classList.remove('hidden');
+            document.getElementById('hls-video').classList.add('hidden');
+        }
+        function showHlsPlayer() {
+            document.getElementById('video-frame').classList.add('hidden');
+            document.getElementById('hls-video').classList.remove('hidden');
+        }
+        function destroyHls() {
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+            const v = document.getElementById('hls-video');
+            v.src = '';
+            v.classList.add('hidden');
+        }
+
+        async function playFromServer(url) {
+            const frame  = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
-            frame.src = 'about:blank';
+            const hlsVid = document.getElementById('hls-video');
+
             loader.classList.remove('hidden');
+            destroyHls();
+            frame.src = 'about:blank';
 
-            // Proveedores que inyectan anuncios — se cargan a través del proxy anti-ads
-            const adProviders = ['unlimplay.com', 'supervideo.tv', 'vaplayer.ru'];
-            const needsProxy = adProviders.some(p => url.includes(p));
-            const finalUrl = needsProxy ? `/api/proxy/embed?url=${encodeURIComponent(url)}` : url;
+            // ── Servidor Castellano (unlimplay) → cargar embed directo sin anuncios ──
+            // Llamamos a la API interna de unlimplay para obtener la URL del embed
+            // que se carga DESPUÉS de los anuncios, y la ponemos directo en el iframe.
+            if (url.includes('unlimplay.com')) {
+                try {
+                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}`);
+                    const data = await resp.json();
 
-            setTimeout(() => { frame.src = finalUrl; }, 300);
+                    if (data.embedUrl) {
+                        showIframe();
+                        frame.onload = () => loader.classList.add('hidden');
+                        frame.src = data.embedUrl;
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('API unlimplay falló, usando URL directa:', e.message);
+                }
+                // Fallback: cargar la URL original directamente
+                showIframe();
+                frame.onload = () => loader.classList.add('hidden');
+                frame.src = url;
+                return;
+            }
+
+            // ── Resto de servidores → iframe normal ──
+            showIframe();
+            frame.onload = () => loader.classList.add('hidden');
+            setTimeout(() => { frame.src = url; }, 200);
         }
 
         function renderServerButtons() {
@@ -1426,6 +1470,7 @@
         }
 
         function closePlayer() {
+            destroyHls();
             document.getElementById('player-view').classList.add('hidden');
             document.getElementById('video-frame').src = 'about:blank';
             document.getElementById('server-row').classList.add('hidden');
