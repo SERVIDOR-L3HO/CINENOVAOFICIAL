@@ -446,6 +446,102 @@ app.get('/api/proxy/hls', async (req, res) => {
   }
 });
 
+// ── Extractor vsembed.ru → m3u8 (para soy-luna) ──────────────────────────────
+app.get('/api/proxy/vsembed', async (req, res) => {
+  try {
+    const { imdb = 'tt5189554', s = '1', e = '1' } = req.query;
+    const embedUrl = `https://vsembed.ru/embed/tv/${imdb}/${s}-${e}`;
+
+    const HEADERS = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Referer': 'https://vsembed.ru/',
+      'Origin': 'https://vsembed.ru',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
+    };
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+    const findM3u8 = (text) => {
+      // Orden de intentos: 1) jwplayer file: 2) sources array 3) URL directa
+      const patterns = [
+        /file\s*:\s*["'`](https?:\/\/[^"'`\s]+?\.m3u8[^"'`\s]*)/i,
+        /["'`](https?:\/\/[^"'`\s]+?\.m3u8(?:\?[^"'`\s]*)?)/i,
+        /hls["\s]*:\s*["'`](https?:\/\/[^"'`\s]+)/i,
+        /src\s*:\s*["'`](https?:\/\/[^"'`\s]+?\.m3u8[^"'`\s]*)/i,
+      ];
+      for (const p of patterns) {
+        const m = text.match(p);
+        if (m && m[1]) return m[1];
+      }
+      return null;
+    };
+
+    const findIframe = (text) =>
+      (text.match(/<iframe[^>]+src=["'](https?:\/\/[^"']+)["']/i) || [])[1] || null;
+
+    // ── PASO 1: página principal de vsembed ──────────────────────────────────
+    const r1 = await axios.get(embedUrl, { timeout: 20000, responseType: 'text', headers: HEADERS });
+    let html = r1.data;
+
+    let m3u8 = findM3u8(html);
+    if (m3u8) return res.json({ ok: true, m3u8, step: 'vsembed-html', embedUrl });
+
+    // ── PASO 2: buscar scripts externos de la página y escanear cada uno ─────
+    const scriptSrcs = [];
+    const scriptRe = /<script[^>]+src=["'](https?:\/\/[^"']+)["']/gi;
+    let sm;
+    while ((sm = scriptRe.exec(html)) !== null) {
+      if (/vsembed|player|embed|stream|hls/i.test(sm[1])) scriptSrcs.push(sm[1]);
+    }
+
+    for (const src of scriptSrcs.slice(0, 3)) {
+      try {
+        const rs = await axios.get(src, { timeout: 10000, responseType: 'text', headers: HEADERS });
+        m3u8 = findM3u8(rs.data);
+        if (m3u8) return res.json({ ok: true, m3u8, step: 'external-script', embedUrl });
+      } catch (_) { /* ignorar errores de scripts individuales */ }
+    }
+
+    // ── PASO 3: seguir el primer iframe de la página ─────────────────────────
+    const iframeSrc = findIframe(html);
+    if (iframeSrc) {
+      try {
+        const r2 = await axios.get(iframeSrc, {
+          timeout: 15000, responseType: 'text',
+          headers: { ...HEADERS, Referer: embedUrl, Origin: new URL(iframeSrc).origin }
+        });
+        m3u8 = findM3u8(r2.data);
+        if (m3u8) return res.json({ ok: true, m3u8, step: 'iframe', embedUrl, iframeSrc });
+
+        // PASO 3b: scripts del iframe
+        const scriptRe2 = /<script[^>]+src=["'](https?:\/\/[^"']+)["']/gi;
+        let sm2;
+        while ((sm2 = scriptRe2.exec(r2.data)) !== null) {
+          if (/player|stream|hls|embed/i.test(sm2[1])) {
+            try {
+              const rs2 = await axios.get(sm2[1], {
+                timeout: 10000, responseType: 'text',
+                headers: { ...HEADERS, Referer: iframeSrc }
+              });
+              m3u8 = findM3u8(rs2.data);
+              if (m3u8) return res.json({ ok: true, m3u8, step: 'iframe-script', embedUrl });
+            } catch (_) {}
+          }
+        }
+      } catch (err2) {
+        console.warn('vsembed iframe fetch failed:', err2.message);
+      }
+    }
+
+    // ── PASO 4: no encontró m3u8 — devolver embedUrl para iframe fallback ────
+    return res.json({ ok: false, m3u8: null, embedUrl, step: 'no-m3u8-found' });
+
+  } catch (err) {
+    console.error('vsembed extract error:', err.message);
+    res.status(500).json({ ok: false, m3u8: null, error: err.message });
+  }
+});
+
 // Proxy para el reproductor SuperVideo
 app.get('/api/player', async (req, res) => {
   try {

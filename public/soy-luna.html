@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soy Luna — CINENOVA</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#0c0c0c">
@@ -680,8 +681,10 @@
 
     <!-- ── VIDEO ── -->
     <div style="flex:1;position:relative;background:#000;min-height:0;">
-        <iframe id="video-frame" style="width:100%;height:100%;border:none;"
+        <iframe id="video-frame" style="width:100%;height:100%;border:none;display:none;"
             allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+        <video id="hls-video" style="width:100%;height:100%;display:none;background:#000;"
+            controls autoplay playsinline></video>
 
         <!-- Loader -->
         <div id="player-loader"
@@ -1084,11 +1087,11 @@
     }
 
     function closePlayer() {
-        // Auto-mark current episode as watched when closing player
         markWatched(curSeason, curEpisode);
         document.getElementById('player-view').classList.remove('open');
         document.getElementById('video-frame').src = '';
-        // Re-render list to reflect watched state
+        document.getElementById('video-frame').style.display = 'none';
+        destroyHls();
         if (epCache[curSeason]) renderEpisodeList(epCache[curSeason]);
         updatePlayingCard();
         updateSeasonProgress();
@@ -1104,14 +1107,82 @@
         loadEmbed();
     }
 
-    function loadEmbed() {
+    let hlsInstance = null;
+
+    function destroyHls() {
+        if (hlsInstance) {
+            try { hlsInstance.destroy(); } catch(_) {}
+            hlsInstance = null;
+        }
+        const vid = document.getElementById('hls-video');
+        vid.pause();
+        vid.src = '';
+        vid.style.display = 'none';
+    }
+
+    async function loadEmbed() {
         const loader = document.getElementById('player-loader');
         const frame  = document.getElementById('video-frame');
+        const vid    = document.getElementById('hls-video');
+
         loader.style.display = 'flex';
+        frame.style.display  = 'none';
         frame.src = '';
-        const url = getEmbedUrl(curSeason, curEpisode);
-        frame.onload = () => { loader.style.display = 'none'; };
-        setTimeout(() => { frame.src = url; }, 150);
+        destroyHls();
+
+        try {
+            const r = await fetch(
+                `/api/proxy/vsembed?imdb=${IMDB_ID}&s=${curSeason}&e=${curEpisode}`
+            );
+            const data = await r.json();
+
+            if (data.ok && data.m3u8) {
+                // ── Reproducir m3u8 nativo con HLS.js ──────────────────────
+                const proxied = `/api/proxy/hls?url=${encodeURIComponent(data.m3u8)}&ref=${encodeURIComponent('https://vsembed.ru/')}`;
+
+                if (Hls.isSupported()) {
+                    const hls = new Hls({ maxBufferLength: 30, enableWorker: true });
+                    hlsInstance = hls;
+                    hls.loadSource(proxied);
+                    hls.attachMedia(vid);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        loader.style.display = 'none';
+                        vid.style.display = 'block';
+                        vid.play().catch(() => {});
+                    });
+                    hls.on(Hls.Events.ERROR, (_, d) => {
+                        if (d.fatal) {
+                            console.warn('HLS error, fallback al iframe:', d);
+                            destroyHls();
+                            useFallbackIframe();
+                        }
+                    });
+                } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Safari nativo
+                    vid.src = proxied;
+                    vid.style.display = 'block';
+                    vid.addEventListener('loadedmetadata', () => {
+                        loader.style.display = 'none';
+                        vid.play().catch(() => {});
+                    }, { once: true });
+                } else {
+                    useFallbackIframe();
+                }
+            } else {
+                // No se encontró m3u8 → iframe fallback
+                useFallbackIframe();
+            }
+        } catch (err) {
+            console.error('loadEmbed error:', err);
+            useFallbackIframe();
+        }
+
+        function useFallbackIframe() {
+            const url = getEmbedUrl(curSeason, curEpisode);
+            frame.style.display = 'block';
+            frame.onload = () => { loader.style.display = 'none'; };
+            setTimeout(() => { frame.src = url; }, 150);
+        }
     }
 
     // ─── Navigation ──────────────────────────────────────────────────────────────
