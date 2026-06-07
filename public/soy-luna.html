@@ -247,6 +247,43 @@
             border-radius: 2px;
         }
 
+        /* ── Watch state ── */
+        .ep-card.watched { opacity: .65; }
+        .ep-card.watched:hover { opacity: 1; }
+        .ep-card.watched .ep-title { color: #9ca3af; }
+
+        .check-badge {
+            position: absolute; top: 6px; right: 6px;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: #22c55e; border: 2px solid #0c0c0c;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; color: #fff; font-weight: 900;
+            box-shadow: 0 2px 8px rgba(34,197,94,.4);
+            z-index: 5;
+        }
+
+        .watch-toggle {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 9px; border-radius: 99px;
+            font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+            cursor: pointer; border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05); color: #6b7280;
+            transition: all .2s; flex-shrink: 0;
+        }
+        .watch-toggle:hover { border-color: rgba(34,197,94,.4); color: #22c55e; }
+        .watch-toggle.is-watched { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.4); color: #22c55e; }
+
+        /* Season progress bar */
+        .season-prog-track {
+            flex: 1; height: 4px; border-radius: 99px;
+            background: rgba(255,255,255,.08); overflow: hidden; min-width: 60px;
+        }
+        .season-prog-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--accent3), var(--accent2));
+            transition: width .4s ease;
+        }
+
         /* Scroll episodes list */
         #ep-list { max-height: 70vh; overflow-y: auto; scroll-behavior: smooth; }
     </style>
@@ -301,9 +338,9 @@
 
             <!-- CTA -->
             <div class="fade3" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                <button onclick="startPlay(1,1)"
+                <button id="hero-play-btn" onclick="heroCTA()"
                     style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:16px;background:var(--accent2);color:#fff;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;box-shadow:0 8px 30px rgba(168,85,247,.45);">
-                    <i class="fas fa-play"></i> REPRODUCIR T1 E1
+                    <i class="fas fa-play"></i> <span id="hero-play-label">REPRODUCIR T1 E1</span>
                 </button>
                 <button onclick="openTrailer()"
                     style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:16px;background:rgba(255,255,255,.07);color:#d1d5db;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .2s;">
@@ -313,6 +350,16 @@
                     style="display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:16px;background:rgba(255,255,255,.04);color:#6b7280;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;">
                     <i class="fas fa-list" style="font-size:10px;"></i> EPISODIOS
                 </button>
+            </div>
+            <!-- Overall progress bar -->
+            <div id="hero-progress-wrap" style="display:none;margin-top:20px;max-width:400px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <span style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;">Tu progreso</span>
+                    <span id="hero-progress-label" style="font-size:10px;font-weight:900;color:var(--accent);"></span>
+                </div>
+                <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;">
+                    <div id="hero-progress-fill" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent3),var(--accent2));transition:width .5s ease;width:0%;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -341,18 +388,29 @@
         </div>
 
         <!-- Season info bar -->
-        <div id="season-bar" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.18);margin-bottom:20px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="fas fa-tv" style="font-size:12px;"></i>
-            </div>
-            <div>
-                <span id="bar-season" style="font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">TEMPORADA 1</span>
-                <span id="bar-eps" style="font-size:11px;color:#4b5563;font-weight:700;margin-left:10px;"></span>
-            </div>
-            <div style="margin-left:auto;">
-                <span id="bar-loading" style="font-size:10px;color:#6b7280;font-weight:700;display:none;">
+        <div id="season-bar" style="padding:14px 16px;border-radius:14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.18);margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-tv" style="font-size:12px;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span id="bar-season" style="font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">TEMPORADA 1</span>
+                        <span id="bar-eps" style="font-size:11px;color:#4b5563;font-weight:700;"></span>
+                        <span id="bar-watched-label" style="font-size:10px;color:#22c55e;font-weight:800;margin-left:auto;white-space:nowrap;"></span>
+                    </div>
+                </div>
+                <span id="bar-loading" style="font-size:10px;color:#6b7280;font-weight:700;display:none;flex-shrink:0;">
                     <i class="fas fa-circle-notch spinner" style="font-size:10px;margin-right:4px;"></i> Cargando...
                 </span>
+            </div>
+            <!-- Progress bar -->
+            <div class="season-prog-track">
+                <div class="season-prog-fill" id="bar-prog-fill" style="width:0%;"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                <span id="bar-watched-count" style="font-size:9px;color:#4b5563;font-weight:700;"></span>
+                <span id="bar-remaining-count" style="font-size:9px;color:#4b5563;font-weight:700;"></span>
             </div>
         </div>
 
@@ -579,6 +637,166 @@
     let curServerIdx = 0;
     let epCache     = {};
 
+    // ─── Watch Progress ──────────────────────────────────────────────────────────
+    const LS_KEY = 'cinenova_sl_watched';
+
+    function getWatched() {
+        try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+    }
+    function saveWatched(data) {
+        try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch {}
+    }
+    function isWatched(season, episode) {
+        return !!getWatched()[`${season}_${episode}`];
+    }
+    function markWatched(season, episode) {
+        const d = getWatched();
+        d[`${season}_${episode}`] = true;
+        saveWatched(d);
+    }
+    function unmarkWatched(season, episode) {
+        const d = getWatched();
+        delete d[`${season}_${episode}`];
+        saveWatched(d);
+    }
+
+    function toggleWatched(e, season, episode) {
+        e.stopPropagation();
+        if (isWatched(season, episode)) {
+            unmarkWatched(season, episode);
+        } else {
+            markWatched(season, episode);
+        }
+        // Re-render only the affected card
+        const eps = epCache[season];
+        if (eps) {
+            const ep = eps.find(x => x.number === episode);
+            if (ep) {
+                const card = document.getElementById(`epc-${episode}`);
+                if (card) {
+                    const watched = isWatched(season, episode);
+                    const playing = (episode === curEpisode && season === curSeason);
+                    card.classList.toggle('watched', watched);
+
+                    // Update check badge
+                    const existing = card.querySelector('.check-badge');
+                    if (watched && !existing) {
+                        card.querySelector('.ep-thumb').insertAdjacentHTML('beforeend',
+                            '<div class="check-badge"><i class="fas fa-check"></i></div>');
+                    } else if (!watched && existing) {
+                        existing.remove();
+                    }
+
+                    // Update toggle button
+                    const btn = card.querySelector('.watch-toggle');
+                    if (btn) {
+                        btn.className = `watch-toggle ${watched ? 'is-watched' : ''}`;
+                        btn.title = watched ? 'Marcar como no visto' : 'Marcar como visto';
+                        btn.innerHTML = `<i class="fas fa-${watched ? 'eye-slash' : 'eye'}"></i> ${watched ? 'DESMARCAR' : 'MARCAR'}`;
+                    }
+
+                    // Update visto label
+                    const meta = card.querySelector('.ep-meta');
+                    const oldLabel = meta?.querySelector('.visto-label');
+                    if (oldLabel) oldLabel.remove();
+                    if (watched && !playing && meta) {
+                        meta.insertAdjacentHTML('afterbegin',
+                            '<span class="visto-label" style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;color:#22c55e;text-transform:uppercase;letter-spacing:.5px;"><i class="fas fa-check-circle"></i> VISTO</span>');
+                    }
+                }
+            }
+        }
+        updateSeasonProgress();
+        updateHeroCTA();
+    }
+
+    function getSeasonProgress(season) {
+        const watched = getWatched();
+        const total   = SEASONS[season];
+        let count = 0;
+        for (let i = 1; i <= total; i++) {
+            if (watched[`${season}_${i}`]) count++;
+        }
+        return { count, total };
+    }
+
+    function getTotalProgress() {
+        let total = 0, count = 0;
+        for (let s = 1; s <= 3; s++) {
+            const p = getSeasonProgress(s);
+            total += p.total; count += p.count;
+        }
+        return { count, total };
+    }
+
+    function getNextUnwatched() {
+        const w = getWatched();
+        for (let s = 1; s <= 3; s++) {
+            for (let e = 1; e <= SEASONS[s]; e++) {
+                if (!w[`${s}_${e}`]) return { season: s, episode: e };
+            }
+        }
+        return null;
+    }
+
+    function updateSeasonProgress() {
+        const { count, total } = getSeasonProgress(curSeason);
+        const pct  = total > 0 ? (count / total) * 100 : 0;
+        const left = total - count;
+
+        const fill = document.getElementById('bar-prog-fill');
+        if (fill) fill.style.width = `${pct}%`;
+
+        const wLabel = document.getElementById('bar-watched-label');
+        if (wLabel) wLabel.textContent = count > 0 ? `✓ ${count} vistos` : '';
+
+        const wCount = document.getElementById('bar-watched-count');
+        if (wCount) wCount.textContent = count > 0 ? `${count} episodios vistos` : 'Sin episodios vistos';
+
+        const rCount = document.getElementById('bar-remaining-count');
+        if (rCount) rCount.textContent = left > 0 ? `${left} pendientes` : left === 0 ? '¡Temporada completada! 🎉' : '';
+    }
+
+    function updateHeroCTA() {
+        const next  = getNextUnwatched();
+        const label = document.getElementById('hero-play-label');
+        const wrap  = document.getElementById('hero-progress-wrap');
+        const fill  = document.getElementById('hero-progress-fill');
+        const pLabel = document.getElementById('hero-progress-label');
+        const { count, total } = getTotalProgress();
+
+        if (next) {
+            if (count > 0) {
+                if (label) label.textContent = `CONTINUAR T${next.season} E${next.episode}`;
+                // Store next target
+                document.getElementById('hero-play-btn').dataset.season  = next.season;
+                document.getElementById('hero-play-btn').dataset.episode = next.episode;
+            } else {
+                if (label) label.textContent = 'REPRODUCIR T1 E1';
+                document.getElementById('hero-play-btn').dataset.season  = 1;
+                document.getElementById('hero-play-btn').dataset.episode = 1;
+            }
+        } else {
+            if (label) label.textContent = '🎉 COMPLETADA';
+        }
+
+        if (count > 0 && wrap) {
+            wrap.style.display = '';
+            const pct = Math.round((count / total) * 100);
+            if (fill) fill.style.width = `${pct}%`;
+            if (pLabel) pLabel.textContent = `${count} / ${total} episodios · ${pct}%`;
+        } else if (wrap) {
+            wrap.style.display = 'none';
+        }
+    }
+
+    function heroCTA() {
+        const btn = document.getElementById('hero-play-btn');
+        const s = parseInt(btn.dataset.season  || '1');
+        const e = parseInt(btn.dataset.episode || '1');
+        startPlay(s, e);
+    }
+
     // ─── Season selection ────────────────────────────────────────────────────────
     async function selectSeason(n, scroll = false) {
         curSeason = n;
@@ -619,20 +837,22 @@
         document.getElementById('bar-eps').textContent = `· ${eps.length} episodios`;
 
         renderEpisodeList(eps);
+        updateSeasonProgress();
     }
 
     function renderEpisodeList(eps) {
         const list = document.getElementById('ep-list');
         list.innerHTML = '';
         eps.forEach(ep => {
-            const isPlaying = (ep.number === curEpisode && curSeason === curSeason);
+            const watched  = isWatched(curSeason, ep.number);
+            const playing  = (ep.number === curEpisode);
             const thumbUrl = ep.thumbnail || '';
             const runtime  = ep.runtime ? `${ep.runtime} min` : '';
             const title    = ep.name || `Episodio ${ep.number}`;
             const desc     = ep.overview || '';
 
             list.insertAdjacentHTML('beforeend', `
-                <div class="ep-card ${ep.number === curEpisode ? 'playing' : ''}"
+                <div class="ep-card ${playing ? 'playing' : ''} ${watched ? 'watched' : ''}"
                      id="epc-${ep.number}"
                      onclick="startPlay(${curSeason}, ${ep.number})">
                     <div class="ep-thumb">
@@ -647,14 +867,22 @@
                                 <i class="fas fa-play" style="font-size:14px;color:#fff;margin-left:2px;"></i>
                             </div>
                         </div>
+                        ${watched ? '<div class="check-badge"><i class="fas fa-check"></i></div>' : ''}
                     </div>
                     <div class="ep-info">
                         <div class="ep-num">Episodio ${ep.number}</div>
                         <div class="ep-title">${title}</div>
                         ${desc ? `<div class="ep-desc">${desc}</div>` : ''}
                         <div class="ep-meta">
-                            ${ep.number === curEpisode ? '<span class="watching-badge"><span style="width:5px;height:5px;border-radius:50%;background:#fff;display:inline-block;"></span> VIENDO</span>' : ''}
+                            ${playing ? '<span class="watching-badge"><span style="width:5px;height:5px;border-radius:50%;background:#fff;display:inline-block;"></span> VIENDO</span>' : ''}
+                            ${watched && !playing ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;color:#22c55e;text-transform:uppercase;letter-spacing:.5px;"><i class="fas fa-check-circle"></i> VISTO</span>' : ''}
                             ${runtime ? `<span class="ep-runtime"><i class="fas fa-clock" style="font-size:9px;margin-right:3px;opacity:.5;"></i>${runtime}</span>` : ''}
+                            <button class="watch-toggle ${watched ? 'is-watched' : ''}"
+                                onclick="toggleWatched(event,${curSeason},${ep.number})"
+                                title="${watched ? 'Marcar como no visto' : 'Marcar como visto'}">
+                                <i class="fas fa-${watched ? 'eye-slash' : 'eye'}"></i>
+                                ${watched ? 'DESMARCAR' : 'MARCAR'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -695,9 +923,15 @@
     }
 
     function closePlayer() {
+        // Auto-mark current episode as watched when closing player
+        markWatched(curSeason, curEpisode);
         document.getElementById('player-view').classList.remove('open');
         document.getElementById('video-frame').src = '';
+        // Re-render list to reflect watched state
+        if (epCache[curSeason]) renderEpisodeList(epCache[curSeason]);
         updatePlayingCard();
+        updateSeasonProgress();
+        updateHeroCTA();
     }
 
     function renderServerButtons() {
@@ -754,6 +988,8 @@
 
     // ─── Navigation ──────────────────────────────────────────────────────────────
     function nextEp() {
+        // Mark current as watched before advancing
+        markWatched(curSeason, curEpisode);
         const maxEp = SEASONS[curSeason];
         if (curEpisode < maxEp) {
             curEpisode++;
@@ -765,6 +1001,8 @@
         document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode}`;
         document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
         updatePlayingCard();
+        updateSeasonProgress();
+        updateHeroCTA();
         loadEmbed();
     }
 
@@ -840,6 +1078,7 @@
     }
 
     // ─── Init ─────────────────────────────────────────────────────────────────────
+    updateHeroCTA();
     selectSeason(1);
     loadCast();
 
