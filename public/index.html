@@ -1402,19 +1402,21 @@
             destroyHls();
             frame.src = 'about:blank';
 
-            // ── Servidor Castellano (unlimplay) → cargar embed directo sin anuncios ──
-            // Llamamos a la API interna de unlimplay para obtener la URL del embed
-            // que se carga DESPUÉS de los anuncios, y la ponemos directo en el iframe.
-            if (url.includes('unlimplay.com') || url.includes('verhdlink.cam')) {
+            // ── Servidores con extracción de embed real (sin anuncios) ──
+            if (url.includes('unlimplay.com') || url.includes('verhdlink.cam') || url.includes('vsembed.ru')) {
                 try {
-                    const extractLang = url.includes('verhdlink.cam') ? currentAudioType : currentAudioType;
-                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=${extractLang}`);
+                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=${currentAudioType}`);
                     const data = await resp.json();
 
                     if (data.embedUrl) {
                         showIframe();
                         frame.onload = () => loader.classList.add('hidden');
-                        frame.src = data.embedUrl;
+                        // vsembed → cargar el player real a través de nuestro proxy anti-anuncios
+                        if (data.source === 'vsembed') {
+                            frame.src = `/api/proxy/embed?url=${encodeURIComponent(data.embedUrl)}`;
+                        } else {
+                            frame.src = data.embedUrl;
+                        }
                         return;
                     }
                 } catch (e) {
