@@ -498,19 +498,23 @@
         </div>
 
         <!-- Episodes Drawer -->
-        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col" style="background:#0a0a0a; border-top:1px solid rgba(255,255,255,0.08); max-height:220px;">
-            <div class="px-4 md:px-6 pt-2.5 pb-2 flex items-center justify-between gap-3 flex-shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <div id="episodes-drawer" class="hidden flex-shrink-0 flex-col" style="background:#0a0a0a; border-top:1px solid rgba(255,255,255,0.08); max-height:340px;">
+            <!-- Header: season pills -->
+            <div class="px-4 md:px-6 pt-2.5 pb-2 flex items-center justify-between gap-3 flex-shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.06);">
                 <div class="flex items-center gap-2">
                     <div class="w-1 h-3.5 rounded-full flex-shrink-0" style="background:var(--accent);"></div>
-                    <span class="text-[8px] font-black tracking-[3px] uppercase text-gray-400">TEMPORADA</span>
+                    <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent);">EPISODIOS</span>
                 </div>
                 <div class="flex items-center gap-2 flex-1 overflow-x-auto mx-3" style="scrollbar-width:none;" id="season-pills-row"></div>
                 <button onclick="toggleEpisodesDrawer()" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-all glass-panel">
                     <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
                 </button>
             </div>
+            <!-- Season description -->
+            <div id="season-description" class="px-4 py-2 text-[9px] text-gray-500 leading-relaxed flex-shrink-0 hidden" style="border-bottom:1px solid rgba(255,255,255,0.04);"></div>
             <select id="season-select" class="hidden"></select>
-            <div id="episode-list" class="flex gap-3 overflow-x-auto px-4 py-3 flex-shrink-0" style="scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;"></div>
+            <!-- Episode list: vertical -->
+            <div id="episode-list" class="flex flex-col overflow-y-auto px-3 py-2 gap-2" style="scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;"></div>
         </div>
     </div>
 
@@ -1513,35 +1517,66 @@
             </div>`;
 
             let episodes = [];
+            let seasonOverview = '';
             try {
                 const res = await fetch(`/api/series/${seriesId}/season/${seasonNum}?lang=${currentLang}`);
-                episodes = await res.json();
-                if (!Array.isArray(episodes) || episodes.length === 0) throw new Error('empty');
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    episodes = data;
+                } else if (data && Array.isArray(data.episodes)) {
+                    episodes = data.episodes;
+                    seasonOverview = data.overview || '';
+                }
+                if (episodes.length === 0) throw new Error('empty');
             } catch(e) {
                 episodes = Array.from({length: episodeCount}, (_, i) => ({
-                    number: i + 1, name: `Episodio ${i + 1}`, thumbnail: null, runtime: null
+                    number: i + 1, name: `Episodio ${i + 1}`, thumbnail: null, runtime: null, overview: ''
                 }));
             }
 
             currentSeasonEpisodes = episodes;
 
+            const descEl = document.getElementById('season-description');
+            if (seasonOverview) {
+                descEl.textContent = seasonOverview;
+                descEl.classList.remove('hidden');
+            } else {
+                descEl.classList.add('hidden');
+            }
+
             list.innerHTML = episodes.map(ep => `
-                <div class="ep-card flex-shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all duration-200"
+                <div class="ep-card w-full flex gap-3 rounded-xl cursor-pointer transition-all duration-200 overflow-hidden"
                      id="ep-card-${ep.number}"
                      onclick="selectEpisode(${seriesId}, ${seasonNum}, ${ep.number})"
-                     style="width:158px; border:1px solid rgba(255,255,255,0.07); background:#111;">
-                    <div class="relative" style="aspect-ratio:16/9; background:#0d0d0d;">
+                     style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); padding:8px;">
+                    <!-- Thumbnail -->
+                    <div class="relative flex-shrink-0 rounded-lg overflow-hidden" style="width:110px; aspect-ratio:16/9; background:#0d0d0d;">
                         ${ep.thumbnail
-                            ? `<img src="${ep.thumbnail}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center\\'><i class=\\'fas fa-film\\' style=\\'color:#333; font-size:1.5rem;\\'></i></div>'">`
-                            : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-film" style="color:#333; font-size:1.5rem;"></i></div>`}
-                        <div class="absolute inset-0" style="background:linear-gradient(to bottom, transparent 45%, rgba(0,0,0,0.55))"></div>
-                        <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[8px] font-black" style="background:var(--accent); color:#000; letter-spacing:.04em;">EP ${ep.number}</span>
-                        ${ep.runtime ? `<span class="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full text-[8px] font-black" style="background:rgba(0,0,0,0.72); color:#fff; border:1px solid rgba(255,255,255,0.1);">${ep.runtime}m</span>` : ''}
+                            ? `<img src="${ep.thumbnail}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                               <div class="w-full h-full items-center justify-center hidden" style="position:absolute;inset:0;"><i class="fas fa-film" style="color:#444; font-size:1.2rem;"></i></div>`
+                            : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-film" style="color:#444; font-size:1.2rem;"></i></div>`}
+                        <!-- Play overlay -->
+                        <div class="ep-play-overlay absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200" style="background:rgba(0,0,0,0.4);">
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:var(--accent);">
+                                <i class="fas fa-play text-black" style="font-size:8px; margin-left:1px;"></i>
+                            </div>
+                        </div>
+                        <!-- VIENDO badge -->
+                        <span class="ep-watching-badge absolute top-1 left-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase hidden" style="background:#e53e3e; color:#fff; letter-spacing:.05em;">VIENDO</span>
                     </div>
-                    <div class="px-2.5 py-2">
-                        <p class="text-white font-bold truncate" style="font-size:10px; line-height:1.3;">${ep.name || `Episodio ${ep.number}`}</p>
+                    <!-- Info -->
+                    <div class="flex flex-col justify-center gap-0.5 flex-1 min-w-0">
+                        <p class="text-[9px] font-black uppercase tracking-widest" style="color:var(--accent);">${seasonNum}. Episodio ${ep.number}</p>
+                        <p class="text-white font-bold leading-tight" style="font-size:11px;" title="${ep.name || ''}">${ep.name || `Episodio ${ep.number}`}</p>
+                        ${ep.overview ? `<p class="text-gray-500 text-[9px] leading-snug line-clamp-2 mt-0.5">${ep.overview}</p>` : ''}
+                        ${ep.runtime ? `<p class="text-gray-500 text-[9px] font-bold mt-1"><i class="fas fa-clock mr-1" style="font-size:7px;"></i>${ep.runtime} min</p>` : ''}
                     </div>
                 </div>`).join('');
+
+            list.querySelectorAll('.ep-card').forEach(card => {
+                card.addEventListener('mouseenter', () => card.querySelector('.ep-play-overlay').style.opacity = '1');
+                card.addEventListener('mouseleave', () => card.querySelector('.ep-play-overlay').style.opacity = '0');
+            });
 
             selectEpisode(seriesId, seasonNum, episodes[0]?.number || 1, true);
         }
@@ -1549,15 +1584,18 @@
         function selectEpisode(seriesId, seasonNum, episodeNum, autoScroll = false) {
             currentEpisode = episodeNum;
             document.querySelectorAll('.ep-card').forEach(card => {
-                card.style.border = '1px solid rgba(255,255,255,0.07)';
-                card.style.boxShadow = 'none';
-                card.style.transform = 'scale(1)';
+                card.style.background = 'rgba(255,255,255,0.04)';
+                card.style.borderColor = 'rgba(255,255,255,0.06)';
+                const badge = card.querySelector('.ep-watching-badge');
+                if (badge) badge.classList.add('hidden');
             });
             const active = document.getElementById(`ep-card-${episodeNum}`);
             if (active) {
-                active.style.border = `1px solid var(--accent)`;
-                active.style.boxShadow = `0 0 14px rgba(56,189,248,0.25)`;
-                if (autoScroll) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+                active.style.background = 'rgba(56,189,248,0.08)';
+                active.style.borderColor = 'rgba(56,189,248,0.35)';
+                const badge = active.querySelector('.ep-watching-badge');
+                if (badge) badge.classList.remove('hidden');
+                if (autoScroll) active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
             loadEpisodeEmbed(seriesId, seasonNum, episodeNum);
         }
@@ -1569,7 +1607,7 @@
             if (idx >= 0 && idx < nums.length - 1) {
                 selectEpisode(currentSeriesId, currentSeason, nums[idx + 1]);
                 const next = document.getElementById(`ep-card-${nums[idx + 1]}`);
-                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                if (next) next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
