@@ -168,7 +168,11 @@ exports.getSeriesDetails = async (req, res) => {
     const s = details.data;
     const imdbId = externalIds.data.imdb_id;
     const creators = s.created_by && s.created_by.length > 0 ? s.created_by.map(c => c.name) : null;
-    const cast = credits.data.cast.slice(0, 8).map(a => a.name);
+    const cast = credits.data.cast.slice(0, 8).map(a => ({
+      name: a.name,
+      character: a.character,
+      photo: a.profile_path ? `https://image.tmdb.org/t/p/w185${a.profile_path}` : null
+    }));
 
     const allVideos = [...(videosLang.data.results || []), ...(videosEn.data.results || [])];
     const trailer = allVideos.find(v => v.site === 'YouTube' && v.type === 'Trailer')

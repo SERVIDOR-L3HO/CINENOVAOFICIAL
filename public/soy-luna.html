@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soy Luna — CINENOVA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0c0c0c">
+    <style>
+        :root {
+            --accent: #c084fc;
+            --accent2: #a855f7;
+            --accent3: #7c3aed;
+            --bg: #0c0c0c;
+            --surface: #141414;
+            --glass: rgba(10, 10, 10, 0.92);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
+        body { background-color: var(--bg); color: white; overflow-x: hidden; }
+
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .glass-card {
+            background: rgba(14, 14, 14, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Hero */
+        .hero-bg {
+            position: relative;
+            min-height: 92vh;
+            background-image: url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg');
+            background-size: cover;
+            background-position: center top;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                rgba(12,12,12,0.97) 0%,
+                rgba(12,12,12,0.85) 45%,
+                rgba(12,12,12,0.3) 70%,
+                rgba(12,12,12,0.05) 100%
+            );
+        }
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 280px;
+            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+        }
+
+        /* Scroll */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.4); border-radius: 99px; }
+
+        /* Episode button */
+        .ep-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .ep-btn:hover {
+            background: rgba(168,85,247,0.15);
+            border-color: rgba(168,85,247,0.4);
+            transform: translateY(-2px);
+        }
+        .ep-btn.active {
+            background: rgba(168,85,247,0.25);
+            border-color: rgba(168,85,247,0.7);
+        }
+        .ep-btn .play-icon {
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(168,85,247,0.3);
+            transition: opacity 0.2s;
+        }
+        .ep-btn:hover .play-icon { opacity: 1; }
+
+        /* Season tab */
+        .season-tab {
+            padding: 8px 20px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: #6b7280;
+        }
+        .season-tab.active {
+            background: var(--accent2);
+            border-color: var(--accent2);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(168,85,247,0.4);
+        }
+        .season-tab:hover:not(.active) {
+            border-color: rgba(168,85,247,0.3);
+            color: var(--accent);
+        }
+
+        /* Cast card */
+        .cast-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .cast-card:hover {
+            border-color: rgba(168,85,247,0.3);
+            transform: translateY(-4px);
+        }
+
+        /* Glows */
+        .glow-purple {
+            box-shadow: 0 0 30px rgba(168,85,247,0.35), 0 0 60px rgba(168,85,247,0.15);
+        }
+        .text-accent { color: var(--accent); }
+
+        /* Spinner */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes livePulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .animate-pulse { animation: livePulse 2s infinite; }
+
+        /* Rating star */
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.25);
+            border-radius: 99px;
+            padding: 4px 12px;
+            font-weight: 900;
+            font-size: 13px;
+            color: #fde68a;
+        }
+
+        /* Audio tab in player */
+        .audio-tab { transition: all 0.2s; }
+        .audio-tab.active-tab {
+            background: var(--accent2) !important;
+            border-color: var(--accent2) !important;
+            color: #fff !important;
+        }
+
+        /* Stat pill */
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 99px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            letter-spacing: 0.5px;
+        }
+
+        /* Logo Luna */
+        @keyframes floatLogo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        .logo-float { animation: floatLogo 4s ease-in-out infinite; }
+
+        /* Fade in */
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        .fade-in { animation: fadeInUp 0.6s ease both; }
+        .fade-in-2 { animation: fadeInUp 0.6s ease 0.15s both; }
+        .fade-in-3 { animation: fadeInUp 0.6s ease 0.3s both; }
+
+        /* Shine effect on title */
+        .title-luna {
+            background: linear-gradient(135deg, #fff 0%, #e9d5ff 40%, #c084fc 70%, #fff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Top nav */
+        .top-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Section divider */
+        .section-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(168,85,247,0.4), transparent);
+            margin: 0;
+        }
+
+        /* Trailer button */
+        .trailer-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #d1d5db;
+        }
+        .trailer-btn:hover {
+            background: rgba(168,85,247,0.15);
+            border-color: rgba(168,85,247,0.5);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── TOP NAV ── -->
+<nav class="top-nav glass">
+    <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-2 px-3 py-2 rounded-full transition-all hover:scale-105 active:scale-95"
+           style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
+            <i class="fas fa-chevron-left text-xs text-gray-400"></i>
+            <span class="text-xs font-black uppercase tracking-widest text-gray-400">CINENOVA</span>
+        </a>
+        <img src="/assets/cinenova_icon.png" class="h-7 opacity-70" onerror="this.style.display='none'">
+    </div>
+    <div class="flex items-center gap-2">
+        <span class="stat-pill">
+            <i class="fas fa-star text-yellow-400" style="font-size:9px"></i>
+            7.97 · TMDB
+        </span>
+        <span class="stat-pill hidden md:inline-flex">
+            <i class="fas fa-film text-purple-400" style="font-size:9px"></i>
+            220 EPISODIOS
+        </span>
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero-bg">
+    <div class="relative z-10 flex flex-col justify-center min-h-screen pt-28 pb-16 px-8 md:px-16 lg:px-24">
+        <!-- Badge -->
+        <div class="fade-in mb-5 flex items-center gap-3 flex-wrap">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest"
+                  style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.5); color:var(--accent);">
+                <i class="fas fa-bolt" style="font-size:8px"></i> SERIE EXCLUSIVA
+            </span>
+            <span class="rating-badge">
+                <i class="fas fa-star" style="font-size:10px; color:#fbbf24;"></i>
+                7.97
+            </span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="fade-in-2 title-luna font-black uppercase leading-none mb-6"
+            style="font-size: clamp(64px, 12vw, 160px); letter-spacing: -3px; line-height: 0.9;">
+            SOY<br>LUNA
+        </h1>
+
+        <!-- Meta pills -->
+        <div class="fade-in-3 flex items-center gap-2 flex-wrap mb-6">
+            <span class="stat-pill"><i class="fas fa-calendar-alt" style="font-size:9px; color:var(--accent);"></i> 2016</span>
+            <span class="stat-pill"><i class="fas fa-layer-group" style="font-size:9px; color:var(--accent);"></i> 3 Temporadas</span>
+            <span class="stat-pill"><i class="fas fa-film" style="font-size:9px; color:var(--accent);"></i> 220 Episodios</span>
+            <span class="stat-pill"><i class="fas fa-globe-americas" style="font-size:9px; color:var(--accent);"></i> Disney Channel</span>
+            <span class="stat-pill"><i class="fas fa-music" style="font-size:9px; color:var(--accent);"></i> Musical · Familia</span>
+        </div>
+
+        <!-- Synopsis -->
+        <p class="fade-in-3 text-gray-300 max-w-xl leading-relaxed mb-8" style="font-size: clamp(13px, 1.8vw, 16px);">
+            Luna, una joven mexicana, llega a Buenos Aires donde descubrirá su pasión por el patinaje,
+            el amor y sus verdaderos orígenes. Una historia de música, amistad y sueños que no se detienen.
+        </p>
+
+        <!-- Action buttons -->
+        <div class="fade-in-3 flex items-center gap-3 flex-wrap">
+            <button onclick="startPlay(1,1)"
+                class="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-sm tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-purple"
+                style="background:var(--accent2); color:#fff; box-shadow:0 8px 30px rgba(168,85,247,0.4);">
+                <i class="fas fa-play"></i> REPRODUCIR T1 E1
+            </button>
+            <button onclick="openTrailer()"
+                class="trailer-btn">
+                <i class="fab fa-youtube"></i> TRÁILER
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── EPISODES SECTION ── -->
+<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
+    <div class="section-line mb-10"></div>
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <div>
+            <h2 class="font-black uppercase text-2xl tracking-tighter" style="color:#fff;">
+                <span style="color:var(--accent);">▶</span> EPISODIOS
+            </h2>
+            <p class="text-gray-600 text-xs font-bold mt-1 tracking-widest">SELECCIONA UNA TEMPORADA</p>
+        </div>
+        <!-- Season tabs -->
+        <div class="flex items-center gap-2">
+            <button onclick="selectSeason(1)" id="tab-s1" class="season-tab active">Temporada 1</button>
+            <button onclick="selectSeason(2)" id="tab-s2" class="season-tab">Temporada 2</button>
+            <button onclick="selectSeason(3)" id="tab-s3" class="season-tab">Temporada 3</button>
+        </div>
+    </div>
+
+    <!-- Season info bar -->
+    <div class="flex items-center gap-4 mb-6 p-4 rounded-2xl" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:var(--accent2);">
+            <i class="fas fa-tv" style="font-size:12px;"></i>
+        </div>
+        <div>
+            <span id="season-label" class="font-black uppercase text-sm tracking-widest" style="color:var(--accent);">TEMPORADA 1</span>
+            <span id="season-ep-count" class="ml-3 text-gray-500 text-xs font-bold">· 80 episodios</span>
+        </div>
+    </div>
+
+    <!-- Episode grid -->
+    <div id="episode-grid" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 xl:grid-cols-16 gap-2">
+        <!-- Generated by JS -->
+    </div>
+</section>
+
+<!-- ── CAST SECTION ── -->
+<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
+    <div class="section-line mb-10"></div>
+    <h2 class="font-black uppercase text-2xl tracking-tighter mb-8">
+        <span style="color:var(--accent);">★</span> ELENCO PRINCIPAL
+    </h2>
+    <div id="cast-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
+        <!-- Generated by JS -->
+    </div>
+</section>
+
+<!-- ── ABOUT SECTION ── -->
+<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
+    <div class="section-line mb-10"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+        <div>
+            <h2 class="font-black uppercase text-2xl tracking-tighter mb-6">
+                <span style="color:var(--accent);">◈</span> ACERCA DE
+            </h2>
+            <p class="text-gray-400 leading-relaxed text-sm mb-6">
+                Luna es una joven adolescente que descubrirá que el amor perdura a pesar del tiempo y la distancia.
+                Ella fue abandonada de bebé por razones que no son lo que parecen al principio. Junto con sus padres
+                llegan de México a Buenos Aires para emprender una nueva etapa de sus vidas.
+            </p>
+            <p class="text-gray-400 leading-relaxed text-sm">
+                Durante esta travesía, conocerá a personas de contextos diversos que podrían acercarla a sus orígenes.
+                Mientras tanto, la pasión, la amistad y el amor la ayudarán a sentirse apegada al camino que decide
+                seguir en busca de su felicidad.
+            </p>
+        </div>
+        <div class="space-y-4">
+            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
+                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Creador</p>
+                <p class="font-bold text-gray-200">Jorge Edelstein</p>
+            </div>
+            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
+                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Géneros</p>
+                <div class="flex gap-2 flex-wrap mt-1">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Musical</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Familia</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Comedia</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Misterio</span>
+                </div>
+            </div>
+            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
+                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Calificación TMDB</p>
+                <div class="flex items-center gap-2">
+                    <div class="flex gap-0.5">
+                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
+                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
+                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
+                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
+                        <i class="fas fa-star-half-alt text-yellow-400" style="font-size:12px"></i>
+                    </div>
+                    <span class="font-black text-lg">7.97</span>
+                    <span class="text-gray-600 text-xs">/ 10</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="px-6 md:px-12 lg:px-20 py-10 text-center">
+    <div class="section-line mb-8"></div>
+    <a href="/" class="inline-flex items-center gap-2 text-gray-700 hover:text-gray-400 transition-colors text-xs font-bold uppercase tracking-widest">
+        <i class="fas fa-arrow-left text-xs"></i>
+        Volver a CINENOVA
+    </a>
+    <p class="text-gray-800 text-xs mt-4">© 2024 CINENOVA — Powered by TMDB</p>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════════════
+     PLAYER OVERLAY
+══════════════════════════════════════════════════════ -->
+<div id="player-view" class="fixed inset-0 z-[200] hidden flex flex-col overflow-hidden" style="background:#060402;">
+    <!-- Top accent line -->
+    <div class="flex-shrink-0 h-0.5 w-full" style="background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)"></div>
+
+    <!-- Player Header -->
+    <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background:rgba(10,10,10,0.98); border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div class="flex items-center gap-3 min-w-0">
+            <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:border-purple-500/50" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-chevron-left text-xs text-gray-400"></i>
+            </button>
+            <div class="min-w-0">
+                <h3 id="player-title" class="font-black italic uppercase text-sm md:text-base tracking-tighter truncate leading-none mb-0.5">SOY LUNA</h3>
+                <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:var(--accent); box-shadow:0 0 6px var(--accent); animation:livePulse 2s infinite;"></span>
+                    <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">REPRODUCIENDO</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-times text-xs text-gray-500 hover:text-red-400"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio / Server Row -->
+    <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-3 flex-wrap" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
+        <div class="flex items-center gap-1.5" id="audio-tabs">
+            <button onclick="switchAudio('latino')" id="tab-latino"
+                class="audio-tab active-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest"
+                style="background:var(--accent2); border:1px solid var(--accent2); color:#fff;">
+                🎙 LATINO
+            </button>
+            <button onclick="switchAudio('castellano')" id="tab-castellano"
+                class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest"
+                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
+                🇪🇸 CASTELLANO
+            </button>
+        </div>
+        <div class="w-px h-5 hidden md:block" style="background:rgba(255,255,255,0.1);"></div>
+        <div class="flex items-center gap-2">
+            <button onclick="prevEpisode()"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all hover:scale-105"
+                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
+                <i class="fas fa-backward" style="font-size:8px"></i> ANTERIOR
+            </button>
+            <button onclick="nextEpisode()"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all hover:scale-105"
+                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
+                <i class="fas fa-forward" style="font-size:8px"></i> SIGUIENTE
+            </button>
+        </div>
+        <span id="player-ep-label" class="text-[8px] font-bold uppercase tracking-widest text-gray-600 ml-auto"></span>
+    </div>
+
+    <!-- Video iframe -->
+    <div class="flex-grow relative bg-black min-h-0">
+        <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+        <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
+            <div class="relative mb-6">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(168,85,247,0.2);">
+                    <div class="w-11 h-11 rounded-full animate-spin" style="border:3px solid var(--accent2); border-top-color:transparent;"></div>
+                </div>
+            </div>
+            <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
+            <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
+        </div>
+    </div>
+
+    <!-- Info bar -->
+    <div class="flex-shrink-0 px-4 py-2 flex items-center justify-between" style="background:rgba(10,10,10,0.99); border-top:1px solid rgba(255,255,255,0.04);">
+        <span class="text-[8px] text-gray-700 font-bold tracking-widest uppercase">SOY LUNA</span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.2); color:var(--accent);">
+            <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:var(--accent);"></span>
+            HD
+        </span>
+    </div>
+</div>
+
+<!-- ── TRAILER MODAL ── -->
+<div id="trailer-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center" style="background:rgba(0,0,0,0.9);">
+    <div class="relative w-full max-w-3xl mx-4">
+        <button onclick="closeTrailer()"
+            class="absolute -top-10 right-0 text-gray-400 hover:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+            <i class="fas fa-times"></i> CERRAR
+        </button>
+        <div style="aspect-ratio:16/9; background:#000; border-radius:16px; overflow:hidden;">
+            <iframe id="trailer-frame" class="w-full h-full" frameborder="0" allowfullscreen
+                allow="autoplay; encrypted-media"></iframe>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // ── State ──
+    const TMDB_ID   = 66203;
+    const IMDB_ID   = 'tt5189554';
+    const SEASONS   = { 1: 80, 2: 80, 3: 60 };
+    const TRAILER   = 'WnJxut5C6yY';
+
+    let currentSeason  = 1;
+    let currentEpisode = 1;
+    let currentAudio   = 'latino';
+
+    // ── Season selector ──
+    function selectSeason(n) {
+        currentSeason = n;
+        document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-s${n}`).classList.add('active');
+        document.getElementById('season-label').textContent = `TEMPORADA ${n}`;
+        document.getElementById('season-ep-count').textContent = `· ${SEASONS[n]} episodios`;
+        renderEpisodes();
+    }
+
+    function renderEpisodes() {
+        const count = SEASONS[currentSeason];
+        const grid  = document.getElementById('episode-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= count; i++) {
+            const isActive = (currentSeason === currentSeason && i === currentEpisode && document.getElementById('player-view').style.display !== 'none');
+            grid.insertAdjacentHTML('beforeend', `
+                <button onclick="startPlay(${currentSeason}, ${i})"
+                    class="ep-btn ${isActive ? 'active' : ''}"
+                    id="ep-${currentSeason}-${i}"
+                    title="Episodio ${i}">
+                    <div class="play-icon"><i class="fas fa-play text-white" style="font-size:10px"></i></div>
+                    <p class="text-[10px] font-black text-gray-400">${i}</p>
+                </button>
+            `);
+        }
+    }
+
+    // ── Play ──
+    async function startPlay(season, episode) {
+        currentSeason  = season;
+        currentEpisode = episode;
+
+        // Show player
+        const pv = document.getElementById('player-view');
+        pv.classList.remove('hidden');
+        pv.style.display = 'flex';
+        document.getElementById('player-title').textContent = `SOY LUNA · T${season} E${episode}`;
+        document.getElementById('player-ep-label').textContent = `T${season} · EP ${episode}`;
+        document.getElementById('player-loader').classList.remove('hidden');
+        document.getElementById('video-frame').src = '';
+
+        // Highlight episode
+        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`ep-${season}-${episode}`);
+        if (btn) btn.classList.add('active');
+
+        await loadEmbed();
+    }
+
+    async function loadEmbed() {
+        const loader = document.getElementById('player-loader');
+        const frame  = document.getElementById('video-frame');
+
+        loader.classList.remove('hidden');
+        frame.src = '';
+
+        let url;
+        if (currentAudio === 'latino') {
+            url = `https://vidlink.pro/tv/${TMDB_ID}/${currentSeason}/${currentEpisode}?primaryColor=a855f7&autoplay=true&title=false`;
+        } else {
+            url = `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${currentSeason}/${currentEpisode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`;
+        }
+
+        // For unlimplay — extract ad-free embed
+        if (url.includes('unlimplay.com')) {
+            try {
+                const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=castellano`);
+                const data = await resp.json();
+                if (data.embedUrl) {
+                    frame.onload = () => loader.classList.add('hidden');
+                    frame.src = data.embedUrl;
+                    return;
+                }
+            } catch (e) {
+                console.warn('Extract falló, fallback:', e.message);
+            }
+        }
+
+        frame.onload = () => loader.classList.add('hidden');
+        setTimeout(() => { frame.src = url; }, 200);
+    }
+
+    function switchAudio(type) {
+        currentAudio = type;
+        document.querySelectorAll('.audio-tab').forEach(t => {
+            t.classList.remove('active-tab');
+            t.style.background = 'rgba(255,255,255,0.04)';
+            t.style.borderColor = 'rgba(255,255,255,0.08)';
+            t.style.color = '#6b7280';
+        });
+        const active = document.getElementById(`tab-${type}`);
+        if (active) {
+            active.classList.add('active-tab');
+            active.style.background = 'var(--accent2)';
+            active.style.borderColor = 'var(--accent2)';
+            active.style.color = '#fff';
+        }
+        loadEmbed();
+    }
+
+    function closePlayer() {
+        const pv = document.getElementById('player-view');
+        pv.classList.add('hidden');
+        pv.style.display = 'none';
+        document.getElementById('video-frame').src = '';
+        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function nextEpisode() {
+        const maxEp = SEASONS[currentSeason];
+        if (currentEpisode < maxEp) {
+            currentEpisode++;
+        } else if (currentSeason < 3) {
+            currentSeason++;
+            currentEpisode = 1;
+            selectSeason(currentSeason);
+        }
+        document.getElementById('player-title').textContent = `SOY LUNA · T${currentSeason} E${currentEpisode}`;
+        document.getElementById('player-ep-label').textContent = `T${currentSeason} · EP ${currentEpisode}`;
+        loadEmbed();
+    }
+
+    function prevEpisode() {
+        if (currentEpisode > 1) {
+            currentEpisode--;
+        } else if (currentSeason > 1) {
+            currentSeason--;
+            currentEpisode = SEASONS[currentSeason];
+            selectSeason(currentSeason);
+        }
+        document.getElementById('player-title').textContent = `SOY LUNA · T${currentSeason} E${currentEpisode}`;
+        document.getElementById('player-ep-label').textContent = `T${currentSeason} · EP ${currentEpisode}`;
+        loadEmbed();
+    }
+
+    // ── Trailer ──
+    function openTrailer() {
+        document.getElementById('trailer-modal').classList.remove('hidden');
+        document.getElementById('trailer-modal').style.display = 'flex';
+        document.getElementById('trailer-frame').src = `https://www.youtube.com/embed/${TRAILER}?autoplay=1`;
+    }
+    function closeTrailer() {
+        document.getElementById('trailer-modal').classList.add('hidden');
+        document.getElementById('trailer-modal').style.display = 'none';
+        document.getElementById('trailer-frame').src = '';
+    }
+    document.getElementById('trailer-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeTrailer();
+    });
+
+    // ── Load cast from API ──
+    async function loadCast() {
+        try {
+            const resp = await fetch(`/api/series/${TMDB_ID}/details?lang=es-MX`);
+            const data = await resp.json();
+            const grid = document.getElementById('cast-grid');
+            if (!data.cast || !data.cast.length) return;
+            grid.innerHTML = '';
+            data.cast.forEach(member => {
+                const name    = typeof member === 'string' ? member : member.name;
+                const char    = typeof member === 'string' ? '' : (member.character || '');
+                const photo   = typeof member === 'string' ? null : member.photo;
+                const initials = name.split(' ').slice(0,2).map(w => w[0]).join('');
+                grid.insertAdjacentHTML('beforeend', `
+                    <div class="cast-card">
+                        <div style="aspect-ratio:2/3; overflow:hidden; background:#1a1a1a;">
+                            ${photo
+                                ? `<img src="${photo}" alt="${name}" class="w-full h-full object-cover" loading="lazy">`
+                                : `<div class="w-full h-full flex items-center justify-center" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(124,58,237,0.2));">
+                                       <span class="font-black text-3xl" style="color:var(--accent);">${initials}</span>
+                                   </div>`
+                            }
+                        </div>
+                        <div class="p-3">
+                            <p class="font-black text-xs text-white leading-tight truncate">${name}</p>
+                            ${char ? `<p class="text-[10px] text-gray-600 truncate mt-0.5">${char}</p>` : ''}
+                        </div>
+                    </div>
+                `);
+            });
+        } catch (e) {
+            console.warn('Cast load error:', e.message);
+        }
+    }
+
+    // ── Init ──
+    renderEpisodes();
+    loadCast();
+</script>
+</body>
+</html>
