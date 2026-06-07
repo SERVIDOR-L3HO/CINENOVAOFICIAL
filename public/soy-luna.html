@@ -7,737 +7,852 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0c0c0c">
     <style>
         :root {
-            --accent: #c084fc;
+            --accent:  #c084fc;
             --accent2: #a855f7;
             --accent3: #7c3aed;
-            --bg: #0c0c0c;
+            --bg:      #0c0c0c;
             --surface: #141414;
-            --glass: rgba(10, 10, 10, 0.92);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --card:    #181818;
         }
-        * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
-        body { background-color: var(--bg); color: white; overflow-x: hidden; }
+        *, *::before, *::after { font-family: 'Outfit', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: #fff; overflow-x: hidden; }
 
-        .glass {
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .glass-card {
-            background: rgba(14, 14, 14, 0.88);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.07);
-        }
-        .glass-panel {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Hero */
-        .hero-bg {
-            position: relative;
-            min-height: 92vh;
-            background-image: url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg');
-            background-size: cover;
-            background-position: center top;
-        }
-        .hero-bg::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                to right,
-                rgba(12,12,12,0.97) 0%,
-                rgba(12,12,12,0.85) 45%,
-                rgba(12,12,12,0.3) 70%,
-                rgba(12,12,12,0.05) 100%
-            );
-        }
-        .hero-bg::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 280px;
-            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
-        }
-
-        /* Scroll */
+        /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.4); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: rgba(168,85,247,.4); border-radius: 99px; }
 
-        /* Episode button */
-        .ep-btn {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+        /* ── Hero ── */
+        .hero-wrap {
             position: relative;
-            overflow: hidden;
+            min-height: 100svh;
+            background: url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg') center top / cover no-repeat;
         }
-        .ep-btn:hover {
-            background: rgba(168,85,247,0.15);
-            border-color: rgba(168,85,247,0.4);
-            transform: translateY(-2px);
+        .hero-wrap::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(105deg,
+                rgba(12,12,12,.97) 0%,
+                rgba(12,12,12,.82) 42%,
+                rgba(12,12,12,.25) 68%,
+                transparent 100%);
         }
-        .ep-btn.active {
-            background: rgba(168,85,247,0.25);
-            border-color: rgba(168,85,247,0.7);
+        .hero-wrap::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 320px;
+            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
         }
-        .ep-btn .play-icon {
-            opacity: 0;
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(168,85,247,0.3);
-            transition: opacity 0.2s;
-        }
-        .ep-btn:hover .play-icon { opacity: 1; }
+        .hero-content { position: relative; z-index: 2; }
 
-        /* Season tab */
-        .season-tab {
-            padding: 8px 20px;
-            border-radius: 99px;
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.04);
-            color: #6b7280;
-        }
-        .season-tab.active {
-            background: var(--accent2);
-            border-color: var(--accent2);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(168,85,247,0.4);
-        }
-        .season-tab:hover:not(.active) {
-            border-color: rgba(168,85,247,0.3);
-            color: var(--accent);
-        }
-
-        /* Cast card */
-        .cast-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .cast-card:hover {
-            border-color: rgba(168,85,247,0.3);
-            transform: translateY(-4px);
-        }
-
-        /* Glows */
-        .glow-purple {
-            box-shadow: 0 0 30px rgba(168,85,247,0.35), 0 0 60px rgba(168,85,247,0.15);
-        }
-        .text-accent { color: var(--accent); }
-
-        /* Spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes livePulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-        .animate-spin { animation: spin 1s linear infinite; }
-        .animate-pulse { animation: livePulse 2s infinite; }
-
-        /* Rating star */
-        .rating-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255,215,0,0.1);
-            border: 1px solid rgba(255,215,0,0.25);
-            border-radius: 99px;
-            padding: 4px 12px;
-            font-weight: 900;
-            font-size: 13px;
-            color: #fde68a;
-        }
-
-        /* Audio tab in player */
-        .audio-tab { transition: all 0.2s; }
-        .audio-tab.active-tab {
-            background: var(--accent2) !important;
-            border-color: var(--accent2) !important;
-            color: #fff !important;
-        }
-
-        /* Stat pill */
-        .stat-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 14px;
-            border-radius: 99px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 11px;
-            font-weight: 700;
-            color: #9ca3af;
-            letter-spacing: 0.5px;
-        }
-
-        /* Logo Luna */
-        @keyframes floatLogo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-        .logo-float { animation: floatLogo 4s ease-in-out infinite; }
-
-        /* Fade in */
-        @keyframes fadeInUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-        .fade-in { animation: fadeInUp 0.6s ease both; }
-        .fade-in-2 { animation: fadeInUp 0.6s ease 0.15s both; }
-        .fade-in-3 { animation: fadeInUp 0.6s ease 0.3s both; }
-
-        /* Shine effect on title */
-        .title-luna {
-            background: linear-gradient(135deg, #fff 0%, #e9d5ff 40%, #c084fc 70%, #fff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* ── Title gradient ── */
+        .title-shine {
+            background: linear-gradient(135deg, #fff 0%, #e9d5ff 35%, #c084fc 65%, #fff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        /* Top nav */
+        /* ── Nav ── */
         .top-nav {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+            padding: 14px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(12,12,12,.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,.07);
         }
 
-        /* Section divider */
-        .section-line {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(168,85,247,0.4), transparent);
-            margin: 0;
+        /* ── Pills ── */
+        .pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 13px; border-radius: 99px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.1);
+            font-size: 10px; font-weight: 800;
+            color: #9ca3af; letter-spacing: .5px;
         }
-
-        /* Trailer button */
-        .trailer-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #d1d5db;
-        }
-        .trailer-btn:hover {
-            background: rgba(168,85,247,0.15);
-            border-color: rgba(168,85,247,0.5);
+        .pill-accent {
+            background: rgba(168,85,247,.15);
+            border-color: rgba(168,85,247,.4);
             color: var(--accent);
         }
+        .pill-gold {
+            background: rgba(251,191,36,.1);
+            border-color: rgba(251,191,36,.3);
+            color: #fde68a;
+        }
+
+        /* ── Season tabs ── */
+        .s-tab {
+            padding: 9px 22px; border-radius: 99px;
+            font-size: 11px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
+            cursor: pointer; transition: all .2s;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04); color: #6b7280;
+            white-space: nowrap;
+        }
+        .s-tab:hover:not(.active) { border-color: rgba(168,85,247,.35); color: var(--accent); }
+        .s-tab.active {
+            background: var(--accent2); border-color: var(--accent2); color: #fff;
+            box-shadow: 0 0 22px rgba(168,85,247,.45);
+        }
+
+        /* ── Episode card ── */
+        .ep-card {
+            display: flex; gap: 0;
+            background: var(--card);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.06);
+            cursor: pointer;
+            transition: all .22s ease;
+            position: relative;
+        }
+        .ep-card:hover {
+            border-color: rgba(168,85,247,.45);
+            background: #1e1e1e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,.5);
+        }
+        .ep-card.playing {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 1px var(--accent2), 0 8px 30px rgba(168,85,247,.3);
+        }
+
+        /* Thumbnail */
+        .ep-thumb {
+            position: relative;
+            flex-shrink: 0;
+            width: 180px;
+            background: #111;
+            overflow: hidden;
+        }
+        @media (max-width: 640px) { .ep-thumb { width: 130px; } }
+        .ep-thumb img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s;
+        }
+        .ep-card:hover .ep-thumb img { transform: scale(1.05); }
+
+        /* Play overlay */
+        .ep-thumb .play-over {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,.55);
+            opacity: 0; transition: opacity .2s;
+        }
+        .ep-card:hover .play-over { opacity: 1; }
+        .ep-card.playing .play-over { opacity: 1; background: rgba(168,85,247,.35); }
+        .play-over .play-circle {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,255,255,.15);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,.5);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Episode info */
+        .ep-info { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+        .ep-num { font-size: 10px; font-weight: 800; color: #6b7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .ep-title { font-size: 14px; font-weight: 800; color: #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+        @media (max-width: 480px) { .ep-title { font-size: 12px; } }
+        .ep-desc { font-size: 11px; color: #6b7280; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        @media (max-width: 480px) { .ep-desc { display: none; } }
+        .ep-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .ep-runtime { font-size: 10px; font-weight: 700; color: #4b5563; }
+
+        /* WATCHING badge */
+        .watching-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 4px;
+            background: var(--accent2); color: #fff;
+            font-size: 9px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase;
+        }
+
+        /* Episode skeleton */
+        .skel { background: rgba(255,255,255,.06); border-radius: 8px; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer {
+            0%   { opacity: .4; }
+            50%  { opacity: .8; }
+            100% { opacity: .4; }
+        }
+
+        /* ── Divider ── */
+        .div-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(168,85,247,.4), transparent);
+        }
+
+        /* ── Cast card ── */
+        .cast-card {
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 14px; overflow: hidden;
+            transition: all .2s; text-align: center;
+        }
+        .cast-card:hover { border-color: rgba(168,85,247,.3); transform: translateY(-4px); }
+
+        /* ── Animations ── */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .fade1 { animation: fadeUp .55s ease both; }
+        .fade2 { animation: fadeUp .55s .12s ease both; }
+        .fade3 { animation: fadeUp .55s .25s ease both; }
+        @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+        .live-pulse { animation: livePulse 2s infinite; }
+
+        /* ── Player ── */
+        #player-view {
+            display: none; position: fixed; inset: 0; z-index: 300;
+            flex-direction: column; background: #060402;
+        }
+        #player-view.open { display: flex; }
+
+        /* Server buttons */
+        .srv-btn {
+            padding: 5px 14px; border-radius: 99px;
+            font-size: 9px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
+            cursor: pointer; transition: all .2s; border: 1px solid rgba(255,255,255,.1);
+            background: rgba(255,255,255,.04); color: #6b7280; white-space: nowrap;
+        }
+        .srv-btn:hover:not(.srv-active) { border-color: rgba(168,85,247,.35); color: var(--accent); }
+        .srv-btn.srv-active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+        /* Audio tabs */
+        .aud-tab {
+            padding: 5px 14px; border-radius: 99px;
+            font-size: 9px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
+            cursor: pointer; transition: all .2s; border: 1px solid rgba(255,255,255,.1);
+            background: rgba(255,255,255,.04); color: #6b7280;
+        }
+        .aud-tab.aud-active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+        .aud-tab:hover:not(.aud-active) { border-color: rgba(168,85,247,.3); color: var(--accent); }
+
+        /* Spinner */
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+
+        /* Progress bar on episode thumbnail */
+        .ep-progress {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 3px; background: rgba(255,255,255,.15);
+        }
+        .ep-progress-fill {
+            height: 100%; background: var(--accent2);
+            border-radius: 2px;
+        }
+
+        /* Scroll episodes list */
+        #ep-list { max-height: 70vh; overflow-y: auto; scroll-behavior: smooth; }
     </style>
 </head>
 <body>
 
-<!-- ── TOP NAV ── -->
-<nav class="top-nav glass">
-    <div class="flex items-center gap-4">
-        <a href="/" class="flex items-center gap-2 px-3 py-2 rounded-full transition-all hover:scale-105 active:scale-95"
-           style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);">
-            <i class="fas fa-chevron-left text-xs text-gray-400"></i>
-            <span class="text-xs font-black uppercase tracking-widest text-gray-400">CINENOVA</span>
+<!-- ═══════════════════════════════ NAV ════════════════════════════════ -->
+<nav class="top-nav">
+    <div class="flex items-center gap-3">
+        <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:10px;font-weight:900;letter-spacing:1px;color:#9ca3af;text-transform:uppercase;text-decoration:none;transition:all .2s;">
+            <i class="fas fa-chevron-left" style="font-size:9px"></i> CINENOVA
         </a>
-        <img src="/assets/cinenova_icon.png" class="h-7 opacity-70" onerror="this.style.display='none'">
+        <img src="/assets/cinenova_icon.png" style="height:28px;opacity:.65;" onerror="this.style.display='none'">
     </div>
     <div class="flex items-center gap-2">
-        <span class="stat-pill">
-            <i class="fas fa-star text-yellow-400" style="font-size:9px"></i>
-            7.97 · TMDB
-        </span>
-        <span class="stat-pill hidden md:inline-flex">
-            <i class="fas fa-film text-purple-400" style="font-size:9px"></i>
-            220 EPISODIOS
-        </span>
+        <span class="pill pill-gold"><i class="fas fa-star" style="font-size:8px;color:#fbbf24;"></i> 7.97</span>
+        <span class="pill" style="display:none;" id="nav-ep-count"><i class="fas fa-play-circle" style="font-size:8px;color:var(--accent);"></i> 220 EPS</span>
+        <span class="pill" id="nav-ep-count-vis"><i class="fas fa-play-circle" style="font-size:8px;color:var(--accent);"></i> 220 EPS</span>
     </div>
 </nav>
 
-<!-- ── HERO ── -->
-<div class="hero-bg">
-    <div class="relative z-10 flex flex-col justify-center min-h-screen pt-28 pb-16 px-8 md:px-16 lg:px-24">
-        <!-- Badge -->
-        <div class="fade-in mb-5 flex items-center gap-3 flex-wrap">
-            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest"
-                  style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.5); color:var(--accent);">
-                <i class="fas fa-bolt" style="font-size:8px"></i> SERIE EXCLUSIVA
-            </span>
-            <span class="rating-badge">
-                <i class="fas fa-star" style="font-size:10px; color:#fbbf24;"></i>
-                7.97
-            </span>
-        </div>
-
-        <!-- Title -->
-        <h1 class="fade-in-2 title-luna font-black uppercase leading-none mb-6"
-            style="font-size: clamp(64px, 12vw, 160px); letter-spacing: -3px; line-height: 0.9;">
-            SOY<br>LUNA
-        </h1>
-
-        <!-- Meta pills -->
-        <div class="fade-in-3 flex items-center gap-2 flex-wrap mb-6">
-            <span class="stat-pill"><i class="fas fa-calendar-alt" style="font-size:9px; color:var(--accent);"></i> 2016</span>
-            <span class="stat-pill"><i class="fas fa-layer-group" style="font-size:9px; color:var(--accent);"></i> 3 Temporadas</span>
-            <span class="stat-pill"><i class="fas fa-film" style="font-size:9px; color:var(--accent);"></i> 220 Episodios</span>
-            <span class="stat-pill"><i class="fas fa-globe-americas" style="font-size:9px; color:var(--accent);"></i> Disney Channel</span>
-            <span class="stat-pill"><i class="fas fa-music" style="font-size:9px; color:var(--accent);"></i> Musical · Familia</span>
-        </div>
-
-        <!-- Synopsis -->
-        <p class="fade-in-3 text-gray-300 max-w-xl leading-relaxed mb-8" style="font-size: clamp(13px, 1.8vw, 16px);">
-            Luna, una joven mexicana, llega a Buenos Aires donde descubrirá su pasión por el patinaje,
-            el amor y sus verdaderos orígenes. Una historia de música, amistad y sueños que no se detienen.
-        </p>
-
-        <!-- Action buttons -->
-        <div class="fade-in-3 flex items-center gap-3 flex-wrap">
-            <button onclick="startPlay(1,1)"
-                class="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-sm tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-purple"
-                style="background:var(--accent2); color:#fff; box-shadow:0 8px 30px rgba(168,85,247,0.4);">
-                <i class="fas fa-play"></i> REPRODUCIR T1 E1
-            </button>
-            <button onclick="openTrailer()"
-                class="trailer-btn">
-                <i class="fab fa-youtube"></i> TRÁILER
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ── EPISODES SECTION ── -->
-<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
-    <div class="section-line mb-10"></div>
-
-    <!-- Section header -->
-    <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
-        <div>
-            <h2 class="font-black uppercase text-2xl tracking-tighter" style="color:#fff;">
-                <span style="color:var(--accent);">▶</span> EPISODIOS
-            </h2>
-            <p class="text-gray-600 text-xs font-bold mt-1 tracking-widest">SELECCIONA UNA TEMPORADA</p>
-        </div>
-        <!-- Season tabs -->
-        <div class="flex items-center gap-2">
-            <button onclick="selectSeason(1)" id="tab-s1" class="season-tab active">Temporada 1</button>
-            <button onclick="selectSeason(2)" id="tab-s2" class="season-tab">Temporada 2</button>
-            <button onclick="selectSeason(3)" id="tab-s3" class="season-tab">Temporada 3</button>
-        </div>
-    </div>
-
-    <!-- Season info bar -->
-    <div class="flex items-center gap-4 mb-6 p-4 rounded-2xl" style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.15);">
-        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:var(--accent2);">
-            <i class="fas fa-tv" style="font-size:12px;"></i>
-        </div>
-        <div>
-            <span id="season-label" class="font-black uppercase text-sm tracking-widest" style="color:var(--accent);">TEMPORADA 1</span>
-            <span id="season-ep-count" class="ml-3 text-gray-500 text-xs font-bold">· 80 episodios</span>
-        </div>
-    </div>
-
-    <!-- Episode grid -->
-    <div id="episode-grid" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 xl:grid-cols-16 gap-2">
-        <!-- Generated by JS -->
-    </div>
-</section>
-
-<!-- ── CAST SECTION ── -->
-<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
-    <div class="section-line mb-10"></div>
-    <h2 class="font-black uppercase text-2xl tracking-tighter mb-8">
-        <span style="color:var(--accent);">★</span> ELENCO PRINCIPAL
-    </h2>
-    <div id="cast-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
-        <!-- Generated by JS -->
-    </div>
-</section>
-
-<!-- ── ABOUT SECTION ── -->
-<section class="relative z-10 px-6 md:px-12 lg:px-20 py-12">
-    <div class="section-line mb-10"></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        <div>
-            <h2 class="font-black uppercase text-2xl tracking-tighter mb-6">
-                <span style="color:var(--accent);">◈</span> ACERCA DE
-            </h2>
-            <p class="text-gray-400 leading-relaxed text-sm mb-6">
-                Luna es una joven adolescente que descubrirá que el amor perdura a pesar del tiempo y la distancia.
-                Ella fue abandonada de bebé por razones que no son lo que parecen al principio. Junto con sus padres
-                llegan de México a Buenos Aires para emprender una nueva etapa de sus vidas.
-            </p>
-            <p class="text-gray-400 leading-relaxed text-sm">
-                Durante esta travesía, conocerá a personas de contextos diversos que podrían acercarla a sus orígenes.
-                Mientras tanto, la pasión, la amistad y el amor la ayudarán a sentirse apegada al camino que decide
-                seguir en busca de su felicidad.
-            </p>
-        </div>
-        <div class="space-y-4">
-            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
-                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Creador</p>
-                <p class="font-bold text-gray-200">Jorge Edelstein</p>
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section class="hero-wrap">
+    <div class="hero-content" style="min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 60px;">
+        <div style="max-width:600px;">
+            <!-- Badges -->
+            <div class="fade1" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+                <span class="pill pill-accent"><i class="fas fa-bolt" style="font-size:8px;"></i> SERIE EXCLUSIVA</span>
+                <span class="pill pill-gold"><i class="fas fa-star" style="font-size:8px;color:#fbbf24;"></i> 7.97 · TMDB</span>
+                <span class="pill" style="color:#6b7280;">2016 – 2018</span>
             </div>
-            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
-                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Géneros</p>
-                <div class="flex gap-2 flex-wrap mt-1">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Musical</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Familia</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Comedia</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); color:var(--accent);">Misterio</span>
+
+            <!-- Title -->
+            <h1 class="title-shine fade2 font-black uppercase"
+                style="font-size:clamp(72px,13vw,160px);letter-spacing:-4px;line-height:.88;margin-bottom:24px;">
+                SOY<br>LUNA
+            </h1>
+
+            <!-- Stats row -->
+            <div class="fade2" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+                <span class="pill"><i class="fas fa-layer-group" style="font-size:8px;color:var(--accent);"></i> 3 TEMPORADAS</span>
+                <span class="pill"><i class="fas fa-film" style="font-size:8px;color:var(--accent);"></i> 220 EPISODIOS</span>
+                <span class="pill"><i class="fas fa-music" style="font-size:8px;color:var(--accent);"></i> MUSICAL · FAMILIA</span>
+                <span class="pill"><i class="fas fa-globe-americas" style="font-size:8px;color:var(--accent);"></i> DISNEY CHANNEL</span>
+            </div>
+
+            <!-- Synopsis -->
+            <p class="fade3" style="color:#a1a1aa;font-size:clamp(13px,1.8vw,15px);line-height:1.7;max-width:520px;margin-bottom:28px;">
+                Luna, una joven mexicana, llega a Buenos Aires donde descubrirá su pasión por el patinaje,
+                el amor y sus verdaderos orígenes. Una historia de música, amistad y sueños que nunca se detienen.
+            </p>
+
+            <!-- CTA -->
+            <div class="fade3" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <button onclick="startPlay(1,1)"
+                    style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:16px;background:var(--accent2);color:#fff;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;box-shadow:0 8px 30px rgba(168,85,247,.45);">
+                    <i class="fas fa-play"></i> REPRODUCIR T1 E1
+                </button>
+                <button onclick="openTrailer()"
+                    style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:16px;background:rgba(255,255,255,.07);color:#d1d5db;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:all .2s;">
+                    <i class="fab fa-youtube" style="color:#ef4444;"></i> TRÁILER
+                </button>
+                <button onclick="scrollToEps()"
+                    style="display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:16px;background:rgba(255,255,255,.04);color:#6b7280;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;">
+                    <i class="fas fa-list" style="font-size:10px;"></i> EPISODIOS
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════ EPISODES ═══════════════════════════ -->
+<section id="episodes-section" style="padding:48px 0 60px;">
+    <div style="max-width:960px;margin:0 auto;padding:0 20px;">
+
+        <div class="div-line" style="margin-bottom:36px;"></div>
+
+        <!-- Header row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+            <div>
+                <h2 style="font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-1px;">
+                    <span style="color:var(--accent);">▶</span> EPISODIOS
+                </h2>
+                <p id="season-desc" style="font-size:11px;color:#4b5563;font-weight:700;margin-top:4px;max-width:460px;line-height:1.5;"></p>
+            </div>
+            <!-- Season tabs -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;" id="season-tabs">
+                <button class="s-tab active" onclick="selectSeason(1)" id="stab-1">Temporada 1</button>
+                <button class="s-tab" onclick="selectSeason(2)" id="stab-2">Temporada 2</button>
+                <button class="s-tab" onclick="selectSeason(3)" id="stab-3">Temporada 3</button>
+            </div>
+        </div>
+
+        <!-- Season info bar -->
+        <div id="season-bar" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.18);margin-bottom:20px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-tv" style="font-size:12px;"></i>
+            </div>
+            <div>
+                <span id="bar-season" style="font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);">TEMPORADA 1</span>
+                <span id="bar-eps" style="font-size:11px;color:#4b5563;font-weight:700;margin-left:10px;"></span>
+            </div>
+            <div style="margin-left:auto;">
+                <span id="bar-loading" style="font-size:10px;color:#6b7280;font-weight:700;display:none;">
+                    <i class="fas fa-circle-notch spinner" style="font-size:10px;margin-right:4px;"></i> Cargando...
+                </span>
+            </div>
+        </div>
+
+        <!-- Episode list -->
+        <div id="ep-list" style="display:flex;flex-direction:column;gap:8px;">
+            <!-- Skeletons -->
+            <div id="ep-skeletons">
+                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
+                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
+                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
+                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
+                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════ CAST ═══════════════════════════════ -->
+<section style="padding:0 0 60px;">
+    <div style="max-width:960px;margin:0 auto;padding:0 20px;">
+        <div class="div-line" style="margin-bottom:36px;"></div>
+        <h2 style="font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-1px;margin-bottom:24px;">
+            <span style="color:var(--accent);">★</span> ELENCO PRINCIPAL
+        </h2>
+        <div id="cast-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:14px;">
+            <!-- Loaded by JS -->
+            <div class="skel" style="height:180px;border-radius:14px;"></div>
+            <div class="skel" style="height:180px;border-radius:14px;"></div>
+            <div class="skel" style="height:180px;border-radius:14px;"></div>
+            <div class="skel" style="height:180px;border-radius:14px;"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════ ABOUT ══════════════════════════════ -->
+<section style="padding:0 0 80px;">
+    <div style="max-width:960px;margin:0 auto;padding:0 20px;">
+        <div class="div-line" style="margin-bottom:36px;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+            <!-- Left -->
+            <div style="min-width:0;">
+                <h2 style="font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-1px;margin-bottom:20px;">
+                    <span style="color:var(--accent);">◈</span> ACERCA DE
+                </h2>
+                <p style="color:#71717a;font-size:13px;line-height:1.75;margin-bottom:14px;">
+                    Luna es una joven adolescente que descubrirá que el amor perdura a pesar del tiempo y la distancia.
+                    Fue abandonada de bebé por razones que no son lo que parecen al principio.
+                </p>
+                <p style="color:#71717a;font-size:13px;line-height:1.75;">
+                    Junto con sus padres llegan de México a Buenos Aires para emprender una nueva etapa de sus vidas.
+                    La pasión, la amistad y el amor la ayudarán a encontrar su felicidad.
+                </p>
+            </div>
+            <!-- Right -->
+            <div style="display:flex;flex-direction:column;gap:12px;min-width:0;">
+                <div style="padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
+                    <p style="font-size:9px;color:#4b5563;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Creador</p>
+                    <p style="font-weight:800;color:#d1d5db;font-size:13px;">Jorge Edelstein</p>
                 </div>
-            </div>
-            <div class="p-4 rounded-2xl" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);">
-                <p class="text-xs text-gray-600 font-bold uppercase tracking-widest mb-1">Calificación TMDB</p>
-                <div class="flex items-center gap-2">
-                    <div class="flex gap-0.5">
-                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
-                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
-                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
-                        <i class="fas fa-star text-yellow-400" style="font-size:12px"></i>
-                        <i class="fas fa-star-half-alt text-yellow-400" style="font-size:12px"></i>
+                <div style="padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
+                    <p style="font-size:9px;color:#4b5563;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Géneros</p>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <span class="pill pill-accent" style="font-size:9px;">Musical</span>
+                        <span class="pill pill-accent" style="font-size:9px;">Familia</span>
+                        <span class="pill pill-accent" style="font-size:9px;">Comedia</span>
+                        <span class="pill pill-accent" style="font-size:9px;">Misterio</span>
                     </div>
-                    <span class="font-black text-lg">7.97</span>
-                    <span class="text-gray-600 text-xs">/ 10</span>
+                </div>
+                <div style="padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);">
+                    <p style="font-size:9px;color:#4b5563;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Calificación</p>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:28px;font-weight:900;line-height:1;">7.97</span>
+                        <div>
+                            <div style="display:flex;gap:2px;margin-bottom:3px;">
+                                <i class="fas fa-star" style="font-size:11px;color:#fbbf24;"></i>
+                                <i class="fas fa-star" style="font-size:11px;color:#fbbf24;"></i>
+                                <i class="fas fa-star" style="font-size:11px;color:#fbbf24;"></i>
+                                <i class="fas fa-star" style="font-size:11px;color:#fbbf24;"></i>
+                                <i class="fas fa-star-half-alt" style="font-size:11px;color:#fbbf24;"></i>
+                            </div>
+                            <p style="font-size:10px;color:#4b5563;font-weight:700;">1,107 votos · TMDB</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ── FOOTER ── -->
-<footer class="px-6 md:px-12 lg:px-20 py-10 text-center">
-    <div class="section-line mb-8"></div>
-    <a href="/" class="inline-flex items-center gap-2 text-gray-700 hover:text-gray-400 transition-colors text-xs font-bold uppercase tracking-widest">
-        <i class="fas fa-arrow-left text-xs"></i>
-        Volver a CINENOVA
+<!-- Footer -->
+<footer style="padding:24px 20px 40px;text-align:center;border-top:1px solid rgba(255,255,255,.05);">
+    <a href="/" style="display:inline-flex;align-items:center;gap:8px;color:#4b5563;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:color .2s;">
+        <i class="fas fa-arrow-left" style="font-size:10px;"></i> Volver a CINENOVA
     </a>
-    <p class="text-gray-800 text-xs mt-4">© 2024 CINENOVA — Powered by TMDB</p>
+    <p style="color:#27272a;font-size:10px;margin-top:12px;">© 2024 CINENOVA — Datos de TMDB</p>
 </footer>
 
 
-<!-- ══════════════════════════════════════════════════════
-     PLAYER OVERLAY
-══════════════════════════════════════════════════════ -->
-<div id="player-view" class="fixed inset-0 z-[200] hidden flex flex-col overflow-hidden" style="background:#060402;">
-    <!-- Top accent line -->
-    <div class="flex-shrink-0 h-0.5 w-full" style="background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)"></div>
+<!-- ═══════════════════════════ PLAYER OVERLAY ════════════════════════ -->
+<div id="player-view">
+    <!-- Top accent -->
+    <div style="flex-shrink:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);"></div>
 
-    <!-- Player Header -->
-    <div class="flex-shrink-0 px-4 md:px-6 py-3 flex justify-between items-center" style="background:rgba(10,10,10,0.98); border-bottom:1px solid rgba(255,255,255,0.06);">
-        <div class="flex items-center gap-3 min-w-0">
-            <button onclick="closePlayer()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all glass-panel hover:border-purple-500/50" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-                <i class="fas fa-chevron-left text-xs text-gray-400"></i>
+    <!-- Header -->
+    <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(10,10,10,.99);border-bottom:1px solid rgba(255,255,255,.06);">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <button onclick="closePlayer()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;">
+                <i class="fas fa-chevron-left" style="font-size:10px;color:#9ca3af;"></i>
             </button>
-            <div class="min-w-0">
-                <h3 id="player-title" class="font-black italic uppercase text-sm md:text-base tracking-tighter truncate leading-none mb-0.5">SOY LUNA</h3>
-                <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:var(--accent); box-shadow:0 0 6px var(--accent); animation:livePulse 2s infinite;"></span>
-                    <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">REPRODUCIENDO</span>
+            <div style="min-width:0;">
+                <h3 id="player-title" style="font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SOY LUNA</h3>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                    <span class="live-pulse" style="width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);display:inline-block;"></span>
+                    <span style="font-size:8px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--accent);">REPRODUCIENDO</span>
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-            <button onclick="closePlayer()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-                <i class="fas fa-times text-xs text-gray-500 hover:text-red-400"></i>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span id="player-ep-badge" style="font-size:9px;font-weight:800;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;"></span>
+            <button onclick="closePlayer()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+                <i class="fas fa-times" style="font-size:11px;color:#4b5563;"></i>
             </button>
         </div>
     </div>
 
-    <!-- Audio / Server Row -->
-    <div class="flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-3 flex-wrap" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
-        <div class="flex items-center gap-1.5" id="audio-tabs">
-            <button onclick="switchAudio('latino')" id="tab-latino"
-                class="audio-tab active-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest"
-                style="background:var(--accent2); border:1px solid var(--accent2); color:#fff;">
-                🎙 LATINO
+    <!-- Audio + Server Row -->
+    <div style="flex-shrink:0;padding:8px 16px;background:rgba(10,10,10,.99);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;flex-wrap:wrap;overflow-x:auto;">
+        <!-- Audio tabs -->
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <button class="aud-tab aud-active" id="aud-latino"    onclick="switchAudio('latino')">🎙 LATINO</button>
+            <button class="aud-tab"             id="aud-castellano" onclick="switchAudio('castellano')">🇪🇸 CASTELLANO</button>
+        </div>
+        <!-- Divider -->
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0;"></div>
+        <!-- Server buttons -->
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;" id="server-buttons">
+            <!-- filled by JS -->
+        </div>
+        <!-- Divider -->
+        <div style="width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0;display:none;" id="nav-div" class="hidden md:block"></div>
+        <!-- Prev/Next -->
+        <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0;">
+            <button onclick="prevEp()" style="padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#6b7280;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;">
+                <i class="fas fa-backward" style="font-size:8px;margin-right:3px;"></i> ANTERIOR
             </button>
-            <button onclick="switchAudio('castellano')" id="tab-castellano"
-                class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest"
-                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
-                🇪🇸 CASTELLANO
+            <button onclick="nextEp()" style="padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#6b7280;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;">
+                <i class="fas fa-forward" style="font-size:8px;margin-right:3px;"></i> SIGUIENTE
             </button>
         </div>
-        <div class="w-px h-5 hidden md:block" style="background:rgba(255,255,255,0.1);"></div>
-        <div class="flex items-center gap-2">
-            <button onclick="prevEpisode()"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all hover:scale-105"
-                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
-                <i class="fas fa-backward" style="font-size:8px"></i> ANTERIOR
-            </button>
-            <button onclick="nextEpisode()"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all hover:scale-105"
-                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">
-                <i class="fas fa-forward" style="font-size:8px"></i> SIGUIENTE
-            </button>
-        </div>
-        <span id="player-ep-label" class="text-[8px] font-bold uppercase tracking-widest text-gray-600 ml-auto"></span>
     </div>
 
-    <!-- Video iframe -->
-    <div class="flex-grow relative bg-black min-h-0">
-        <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
-        <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
-            <div class="relative mb-6">
-                <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(168,85,247,0.2);">
-                    <div class="w-11 h-11 rounded-full animate-spin" style="border:3px solid var(--accent2); border-top-color:transparent;"></div>
+    <!-- Video -->
+    <div style="flex:1;position:relative;background:#000;min-height:0;">
+        <iframe id="video-frame" style="width:100%;height:100%;border:none;"
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+        <!-- Loader -->
+        <div id="player-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#060402;">
+            <div style="position:relative;margin-bottom:20px;">
+                <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(168,85,247,.2);display:flex;align-items:center;justify-content:center;">
+                    <div class="spinner" style="width:44px;height:44px;border-radius:50%;border:3px solid var(--accent2);border-top-color:transparent;"></div>
                 </div>
             </div>
-            <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
-            <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
+            <p style="font-size:8px;font-weight:900;letter-spacing:4px;color:#374151;text-transform:uppercase;margin-bottom:4px;">CARGANDO SERVIDOR</p>
+            <p style="font-size:7px;font-weight:700;letter-spacing:2px;color:#1f2937;text-transform:uppercase;">Por favor espera...</p>
         </div>
     </div>
 
-    <!-- Info bar -->
-    <div class="flex-shrink-0 px-4 py-2 flex items-center justify-between" style="background:rgba(10,10,10,0.99); border-top:1px solid rgba(255,255,255,0.04);">
-        <span class="text-[8px] text-gray-700 font-bold tracking-widest uppercase">SOY LUNA</span>
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.2); color:var(--accent);">
-            <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:var(--accent);"></span>
-            HD
+    <!-- Bottom bar -->
+    <div style="flex-shrink:0;padding:8px 16px;background:rgba(10,10,10,.99);border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:8px;font-weight:800;color:#374151;letter-spacing:2px;text-transform:uppercase;">SOY LUNA</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--accent);">
+            <span class="live-pulse" style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;"></span> HD
         </span>
     </div>
 </div>
 
-<!-- ── TRAILER MODAL ── -->
-<div id="trailer-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center" style="background:rgba(0,0,0,0.9);">
-    <div class="relative w-full max-w-3xl mx-4">
-        <button onclick="closeTrailer()"
-            class="absolute -top-10 right-0 text-gray-400 hover:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+
+<!-- ═══════════════════════════ TRAILER MODAL ══════════════════════════ -->
+<div id="trailer-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.92);align-items:center;justify-content:center;">
+    <div style="position:relative;width:100%;max-width:820px;padding:0 16px;">
+        <button onclick="closeTrailer()" style="position:absolute;top:-40px;right:16px;background:none;border:none;color:#9ca3af;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:6px;">
             <i class="fas fa-times"></i> CERRAR
         </button>
-        <div style="aspect-ratio:16/9; background:#000; border-radius:16px; overflow:hidden;">
-            <iframe id="trailer-frame" class="w-full h-full" frameborder="0" allowfullscreen
-                allow="autoplay; encrypted-media"></iframe>
+        <div style="aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.1);">
+            <iframe id="trailer-frame" style="width:100%;height:100%;border:none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
     </div>
 </div>
 
 
+<!-- ═══════════════════════════════ JS ═════════════════════════════════ -->
 <script>
-    // ── State ──
-    const TMDB_ID   = 66203;
-    const IMDB_ID   = 'tt5189554';
-    const SEASONS   = { 1: 80, 2: 80, 3: 60 };
-    const TRAILER   = 'WnJxut5C6yY';
+    // ─── Constants ───────────────────────────────────────────────────────────────
+    const TMDB_ID = 66203;
+    const IMDB_ID = 'tt5189554';
+    const TRAILER = 'WnJxut5C6yY';
+    const SEASONS  = { 1: 80, 2: 80, 3: 60 };
+    const SEASON_DESCS = {
+        1: 'Las vacaciones de verano están por terminar. Los padres de Luna han decidido aceptar una oportunidad inesperada: mudarse de Cancún a Buenos Aires.',
+        2: 'Luna debe aprender a manejar sus emociones mientras su mundo se complica con nuevos personajes y revelaciones sobre su verdadera identidad.',
+        3: 'En la temporada final, los secretos salen a la luz y los sueños de Luna alcanzan su punto más alto sobre ruedas.'
+    };
 
-    let currentSeason  = 1;
-    let currentEpisode = 1;
-    let currentAudio   = 'latino';
+    // ─── Servers per audio ───────────────────────────────────────────────────────
+    const SERVERS = {
+        latino: [
+            { id: 'vl-vidlink',   label: 'Servidor 1', quality: 'HD',     fn: (s,e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
+            { id: 'vl-vidsrc',   label: 'Servidor 2', quality: 'HD',     fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { id: 'vl-embed',    label: 'Servidor 3', quality: 'HD',     fn: (s,e) => `https://multiembed.mov/?video_id=${IMDB_ID}&s=${s}&e=${e}` },
+            { id: 'vl-2embed',   label: 'Servidor 4', quality: 'HD',     fn: (s,e) => `https://www.2embed.cc/embedtv/${IMDB_ID}&s=${s}&e=${e}` },
+        ],
+        castellano: [
+            { id: 'ca-unlim',   label: 'Servidor 1', quality: '1080p',  fn: (s,e) => `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${s}/${e}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, extract: true },
+            { id: 'ca-vidsrc',  label: 'Servidor 2', quality: 'HD',     fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}?subtitle=es` },
+            { id: 'ca-2embed',  label: 'Servidor 3', quality: 'HD',     fn: (s,e) => `https://www.2embed.cc/embedtv/${IMDB_ID}&s=${s}&e=${e}` },
+            { id: 'ca-embedsu', label: 'Servidor 4', quality: 'HD',     fn: (s,e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
+        ]
+    };
 
-    // ── Season selector ──
-    function selectSeason(n) {
-        currentSeason = n;
-        document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`tab-s${n}`).classList.add('active');
-        document.getElementById('season-label').textContent = `TEMPORADA ${n}`;
-        document.getElementById('season-ep-count').textContent = `· ${SEASONS[n]} episodios`;
-        renderEpisodes();
+    // ─── State ───────────────────────────────────────────────────────────────────
+    let curSeason   = 1;
+    let curEpisode  = 1;
+    let curAudio    = 'latino';
+    let curServerIdx = 0;
+    let epCache     = {};
+
+    // ─── Season selection ────────────────────────────────────────────────────────
+    async function selectSeason(n, scroll = false) {
+        curSeason = n;
+        document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`stab-${n}`).classList.add('active');
+        document.getElementById('bar-season').textContent = `TEMPORADA ${n}`;
+        document.getElementById('season-desc').textContent = SEASON_DESCS[n] || '';
+        await loadEpisodes(n);
+        if (scroll) scrollToEps();
     }
 
-    function renderEpisodes() {
-        const count = SEASONS[currentSeason];
-        const grid  = document.getElementById('episode-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= count; i++) {
-            const isActive = (currentSeason === currentSeason && i === currentEpisode && document.getElementById('player-view').style.display !== 'none');
-            grid.insertAdjacentHTML('beforeend', `
-                <button onclick="startPlay(${currentSeason}, ${i})"
-                    class="ep-btn ${isActive ? 'active' : ''}"
-                    id="ep-${currentSeason}-${i}"
-                    title="Episodio ${i}">
-                    <div class="play-icon"><i class="fas fa-play text-white" style="font-size:10px"></i></div>
-                    <p class="text-[10px] font-black text-gray-400">${i}</p>
-                </button>
+    async function loadEpisodes(season) {
+        const list = document.getElementById('ep-list');
+
+        // Show skeletons if not cached
+        if (!epCache[season]) {
+            list.innerHTML = `
+                <div id="ep-skeletons">
+                    ${Array(5).fill('<div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>').join('')}
+                </div>`;
+            document.getElementById('bar-loading').style.display = '';
+        }
+
+        if (!epCache[season]) {
+            try {
+                const r = await fetch(`/api/series/${TMDB_ID}/season/${season}?lang=es-MX`);
+                epCache[season] = await r.json();
+            } catch (e) {
+                // Fallback: generate minimal data
+                epCache[season] = Array.from({ length: SEASONS[season] }, (_, i) => ({
+                    number: i + 1, name: `Episodio ${i+1}`, overview: '', runtime: 45, thumbnail: null
+                }));
+            }
+        }
+
+        document.getElementById('bar-loading').style.display = 'none';
+        const eps = epCache[season];
+        document.getElementById('bar-eps').textContent = `· ${eps.length} episodios`;
+
+        renderEpisodeList(eps);
+    }
+
+    function renderEpisodeList(eps) {
+        const list = document.getElementById('ep-list');
+        list.innerHTML = '';
+        eps.forEach(ep => {
+            const isPlaying = (ep.number === curEpisode && curSeason === curSeason);
+            const thumbUrl = ep.thumbnail || '';
+            const runtime  = ep.runtime ? `${ep.runtime} min` : '';
+            const title    = ep.name || `Episodio ${ep.number}`;
+            const desc     = ep.overview || '';
+
+            list.insertAdjacentHTML('beforeend', `
+                <div class="ep-card ${ep.number === curEpisode ? 'playing' : ''}"
+                     id="epc-${ep.number}"
+                     onclick="startPlay(${curSeason}, ${ep.number})">
+                    <div class="ep-thumb">
+                        ${thumbUrl
+                            ? `<img src="${thumbUrl}" alt="${title}" loading="lazy">`
+                            : `<div style="width:100%;height:100%;min-height:100px;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;">
+                                   <i class="fas fa-play" style="font-size:18px;color:rgba(168,85,247,.5);"></i>
+                               </div>`
+                        }
+                        <div class="play-over">
+                            <div class="play-circle">
+                                <i class="fas fa-play" style="font-size:14px;color:#fff;margin-left:2px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ep-info">
+                        <div class="ep-num">Episodio ${ep.number}</div>
+                        <div class="ep-title">${title}</div>
+                        ${desc ? `<div class="ep-desc">${desc}</div>` : ''}
+                        <div class="ep-meta">
+                            ${ep.number === curEpisode ? '<span class="watching-badge"><span style="width:5px;height:5px;border-radius:50%;background:#fff;display:inline-block;"></span> VIENDO</span>' : ''}
+                            ${runtime ? `<span class="ep-runtime"><i class="fas fa-clock" style="font-size:9px;margin-right:3px;opacity:.5;"></i>${runtime}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
             `);
+        });
+    }
+
+    function updatePlayingCard() {
+        document.querySelectorAll('.ep-card').forEach(c => c.classList.remove('playing'));
+        const card = document.getElementById(`epc-${curEpisode}`);
+        if (card) {
+            card.classList.add('playing');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
-    // ── Play ──
+    // ─── Playback ────────────────────────────────────────────────────────────────
     async function startPlay(season, episode) {
-        currentSeason  = season;
-        currentEpisode = episode;
+        const prevSeason = curSeason;
+        curSeason   = season;
+        curEpisode  = episode;
+        curServerIdx = 0;
 
-        // Show player
+        // If season changed, reload the episode list
+        if (season !== prevSeason) await selectSeason(season);
+        updatePlayingCard();
+        openPlayer();
+    }
+
+    function openPlayer() {
         const pv = document.getElementById('player-view');
-        pv.classList.remove('hidden');
-        pv.style.display = 'flex';
-        document.getElementById('player-title').textContent = `SOY LUNA · T${season} E${episode}`;
-        document.getElementById('player-ep-label').textContent = `T${season} · EP ${episode}`;
-        document.getElementById('player-loader').classList.remove('hidden');
+        pv.classList.add('open');
+        const title = epCache[curSeason]?.find(e => e.number === curEpisode)?.name || `Episodio ${curEpisode}`;
+        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode} — ${title}`;
+        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
+        renderServerButtons();
+        loadEmbed();
+    }
+
+    function closePlayer() {
+        document.getElementById('player-view').classList.remove('open');
         document.getElementById('video-frame').src = '';
+        updatePlayingCard();
+    }
 
-        // Highlight episode
-        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById(`ep-${season}-${episode}`);
-        if (btn) btn.classList.add('active');
+    function renderServerButtons() {
+        const servers = SERVERS[curAudio];
+        const container = document.getElementById('server-buttons');
+        container.innerHTML = '';
+        servers.forEach((srv, i) => {
+            container.insertAdjacentHTML('beforeend', `
+                <button class="srv-btn ${i === curServerIdx ? 'srv-active' : ''}"
+                        onclick="selectServer(${i})"
+                        title="${srv.quality}">
+                    ${srv.label}
+                    <span style="font-size:7px;opacity:.6;margin-left:2px;">${srv.quality}</span>
+                </button>
+            `);
+        });
+    }
 
-        await loadEmbed();
+    function selectServer(idx) {
+        curServerIdx = idx;
+        renderServerButtons();
+        loadEmbed();
+    }
+
+    function switchAudio(type) {
+        curAudio = type;
+        curServerIdx = 0;
+        document.querySelectorAll('.aud-tab').forEach(t => t.classList.remove('aud-active'));
+        document.getElementById(`aud-${type}`).classList.add('aud-active');
+        renderServerButtons();
+        loadEmbed();
     }
 
     async function loadEmbed() {
         const loader = document.getElementById('player-loader');
         const frame  = document.getElementById('video-frame');
-
-        loader.classList.remove('hidden');
+        loader.style.display = 'flex';
         frame.src = '';
 
-        let url;
-        if (currentAudio === 'latino') {
-            url = `https://vidlink.pro/tv/${TMDB_ID}/${currentSeason}/${currentEpisode}?primaryColor=a855f7&autoplay=true&title=false`;
-        } else {
-            url = `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${currentSeason}/${currentEpisode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`;
-        }
+        const srv = SERVERS[curAudio][curServerIdx];
+        let url   = srv.fn(curSeason, curEpisode);
 
-        // For unlimplay — extract ad-free embed
-        if (url.includes('unlimplay.com')) {
+        if (srv.extract) {
             try {
-                const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=castellano`);
-                const data = await resp.json();
-                if (data.embedUrl) {
-                    frame.onload = () => loader.classList.add('hidden');
-                    frame.src = data.embedUrl;
-                    return;
-                }
-            } catch (e) {
-                console.warn('Extract falló, fallback:', e.message);
-            }
+                const r = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=castellano`);
+                const d = await r.json();
+                if (d.embedUrl) url = d.embedUrl;
+            } catch (e) { /* fallback to original url */ }
         }
 
-        frame.onload = () => loader.classList.add('hidden');
-        setTimeout(() => { frame.src = url; }, 200);
+        frame.onload = () => { loader.style.display = 'none'; };
+        setTimeout(() => { frame.src = url; }, 150);
     }
 
-    function switchAudio(type) {
-        currentAudio = type;
-        document.querySelectorAll('.audio-tab').forEach(t => {
-            t.classList.remove('active-tab');
-            t.style.background = 'rgba(255,255,255,0.04)';
-            t.style.borderColor = 'rgba(255,255,255,0.08)';
-            t.style.color = '#6b7280';
-        });
-        const active = document.getElementById(`tab-${type}`);
-        if (active) {
-            active.classList.add('active-tab');
-            active.style.background = 'var(--accent2)';
-            active.style.borderColor = 'var(--accent2)';
-            active.style.color = '#fff';
-        }
+    // ─── Navigation ──────────────────────────────────────────────────────────────
+    function nextEp() {
+        const maxEp = SEASONS[curSeason];
+        if (curEpisode < maxEp) {
+            curEpisode++;
+        } else if (curSeason < 3) {
+            curSeason++;
+            curEpisode = 1;
+            selectSeason(curSeason);
+        } else return;
+        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode}`;
+        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
+        updatePlayingCard();
         loadEmbed();
     }
 
-    function closePlayer() {
-        const pv = document.getElementById('player-view');
-        pv.classList.add('hidden');
-        pv.style.display = 'none';
-        document.getElementById('video-frame').src = '';
-        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
-    }
-
-    function nextEpisode() {
-        const maxEp = SEASONS[currentSeason];
-        if (currentEpisode < maxEp) {
-            currentEpisode++;
-        } else if (currentSeason < 3) {
-            currentSeason++;
-            currentEpisode = 1;
-            selectSeason(currentSeason);
-        }
-        document.getElementById('player-title').textContent = `SOY LUNA · T${currentSeason} E${currentEpisode}`;
-        document.getElementById('player-ep-label').textContent = `T${currentSeason} · EP ${currentEpisode}`;
+    function prevEp() {
+        if (curEpisode > 1) {
+            curEpisode--;
+        } else if (curSeason > 1) {
+            curSeason--;
+            curEpisode = SEASONS[curSeason];
+            selectSeason(curSeason);
+        } else return;
+        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode}`;
+        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
+        updatePlayingCard();
         loadEmbed();
     }
 
-    function prevEpisode() {
-        if (currentEpisode > 1) {
-            currentEpisode--;
-        } else if (currentSeason > 1) {
-            currentSeason--;
-            currentEpisode = SEASONS[currentSeason];
-            selectSeason(currentSeason);
-        }
-        document.getElementById('player-title').textContent = `SOY LUNA · T${currentSeason} E${currentEpisode}`;
-        document.getElementById('player-ep-label').textContent = `T${currentSeason} · EP ${currentEpisode}`;
-        loadEmbed();
-    }
-
-    // ── Trailer ──
+    // ─── Trailer ─────────────────────────────────────────────────────────────────
     function openTrailer() {
-        document.getElementById('trailer-modal').classList.remove('hidden');
-        document.getElementById('trailer-modal').style.display = 'flex';
+        const m = document.getElementById('trailer-modal');
+        m.style.display = 'flex';
         document.getElementById('trailer-frame').src = `https://www.youtube.com/embed/${TRAILER}?autoplay=1`;
     }
     function closeTrailer() {
-        document.getElementById('trailer-modal').classList.add('hidden');
         document.getElementById('trailer-modal').style.display = 'none';
         document.getElementById('trailer-frame').src = '';
     }
-    document.getElementById('trailer-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeTrailer();
-    });
+    document.getElementById('trailer-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTrailer(); });
 
-    // ── Load cast from API ──
+    // ─── Scroll helpers ───────────────────────────────────────────────────────────
+    function scrollToEps() {
+        document.getElementById('episodes-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ─── Cast loader ─────────────────────────────────────────────────────────────
     async function loadCast() {
         try {
-            const resp = await fetch(`/api/series/${TMDB_ID}/details?lang=es-MX`);
-            const data = await resp.json();
+            const r = await fetch(`/api/series/${TMDB_ID}/details?lang=es-MX`);
+            const d = await r.json();
             const grid = document.getElementById('cast-grid');
-            if (!data.cast || !data.cast.length) return;
+            if (!d.cast?.length) return;
             grid.innerHTML = '';
-            data.cast.forEach(member => {
+            d.cast.forEach(member => {
                 const name    = typeof member === 'string' ? member : member.name;
-                const char    = typeof member === 'string' ? '' : (member.character || '');
-                const photo   = typeof member === 'string' ? null : member.photo;
-                const initials = name.split(' ').slice(0,2).map(w => w[0]).join('');
+                const char    = typeof member === 'object' ? (member.character || '') : '';
+                const photo   = typeof member === 'object' ? member.photo : null;
+                const initials = name.split(' ').slice(0,2).map(w=>w[0]).join('');
                 grid.insertAdjacentHTML('beforeend', `
                     <div class="cast-card">
-                        <div style="aspect-ratio:2/3; overflow:hidden; background:#1a1a1a;">
+                        <div style="aspect-ratio:2/3;overflow:hidden;background:#181818;">
                             ${photo
-                                ? `<img src="${photo}" alt="${name}" class="w-full h-full object-cover" loading="lazy">`
-                                : `<div class="w-full h-full flex items-center justify-center" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(124,58,237,0.2));">
-                                       <span class="font-black text-3xl" style="color:var(--accent);">${initials}</span>
+                                ? `<img src="${photo}" alt="${name}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">`
+                                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(124,58,237,.2));">
+                                       <span style="font-size:28px;font-weight:900;color:var(--accent);">${initials}</span>
                                    </div>`
                             }
                         </div>
-                        <div class="p-3">
-                            <p class="font-black text-xs text-white leading-tight truncate">${name}</p>
-                            ${char ? `<p class="text-[10px] text-gray-600 truncate mt-0.5">${char}</p>` : ''}
+                        <div style="padding:10px 8px;">
+                            <p style="font-size:11px;font-weight:900;color:#f3f4f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</p>
+                            ${char ? `<p style="font-size:9px;color:#4b5563;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${char}</p>` : ''}
                         </div>
                     </div>
                 `);
             });
-        } catch (e) {
-            console.warn('Cast load error:', e.message);
-        }
+        } catch (e) { console.warn('Cast error:', e); }
     }
 
-    // ── Init ──
-    renderEpisodes();
+    // ─── Responsive About ─────────────────────────────────────────────────────────
+    function setAboutResponsive() {
+        const about = document.querySelector('[data-about-grid]');
+        if (!about) return;
+        about.style.gridTemplateColumns = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────────
+    selectSeason(1);
     loadCast();
+
+    // Responsive about grid
+    document.addEventListener('DOMContentLoaded', () => {
+        const aboutGrid = document.querySelector('section:last-of-type > div > div:last-child');
+        if (window.innerWidth < 640 && aboutGrid) {
+            aboutGrid.style.gridTemplateColumns = '1fr';
+        }
+        window.addEventListener('resize', () => {
+            if (aboutGrid) aboutGrid.style.gridTemplateColumns = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
+        });
+    });
 </script>
 </body>
 </html>
