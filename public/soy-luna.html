@@ -209,29 +209,66 @@
         /* ── Player ── */
         #player-view {
             display: none; position: fixed; inset: 0; z-index: 300;
-            flex-direction: column; background: #060402;
+            flex-direction: column; background: #040205;
         }
         #player-view.open { display: flex; }
 
-        /* Server buttons */
-        .srv-btn {
-            padding: 5px 14px; border-radius: 99px;
-            font-size: 9px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
-            cursor: pointer; transition: all .2s; border: 1px solid rgba(255,255,255,.1);
-            background: rgba(255,255,255,.04); color: #6b7280; white-space: nowrap;
+        /* Glass panel base */
+        .glass-panel {
+            background: rgba(15, 10, 22, 0.82);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid rgba(168,85,247,.12);
         }
-        .srv-btn:hover:not(.srv-active) { border-color: rgba(168,85,247,.35); color: var(--accent); }
-        .srv-btn.srv-active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+        .glass-panel-bottom {
+            background: rgba(15, 10, 22, 0.82);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-top: 1px solid rgba(168,85,247,.12);
+        }
 
-        /* Audio tabs */
+        /* Audio tabs — glass pill style */
         .aud-tab {
-            padding: 5px 14px; border-radius: 99px;
-            font-size: 9px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
-            cursor: pointer; transition: all .2s; border: 1px solid rgba(255,255,255,.1);
-            background: rgba(255,255,255,.04); color: #6b7280;
+            position: relative;
+            padding: 7px 18px; border-radius: 99px;
+            font-size: 9px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase;
+            cursor: pointer; transition: all .25s cubic-bezier(.4,0,.2,1);
+            border: 1px solid rgba(255,255,255,.08);
+            background: rgba(255,255,255,.04); color: #4b5563;
+            overflow: hidden;
         }
-        .aud-tab.aud-active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
-        .aud-tab:hover:not(.aud-active) { border-color: rgba(168,85,247,.3); color: var(--accent); }
+        .aud-tab::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(168,85,247,.15), rgba(124,58,237,.08));
+            opacity: 0; transition: opacity .25s;
+            border-radius: inherit;
+        }
+        .aud-tab.aud-active {
+            background: rgba(168,85,247,.18);
+            border-color: rgba(168,85,247,.55);
+            color: #e9d5ff;
+            box-shadow: 0 0 18px rgba(168,85,247,.25), inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .aud-tab.aud-active::before { opacity: 1; }
+        .aud-tab:hover:not(.aud-active) { border-color: rgba(168,85,247,.25); color: #9ca3af; }
+
+        /* Nav buttons glass */
+        .nav-glass-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 16px; border-radius: 99px;
+            font-size: 8px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer; transition: all .25s; white-space: nowrap;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.07);
+            color: #4b5563;
+        }
+        .nav-glass-btn:hover {
+            background: rgba(168,85,247,.1);
+            border-color: rgba(168,85,247,.35);
+            color: #c084fc;
+            box-shadow: 0 0 14px rgba(168,85,247,.15);
+        }
 
         /* Spinner */
         @keyframes spin { to { transform:rotate(360deg); } }
@@ -511,79 +548,147 @@
 
 <!-- ═══════════════════════════ PLAYER OVERLAY ════════════════════════ -->
 <div id="player-view">
-    <!-- Top accent -->
-    <div style="flex-shrink:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);"></div>
 
-    <!-- Header -->
-    <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(10,10,10,.99);border-bottom:1px solid rgba(255,255,255,.06);">
-        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-            <button onclick="closePlayer()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;">
-                <i class="fas fa-chevron-left" style="font-size:10px;color:#9ca3af;"></i>
+    <!-- Top rainbow line -->
+    <div style="flex-shrink:0;height:2px;background:linear-gradient(90deg,#7c3aed,#a855f7,#c084fc,#a855f7,transparent);"></div>
+
+    <!-- ── GLASS HEADER ── -->
+    <div class="glass-panel" style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:10px;">
+
+        <!-- Left: back + title -->
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">
+            <button onclick="closePlayer()"
+                style="width:36px;height:36px;border-radius:50%;
+                       background:rgba(168,85,247,.1);
+                       border:1px solid rgba(168,85,247,.3);
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;
+                       flex-shrink:0;transition:all .2s;
+                       box-shadow:0 0 12px rgba(168,85,247,.15);">
+                <i class="fas fa-chevron-left" style="font-size:10px;color:#c084fc;"></i>
             </button>
             <div style="min-width:0;">
-                <h3 id="player-title" style="font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SOY LUNA</h3>
-                <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-                    <span class="live-pulse" style="width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);display:inline-block;"></span>
-                    <span style="font-size:8px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--accent);">REPRODUCIENDO</span>
+                <h3 id="player-title"
+                    style="font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;
+                           letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                           background:linear-gradient(135deg,#fff 0%,#e9d5ff 50%,#c084fc 100%);
+                           -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                    SOY LUNA
+                </h3>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                    <span class="live-pulse" style="width:5px;height:5px;border-radius:50%;background:#a855f7;box-shadow:0 0 8px #a855f7;display:inline-block;flex-shrink:0;"></span>
+                    <span style="font-size:7.5px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:#7c3aed;">REPRODUCIENDO</span>
                 </div>
             </div>
         </div>
+
+        <!-- Right: badge + close -->
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-            <span id="player-ep-badge" style="font-size:9px;font-weight:800;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;"></span>
-            <button onclick="closePlayer()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+            <span id="player-ep-badge"
+                style="padding:4px 12px;border-radius:99px;
+                       background:rgba(168,85,247,.12);
+                       border:1px solid rgba(168,85,247,.3);
+                       font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+                       color:#c084fc;white-space:nowrap;"></span>
+            <button onclick="closePlayer()"
+                style="width:32px;height:32px;border-radius:50%;
+                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
                 <i class="fas fa-times" style="font-size:11px;color:#4b5563;"></i>
             </button>
         </div>
     </div>
 
-    <!-- Audio + Server Row -->
-    <div style="flex-shrink:0;padding:8px 16px;background:rgba(10,10,10,.99);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;flex-wrap:wrap;overflow-x:auto;">
-        <!-- Audio tabs -->
+    <!-- ── GLASS CONTROLS BAR ── -->
+    <div class="glass-panel" style="flex-shrink:0;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+
+        <!-- Audio pills -->
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <button class="aud-tab aud-active" id="aud-latino"    onclick="switchAudio('latino')">🎙 LATINO</button>
-            <button class="aud-tab"             id="aud-castellano" onclick="switchAudio('castellano')">🇪🇸 CASTELLANO</button>
+            <button class="aud-tab aud-active" id="aud-latino"     onclick="switchAudio('latino')">🎙 LATINO</button>
+            <button class="aud-tab"            id="aud-castellano" onclick="switchAudio('castellano')">🇪🇸 CASTELLANO</button>
         </div>
-        <!-- Divider -->
-        <div style="width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0;"></div>
-        <!-- Server buttons -->
-        <div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;" id="server-buttons">
-            <!-- filled by JS -->
+
+        <!-- Thin glass divider -->
+        <div style="width:1px;height:22px;background:linear-gradient(to bottom,transparent,rgba(168,85,247,.3),transparent);flex-shrink:0;"></div>
+
+        <!-- Server indicator (single, no switch needed) -->
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="display:inline-flex;align-items:center;gap:6px;
+                         padding:6px 14px;border-radius:99px;
+                         background:rgba(168,85,247,.12);
+                         border:1px solid rgba(168,85,247,.35);
+                         font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+                         color:#c084fc;
+                         box-shadow:0 0 14px rgba(168,85,247,.15),inset 0 1px 0 rgba(255,255,255,.07);">
+                <i class="fas fa-server" style="font-size:7px;opacity:.8;"></i>
+                VSEMBED
+                <span style="font-size:7px;opacity:.6;font-weight:700;">1080p</span>
+            </span>
         </div>
-        <!-- Divider -->
-        <div style="width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0;display:none;" id="nav-div" class="hidden md:block"></div>
-        <!-- Prev/Next -->
-        <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0;">
-            <button onclick="prevEp()" style="padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#6b7280;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;">
-                <i class="fas fa-backward" style="font-size:8px;margin-right:3px;"></i> ANTERIOR
+
+        <!-- Prev / Next — pushed right -->
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;">
+            <button class="nav-glass-btn" onclick="prevEp()">
+                <i class="fas fa-backward-step" style="font-size:9px;"></i> ANTERIOR
             </button>
-            <button onclick="nextEp()" style="padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#6b7280;font-size:8px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;">
-                <i class="fas fa-forward" style="font-size:8px;margin-right:3px;"></i> SIGUIENTE
+            <button class="nav-glass-btn" onclick="nextEp()"
+                style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.3);color:#c084fc;">
+                SIGUIENTE <i class="fas fa-forward-step" style="font-size:9px;"></i>
             </button>
         </div>
     </div>
 
-    <!-- Video -->
+    <!-- ── VIDEO ── -->
     <div style="flex:1;position:relative;background:#000;min-height:0;">
         <iframe id="video-frame" style="width:100%;height:100%;border:none;"
             allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+
         <!-- Loader -->
-        <div id="player-loader" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#060402;">
-            <div style="position:relative;margin-bottom:20px;">
-                <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(168,85,247,.2);display:flex;align-items:center;justify-content:center;">
-                    <div class="spinner" style="width:44px;height:44px;border-radius:50%;border:3px solid var(--accent2);border-top-color:transparent;"></div>
+        <div id="player-loader"
+            style="position:absolute;inset:0;display:flex;flex-direction:column;
+                   align-items:center;justify-content:center;
+                   background:radial-gradient(ellipse at center,#0f0a1a 0%,#040205 100%);">
+            <!-- Glow rings -->
+            <div style="position:relative;width:80px;height:80px;margin-bottom:24px;">
+                <div style="position:absolute;inset:-8px;border-radius:50%;
+                            border:1px solid rgba(168,85,247,.15);animation:spin 4s linear infinite;"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;
+                            border:2px solid transparent;
+                            border-top-color:rgba(168,85,247,.7);
+                            border-right-color:rgba(192,132,252,.3);
+                            animation:spin 1s cubic-bezier(.5,0,.5,1) infinite;"></div>
+                <div style="position:absolute;inset:12px;border-radius:50%;
+                            background:rgba(168,85,247,.08);
+                            display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-play" style="font-size:16px;color:rgba(192,132,252,.6);margin-left:3px;"></i>
                 </div>
             </div>
-            <p style="font-size:8px;font-weight:900;letter-spacing:4px;color:#374151;text-transform:uppercase;margin-bottom:4px;">CARGANDO SERVIDOR</p>
-            <p style="font-size:7px;font-weight:700;letter-spacing:2px;color:#1f2937;text-transform:uppercase;">Por favor espera...</p>
+            <p style="font-size:8px;font-weight:900;letter-spacing:5px;color:#3b1f5a;text-transform:uppercase;margin-bottom:6px;">CARGANDO</p>
+            <p style="font-size:7px;font-weight:700;letter-spacing:2px;color:#1f1030;text-transform:uppercase;">vsembed · 1080p</p>
         </div>
     </div>
 
-    <!-- Bottom bar -->
-    <div style="flex-shrink:0;padding:8px 16px;background:rgba(10,10,10,.99);border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:8px;font-weight:800;color:#374151;letter-spacing:2px;text-transform:uppercase;">SOY LUNA</span>
-        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--accent);">
-            <span class="live-pulse" style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;"></span> HD
-        </span>
+    <!-- ── GLASS BOTTOM BAR ── -->
+    <div class="glass-panel-bottom" style="flex-shrink:0;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:8px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+                         background:linear-gradient(135deg,#7c3aed,#c084fc);
+                         -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                SOY LUNA
+            </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span id="bottom-audio-label"
+                style="font-size:7px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#4b5563;">
+                LATINO
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;
+                         padding:4px 12px;border-radius:99px;
+                         background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);
+                         font-size:7.5px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#a855f7;">
+                <span class="live-pulse" style="width:4px;height:4px;border-radius:50%;background:#a855f7;display:inline-block;"></span>
+                1080p
+            </span>
+        </div>
     </div>
 </div>
 
@@ -614,21 +719,8 @@
         3: 'En la temporada final, los secretos salen a la luz y los sueños de Luna alcanzan su punto más alto sobre ruedas.'
     };
 
-    // ─── Servers per audio ───────────────────────────────────────────────────────
-    const SERVERS = {
-        latino: [
-            { id: 'vl-vsembed',  label: 'Servidor 1', quality: '1080p', fn: (s,e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}` },
-            { id: 'vl-vidlink',  label: 'Servidor 2', quality: 'HD',    fn: (s,e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
-            { id: 'vl-vidsrc',  label: 'Servidor 3', quality: 'HD',    fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
-            { id: 'vl-embed',   label: 'Servidor 4', quality: 'HD',    fn: (s,e) => `https://multiembed.mov/?video_id=${IMDB_ID}&s=${s}&e=${e}` },
-        ],
-        castellano: [
-            { id: 'ca-vsembed', label: 'Servidor 1', quality: '1080p', fn: (s,e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}` },
-            { id: 'ca-unlim',   label: 'Servidor 2', quality: '1080p', fn: (s,e) => `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${s}/${e}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, extract: true },
-            { id: 'ca-vidsrc',  label: 'Servidor 3', quality: 'HD',    fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}?subtitle=es` },
-            { id: 'ca-embedsu', label: 'Servidor 4', quality: 'HD',    fn: (s,e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
-        ]
-    };
+    // ─── Embed URL (único servidor: vsembed.ru) ──────────────────────────────────
+    const getEmbedUrl = (s, e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}`;
 
     // ─── State ───────────────────────────────────────────────────────────────────
     let curSeason   = 1;
@@ -912,13 +1004,15 @@
         openPlayer();
     }
 
+    function setPlayerTitle(s, e) {
+        const title = epCache[s]?.find(ep => ep.number === e)?.name || `Episodio ${e}`;
+        document.getElementById('player-title').textContent = `SOY LUNA · T${s} E${e} — ${title}`;
+        document.getElementById('player-ep-badge').textContent = `T${s} · EP ${e}`;
+    }
+
     function openPlayer() {
-        const pv = document.getElementById('player-view');
-        pv.classList.add('open');
-        const title = epCache[curSeason]?.find(e => e.number === curEpisode)?.name || `Episodio ${curEpisode}`;
-        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode} — ${title}`;
-        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
-        renderServerButtons();
+        document.getElementById('player-view').classList.add('open');
+        setPlayerTitle(curSeason, curEpisode);
         loadEmbed();
     }
 
@@ -934,54 +1028,21 @@
         updateHeroCTA();
     }
 
-    function renderServerButtons() {
-        const servers = SERVERS[curAudio];
-        const container = document.getElementById('server-buttons');
-        container.innerHTML = '';
-        servers.forEach((srv, i) => {
-            container.insertAdjacentHTML('beforeend', `
-                <button class="srv-btn ${i === curServerIdx ? 'srv-active' : ''}"
-                        onclick="selectServer(${i})"
-                        title="${srv.quality}">
-                    ${srv.label}
-                    <span style="font-size:7px;opacity:.6;margin-left:2px;">${srv.quality}</span>
-                </button>
-            `);
-        });
-    }
-
-    function selectServer(idx) {
-        curServerIdx = idx;
-        renderServerButtons();
-        loadEmbed();
-    }
-
     function switchAudio(type) {
         curAudio = type;
-        curServerIdx = 0;
         document.querySelectorAll('.aud-tab').forEach(t => t.classList.remove('aud-active'));
         document.getElementById(`aud-${type}`).classList.add('aud-active');
-        renderServerButtons();
+        const label = document.getElementById('bottom-audio-label');
+        if (label) label.textContent = type === 'latino' ? 'LATINO' : 'CASTELLANO';
         loadEmbed();
     }
 
-    async function loadEmbed() {
+    function loadEmbed() {
         const loader = document.getElementById('player-loader');
         const frame  = document.getElementById('video-frame');
         loader.style.display = 'flex';
         frame.src = '';
-
-        const srv = SERVERS[curAudio][curServerIdx];
-        let url   = srv.fn(curSeason, curEpisode);
-
-        if (srv.extract) {
-            try {
-                const r = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=castellano`);
-                const d = await r.json();
-                if (d.embedUrl) url = d.embedUrl;
-            } catch (e) { /* fallback to original url */ }
-        }
-
+        const url = getEmbedUrl(curSeason, curEpisode);
         frame.onload = () => { loader.style.display = 'none'; };
         setTimeout(() => { frame.src = url; }, 150);
     }
@@ -998,8 +1059,7 @@
             curEpisode = 1;
             selectSeason(curSeason);
         } else return;
-        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode}`;
-        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
+        setPlayerTitle(curSeason, curEpisode);
         updatePlayingCard();
         updateSeasonProgress();
         updateHeroCTA();
@@ -1014,8 +1074,7 @@
             curEpisode = SEASONS[curSeason];
             selectSeason(curSeason);
         } else return;
-        document.getElementById('player-title').textContent = `SOY LUNA · T${curSeason} E${curEpisode}`;
-        document.getElementById('player-ep-badge').textContent = `T${curSeason} · EP ${curEpisode}`;
+        setPlayerTitle(curSeason, curEpisode);
         updatePlayingCard();
         loadEmbed();
     }
