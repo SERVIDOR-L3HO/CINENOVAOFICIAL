@@ -369,35 +369,6 @@ app.get('/api/proxy/extract', async (req, res) => {
       return res.json({ embedUrl: entry.embed_url, language: entry.language, source: 'unlimplay' });
     }
 
-    // ── vsembed.ru: extraer iframe de cloudorchestranova para reproducción limpia ──
-    if (host.includes('vsembed.ru')) {
-      const resp = await axios.get(inputUrl, {
-        timeout: 15000,
-        responseType: 'text',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Referer': 'https://vsembed.ru/',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        }
-      });
-
-      const html = resp.data;
-
-      // Extraer src del iframe principal (cloudorchestranova.com/rcp/<hash>)
-      const iframeMatch = html.match(/id=["']player_iframe["'][^>]+src=["']([^"']+)["']/i)
-        || html.match(/src=["']([^"']*cloudorc[^"']+)["']/i)
-        || html.match(/<iframe[^>]+src=["']([^"']*\/rcp\/[^"']+)["']/i);
-
-      if (!iframeMatch || !iframeMatch[1]) {
-        return res.json({ embedUrl: null, error: 'No se encontró el iframe de vsembed' });
-      }
-
-      let embedUrl = iframeMatch[1];
-      if (embedUrl.startsWith('//')) embedUrl = 'https:' + embedUrl;
-
-      return res.json({ embedUrl, source: 'vsembed' });
-    }
-
     res.json({ embedUrl: null, error: 'Proveedor no soportado' });
 
   } catch (err) {
