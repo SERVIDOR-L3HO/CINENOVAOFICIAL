@@ -16,9 +16,7 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
     latino: [
       {
         name: 'Servidor 1',
-        url: useImdb
-          ? `https://multiembed.mov/?video_id=${imdbId}&s=${season}&e=${episode}`
-          : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`,
+        url: `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=38bdf8&autoplay=true&title=false`,
         quality: 'HD'
       }
     ],

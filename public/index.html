@@ -1401,9 +1401,10 @@
             // ── Servidor Castellano (unlimplay) → cargar embed directo sin anuncios ──
             // Llamamos a la API interna de unlimplay para obtener la URL del embed
             // que se carga DESPUÉS de los anuncios, y la ponemos directo en el iframe.
-            if (url.includes('unlimplay.com')) {
+            if (url.includes('unlimplay.com') || url.includes('verhdlink.cam')) {
                 try {
-                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}`);
+                    const extractLang = url.includes('verhdlink.cam') ? currentAudioType : currentAudioType;
+                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=${extractLang}`);
                     const data = await resp.json();
 
                     if (data.embedUrl) {
@@ -1413,7 +1414,7 @@
                         return;
                     }
                 } catch (e) {
-                    console.warn('API unlimplay falló, usando URL directa:', e.message);
+                    console.warn('Extract falló, usando URL directa:', e.message);
                 }
                 // Fallback: cargar la URL original directamente
                 showIframe();

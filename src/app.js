@@ -282,48 +282,94 @@ app.get('/api/proxy/embed', async (req, res) => {
   }
 });
 
-// ── Obtiene el embed directo (sin anuncios) desde la API interna de unlimplay ──
-// La página /play/embed/ muestra anuncios preroll. La API /play.php/embed/?api=1
-// devuelve la URL del embed interno que se carga DESPUÉS de los anuncios.
-// Cargando esa URL directamente en el iframe saltamos toda la publicidad.
+// ── Extractor de embed directo sin anuncios ──
+// Soporta: unlimplay.com y verhdlink.cam
 app.get('/api/proxy/extract', async (req, res) => {
   try {
-    const { url } = req.query;
+    const { url, lang } = req.query;
     if (!url) return res.status(400).json({ error: 'URL requerida' });
 
-    const unlimUrl = decodeURIComponent(url);
-    const parsedUnlim = new URL(unlimUrl);
+    const inputUrl = decodeURIComponent(url);
+    const parsedUrl = new URL(inputUrl);
+    const host = parsedUrl.hostname;
 
-    // Convertir  /play/embed/movie/ID  →  /play.php/embed/movie/ID?api=1&background=1
-    const apiPath = parsedUnlim.pathname.replace('/play/embed/', '/play.php/embed/');
-    const apiUrl  = `${parsedUnlim.origin}${apiPath}?api=1&background=1&t=${Date.now()}`;
+    // ── verhdlink.cam: parsear data-link del primer servidor activo ──
+    if (host.includes('verhdlink.cam')) {
+      const audioType = (lang || 'latino').toLowerCase(); // 'latino' | 'castellano'
 
-    const resp = await axios.get(apiUrl, {
-      timeout: 20000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Referer': unlimUrl,
-        'Accept': 'application/json, text/plain, */*',
-        'X-Requested-With': 'XMLHttpRequest',
+      const resp = await axios.get(inputUrl, {
+        timeout: 15000,
+        responseType: 'text',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': 'https://verhdlink.cam/',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        }
+      });
+
+      const html = resp.data;
+
+      // Extraer el bloque <ul class="_player-mirrors [tipo] ... active"> 
+      // que corresponde al idioma seleccionado
+      const ulPattern = new RegExp(
+        `<ul[^>]+_player-mirrors[^>]+${audioType}[^>]+active[^>]*>([\\s\\S]*?)<\\/ul>`,
+        'i'
+      );
+      const ulMatch = html.match(ulPattern);
+
+      if (!ulMatch) {
+        return res.json({ embedUrl: null, error: `No se encontró la lista de servidores (${audioType})` });
       }
-    });
 
-    const data = resp.data;
-    if (!data || !data.success || !Array.isArray(data.data)) {
-      return res.json({ embedUrl: null, error: 'Respuesta inesperada de la API de unlimplay' });
+      // Dentro del bloque, tomar el primer data-link disponible
+      const linkMatch = ulMatch[1].match(/data-link=["']([^"']+)["']/i);
+      if (!linkMatch || !linkMatch[1]) {
+        return res.json({ embedUrl: null, error: 'No se encontró data-link en verhdlink' });
+      }
+
+      let embedUrl = linkMatch[1];
+      // Corregir protocol-relative
+      if (embedUrl.startsWith('//')) embedUrl = 'https:' + embedUrl;
+
+      return res.json({ embedUrl, source: 'verhdlink' });
     }
 
-    // Buscar primero "espanol" (castellano), luego "latino" como fallback
-    const entry =
-      data.data.find(d => d.language === 'espanol') ||
-      data.data.find(d => d.language === 'latino')  ||
-      data.data[0];
+    // ── unlimplay.com: API interna /play.php/embed/?api=1 ──
+    if (host.includes('unlimplay.com')) {
+      const apiPath = parsedUrl.pathname.replace('/play/embed/', '/play.php/embed/');
+      const apiUrl  = `${parsedUrl.origin}${apiPath}?api=1&background=1&t=${Date.now()}`;
 
-    if (!entry || !entry.embed_url) {
-      return res.json({ embedUrl: null, error: 'No se encontró embed_url en la API' });
+      const resp = await axios.get(apiUrl, {
+        timeout: 20000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': inputUrl,
+          'Accept': 'application/json, text/plain, */*',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
+
+      const data = resp.data;
+      if (!data || !data.success || !Array.isArray(data.data)) {
+        return res.json({ embedUrl: null, error: 'Respuesta inesperada de unlimplay API' });
+      }
+
+      // Para castellano buscar "espanol", para latino buscar "latino"
+      const wantLang  = (lang === 'castellano') ? 'espanol' : 'latino';
+      const entry =
+        data.data.find(d => d.language === wantLang) ||
+        data.data.find(d => d.language === 'espanol') ||
+        data.data.find(d => d.language === 'latino')  ||
+        data.data[0];
+
+      if (!entry || !entry.embed_url) {
+        return res.json({ embedUrl: null, error: 'No se encontró embed_url en unlimplay API' });
+      }
+
+      return res.json({ embedUrl: entry.embed_url, language: entry.language, source: 'unlimplay' });
     }
 
-    res.json({ embedUrl: entry.embed_url, language: entry.language });
+    res.json({ embedUrl: null, error: 'Proveedor no soportado' });
 
   } catch (err) {
     console.error('Extract error:', err.message);
