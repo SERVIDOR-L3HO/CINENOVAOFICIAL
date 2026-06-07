@@ -101,79 +101,109 @@
             box-shadow: 0 0 22px rgba(168,85,247,.45);
         }
 
-        /* ── Episode card ── */
+        /* ── Episode card — vertical cinematic style ── */
         .ep-card {
-            display: flex; gap: 0;
+            position: relative;
             background: var(--card);
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,.06);
             cursor: pointer;
-            transition: all .22s ease;
-            position: relative;
+            transition: all .25s ease;
         }
         .ep-card:hover {
-            border-color: rgba(168,85,247,.45);
-            background: #1e1e1e;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,.5);
+            border-color: rgba(168,85,247,.5);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(168,85,247,.2);
         }
         .ep-card.playing {
-            border-color: var(--accent2);
-            box-shadow: 0 0 0 1px var(--accent2), 0 8px 30px rgba(168,85,247,.3);
+            border-color: rgba(255,255,255,.75);
+            box-shadow: 0 0 0 2px rgba(255,255,255,.2), 0 12px 40px rgba(0,0,0,.5);
         }
 
-        /* Thumbnail */
+        /* Thumbnail — full width 16:9 */
         .ep-thumb {
             position: relative;
-            flex-shrink: 0;
-            width: 180px;
+            width: 100%;
+            aspect-ratio: 16/9;
             background: #111;
             overflow: hidden;
         }
-        @media (max-width: 640px) { .ep-thumb { width: 130px; } }
         .ep-thumb img {
             width: 100%; height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform .3s;
+            transition: transform .4s ease;
         }
-        .ep-card:hover .ep-thumb img { transform: scale(1.05); }
+        .ep-card:hover .ep-thumb img { transform: scale(1.04); }
 
-        /* Play overlay */
+        /* Gradient overlay on thumbnail */
+        .ep-thumb .thumb-gradient {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top,
+                rgba(0,0,0,.9) 0%,
+                rgba(0,0,0,.5) 40%,
+                rgba(0,0,0,.1) 70%,
+                transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Text overlaid on thumbnail bottom */
+        .ep-thumb-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 14px 14px 12px;
+        }
+        .ep-num {
+            font-size: 11px; font-weight: 800; color: rgba(255,255,255,.55);
+            letter-spacing: .5px; margin-bottom: 3px;
+        }
+        .ep-title {
+            font-size: 15px; font-weight: 900; color: #fff;
+            line-height: 1.25; overflow: hidden;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+
+        /* Play button overlay on hover / playing */
         .ep-thumb .play-over {
             position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,.55);
-            opacity: 0; transition: opacity .2s;
+            background: rgba(0,0,0,.35);
+            opacity: 0; transition: opacity .22s;
+            pointer-events: none;
         }
         .ep-card:hover .play-over { opacity: 1; }
-        .ep-card.playing .play-over { opacity: 1; background: rgba(168,85,247,.35); }
+        .ep-card.playing .play-over { opacity: 1; }
         .play-over .play-circle {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: rgba(255,255,255,.15);
-            backdrop-filter: blur(8px);
-            border: 2px solid rgba(255,255,255,.5);
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(255,255,255,.18);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,.65);
             display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 28px rgba(0,0,0,.5);
         }
-
-        /* Episode info */
-        .ep-info { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-        .ep-num { font-size: 10px; font-weight: 800; color: #6b7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-        .ep-title { font-size: 14px; font-weight: 800; color: #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-        @media (max-width: 480px) { .ep-title { font-size: 12px; } }
-        .ep-desc { font-size: 11px; color: #6b7280; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        @media (max-width: 480px) { .ep-desc { display: none; } }
-        .ep-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .ep-runtime { font-size: 10px; font-weight: 700; color: #4b5563; }
 
         /* WATCHING badge */
         .watching-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 2px 8px; border-radius: 4px;
-            background: var(--accent2); color: #fff;
-            font-size: 9px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 9px; border-radius: 5px;
+            background: #ef4444; color: #fff;
+            font-size: 9px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase;
+            box-shadow: 0 2px 10px rgba(239,68,68,.4);
         }
+
+        /* Episode info row below thumbnail */
+        .ep-info {
+            padding: 10px 14px 12px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        .ep-desc {
+            font-size: 11px; color: #4b5563; line-height: 1.5;
+            overflow: hidden; display: -webkit-box;
+            -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            margin-bottom: 6px;
+        }
+        .ep-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .ep-runtime { font-size: 10px; font-weight: 700; color: #4b5563; }
 
         /* Episode skeleton */
         .skel { background: rgba(255,255,255,.06); border-radius: 8px; animation: shimmer 1.5s infinite; }
@@ -321,8 +351,22 @@
             transition: width .4s ease;
         }
 
-        /* Scroll episodes list */
-        #ep-list { max-height: 70vh; overflow-y: auto; scroll-behavior: smooth; }
+        /* Episodes grid */
+        #ep-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 500px) {
+            #ep-list { grid-template-columns: 1fr; gap: 10px; }
+        }
+
+        /* No thumbnail fallback */
+        .ep-no-thumb {
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(168,85,247,.2), rgba(124,58,237,.1));
+            display: flex; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -452,15 +496,12 @@
         </div>
 
         <!-- Episode list -->
-        <div id="ep-list" style="display:flex;flex-direction:column;gap:8px;">
+        <div id="ep-list">
             <!-- Skeletons -->
-            <div id="ep-skeletons">
-                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
-                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
-                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
-                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
-                <div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>
-            </div>
+            <div class="skel" style="aspect-ratio:16/9;border-radius:16px;"></div>
+            <div class="skel" style="aspect-ratio:16/9;border-radius:16px;"></div>
+            <div class="skel" style="aspect-ratio:16/9;border-radius:16px;"></div>
+            <div class="skel" style="aspect-ratio:16/9;border-radius:16px;"></div>
         </div>
     </div>
 </section>
@@ -905,10 +946,7 @@
 
         // Show skeletons if not cached
         if (!epCache[season]) {
-            list.innerHTML = `
-                <div id="ep-skeletons">
-                    ${Array(5).fill('<div class="skel" style="height:100px;border-radius:14px;margin-bottom:8px;"></div>').join('')}
-                </div>`;
+            list.innerHTML = Array(4).fill('<div class="skel" style="aspect-ratio:16/9;border-radius:16px;"></div>').join('');
             document.getElementById('bar-loading').style.display = '';
         }
 
@@ -937,45 +975,74 @@
         list.innerHTML = '';
         eps.forEach(ep => {
             const watched  = isWatched(curSeason, ep.number);
-            const playing  = (ep.number === curEpisode);
+            const playing  = (ep.number === curEpisode && curSeason === curSeason);
             const thumbUrl = ep.thumbnail || '';
-            const runtime  = ep.runtime ? `${ep.runtime} min` : '';
+            const runtime  = ep.runtime ? `${ep.runtime} min` : '45 min';
             const title    = ep.name || `Episodio ${ep.number}`;
-            const desc     = ep.overview || '';
 
             list.insertAdjacentHTML('beforeend', `
-                <div class="ep-card ${playing ? 'playing' : ''} ${watched ? 'watched' : ''}"
+                <div class="ep-card ${playing ? 'playing' : ''} ${watched && !playing ? 'watched' : ''}"
                      id="epc-${ep.number}"
                      onclick="startPlay(${curSeason}, ${ep.number})">
+
+                    <!-- Thumbnail -->
                     <div class="ep-thumb">
                         ${thumbUrl
                             ? `<img src="${thumbUrl}" alt="${title}" loading="lazy">`
-                            : `<div style="width:100%;height:100%;min-height:100px;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;">
-                                   <i class="fas fa-play" style="font-size:18px;color:rgba(168,85,247,.5);"></i>
+                            : `<div class="ep-no-thumb">
+                                   <i class="fas fa-film" style="font-size:24px;color:rgba(168,85,247,.35);"></i>
                                </div>`
                         }
+
+                        <!-- Gradient overlay -->
+                        <div class="thumb-gradient"></div>
+
+                        <!-- Play circle (hover / playing) -->
                         <div class="play-over">
                             <div class="play-circle">
-                                <i class="fas fa-play" style="font-size:14px;color:#fff;margin-left:2px;"></i>
+                                <i class="fas fa-play" style="font-size:16px;color:#fff;margin-left:3px;"></i>
                             </div>
                         </div>
-                        ${watched ? '<div class="check-badge"><i class="fas fa-check"></i></div>' : ''}
-                    </div>
-                    <div class="ep-info">
-                        <div class="ep-num">Episodio ${ep.number}</div>
-                        <div class="ep-title">${title}</div>
-                        ${desc ? `<div class="ep-desc">${desc}</div>` : ''}
-                        <div class="ep-meta">
-                            ${playing ? '<span class="watching-badge"><span style="width:5px;height:5px;border-radius:50%;background:#fff;display:inline-block;"></span> VIENDO</span>' : ''}
-                            ${watched && !playing ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;color:#22c55e;text-transform:uppercase;letter-spacing:.5px;"><i class="fas fa-check-circle"></i> VISTO</span>' : ''}
-                            ${runtime ? `<span class="ep-runtime"><i class="fas fa-clock" style="font-size:9px;margin-right:3px;opacity:.5;"></i>${runtime}</span>` : ''}
-                            <button class="watch-toggle ${watched ? 'is-watched' : ''}"
-                                onclick="toggleWatched(event,${curSeason},${ep.number})"
-                                title="${watched ? 'Marcar como no visto' : 'Marcar como visto'}">
-                                <i class="fas fa-${watched ? 'eye-slash' : 'eye'}"></i>
-                                ${watched ? 'DESMARCAR' : 'MARCAR'}
-                            </button>
+
+                        <!-- WATCHING badge top-left -->
+                        ${playing ? `
+                        <div style="position:absolute;top:10px;left:10px;z-index:5;">
+                            <span class="watching-badge">
+                                <span style="width:5px;height:5px;border-radius:50%;background:#fff;display:inline-block;flex-shrink:0;"></span>
+                                VIENDO
+                            </span>
+                        </div>` : ''}
+
+                        <!-- Watched check top-right -->
+                        ${watched && !playing ? `
+                        <div style="position:absolute;top:8px;right:8px;z-index:5;">
+                            <div style="width:22px;height:22px;border-radius:50%;background:#22c55e;
+                                        border:2px solid rgba(0,0,0,.5);
+                                        display:flex;align-items:center;justify-content:center;
+                                        box-shadow:0 2px 8px rgba(34,197,94,.4);">
+                                <i class="fas fa-check" style="font-size:9px;color:#fff;"></i>
+                            </div>
+                        </div>` : ''}
+
+                        <!-- Episode number + title overlaid on bottom -->
+                        <div class="ep-thumb-info">
+                            <div class="ep-num">${ep.number}. Episodio</div>
+                            <div class="ep-title">${title}</div>
                         </div>
+                    </div>
+
+                    <!-- Bottom row: runtime + mark button -->
+                    <div class="ep-info">
+                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#4b5563;">
+                            <i class="fas fa-clock" style="font-size:9px;opacity:.5;"></i>
+                            ${runtime}
+                        </span>
+                        <button class="watch-toggle ${watched ? 'is-watched' : ''}"
+                            onclick="toggleWatched(event,${curSeason},${ep.number})"
+                            title="${watched ? 'Marcar como no visto' : 'Marcar como visto'}">
+                            <i class="fas fa-${watched ? 'eye-slash' : 'eye'}"></i>
+                            ${watched ? 'DESMARCAR' : 'MARCAR'}
+                        </button>
                     </div>
                 </div>
             `);
