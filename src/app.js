@@ -143,7 +143,10 @@ const AD_BLOCK_CODE = `
   // 3. Bloquear fetch/XHR a servidores de anuncios
   var AD_HOSTS = ['googlesyndication','doubleclick','exoclick','trafficjunky',
     'adnxs','adskeeper','popads','propellerads','hilltopads','adsterra',
-    'mgid','bidvertiser','yllix','coinzilla','sapphirebet','imasdk.googleapis'];
+    'mgid','bidvertiser','yllix','coinzilla','sapphirebet','imasdk.googleapis',
+    'histats.com','sstatic1.histats','cloudflareinsights',
+    'disable-devtool','unpkg.com/disable-devtool',
+    'cloudnestra.com/asdf','s10.histats'];
   var _fetch = window.fetch;
   window.fetch = function(input){
     var u = (typeof input==='string'?input:(input.url||''));
@@ -165,21 +168,39 @@ const AD_BLOCK_CODE = `
     return _XHRsend.apply(this,arguments);
   };
 
-  // 4. Bloquear window.open (popups)
+  // 4. Bloquear window.open y location redirects (popups/popunders)
   window.open = function(){ return {focus:function(){},blur:function(){}}; };
+  // Bloquear redirects de top-level desde iframes de ads
+  try {
+    Object.defineProperty(window, 'location', {
+      get: function(){ return window._location || location; },
+      set: function(v){
+        // Solo permitir si viene de interacción del usuario, no de scripts de ads
+        if(document.hasFocus && document.hasFocus()) window._location = v;
+      },
+      configurable: true
+    });
+  } catch(e){}
 
-  // 5. Auto-skip + remover overlays cada 300ms
+  // 5. Neutralizar DisableDevtool de vsembed
+  window.DisableDevtool = function(){};
+
+  // 6. Auto-skip + remover overlays cada 300ms
   function killAds(){
-    // Click en botones de skip
     document.querySelectorAll('[class*="skip"],[id*="skip"],.ima-skip-button,.jw-skip').forEach(function(el){
       try{ el.click(); }catch(e){}
     });
-    // Ocultar contenedores de ads que no tienen video real
-    document.querySelectorAll('.ima-ad-container,.jw-ima-container,.jw-ads-container,.video-ads,.ad-overlay,[class*="preroll"]').forEach(function(el){
-      if(!el.querySelector('video[src]')){ el.style.cssText='display:none!important'; }
+    document.querySelectorAll('.ima-ad-container,.jw-ima-container,.jw-ads-container,.video-ads,.ad-overlay,[class*="preroll"],[id="ad720"],[id="AdWidgetContainer"],[id="onexbet"]').forEach(function(el){
+      if(!el.querySelector('video[src]')){ el.style.cssText='display:none!important;height:0!important;pointer-events:none!important'; }
+    });
+    // Eliminar overlays que bloquean clics (típico de popunders)
+    document.querySelectorAll('div[style*="position: fixed"], div[style*="position:fixed"]').forEach(function(el){
+      if(!el.id && !el.className && el.style.zIndex > 9000){
+        el.style.cssText='display:none!important';
+      }
     });
   }
-  setInterval(killAds, 300);
+  setInterval(killAds, 200);
   document.addEventListener('DOMContentLoaded', killAds);
 })();
 </script>`;
@@ -214,7 +235,10 @@ app.get('/api/proxy/embed', async (req, res) => {
       'adnxs','adskeeper','popads','popcash','propellerads','hilltopads','adcash',
       'revcontent','taboola','outbrain','juicyads','zedo','adsterra','mgid',
       'bidvertiser','yllix','coinzilla','a-ads','ads\\.js','adserver','ad-network',
-      'sapphirebet','betsson','betway','clicktripz','ero-advertising'
+      'sapphirebet','betsson','betway','clicktripz','ero-advertising',
+      // vsembed / cloudnestra specific
+      'cloudflareinsights','disable-devtool','histats','cloudnestra\\.com\\/asdf',
+      'sbx\\.js','reporting\\.js'
     ];
     AD_SCRIPT_PATTERNS.forEach(p => {
       html = html.replace(
@@ -223,11 +247,11 @@ app.get('/api/proxy/embed', async (req, res) => {
       );
     });
 
-    // ── 2. Eliminar scripts inline de popunders / redirects ──
+    // ── 2. Eliminar scripts inline de popunders / redirects / vsembed ads ──
     html = html.replace(
       /<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/gi,
       (match, body) => {
-        if (/pop(under|up)|window\.open\s*\(|exoclick|propellerads|adsterra|ero-advertising|sapphirebet/i.test(body)) {
+        if (/pop(under|up)|window\.open\s*\(|exoclick|propellerads|adsterra|ero-advertising|sapphirebet|DisableDevtool|Histats|_Hasync|histats/i.test(body)) {
           return '<!-- [cinenova] inline ad removed -->';
         }
         return match;

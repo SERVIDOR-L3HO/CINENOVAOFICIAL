@@ -1178,7 +1178,8 @@
         }
 
         function useFallbackIframe() {
-            const url = getEmbedUrl(curSeason, curEpisode);
+            const rawUrl = getEmbedUrl(curSeason, curEpisode);
+            const url = `/api/proxy/embed?url=${encodeURIComponent(rawUrl)}`;
             frame.style.display = 'block';
             frame.onload = () => { loader.style.display = 'none'; };
             setTimeout(() => { frame.src = url; }, 150);
