@@ -1183,10 +1183,20 @@
         hideAdOverlays();
 
         try {
-            const r = await fetch(
-                `/api/proxy/vsembed?imdb=${IMDB_ID}&s=${curSeason}&e=${curEpisode}`
-            );
-            const data = await r.json();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 7000);
+            let data = { ok: false };
+            try {
+                const r = await fetch(
+                    `/api/proxy/vsembed?imdb=${IMDB_ID}&s=${curSeason}&e=${curEpisode}`,
+                    { signal: controller.signal }
+                );
+                clearTimeout(timeoutId);
+                data = await r.json();
+            } catch (fetchErr) {
+                clearTimeout(timeoutId);
+                console.warn('vsembed proxy no disponible, usando iframe directo');
+            }
 
             if (data.ok && data.m3u8) {
                 // ── Reproducir m3u8 nativo con HLS.js ──────────────────────
