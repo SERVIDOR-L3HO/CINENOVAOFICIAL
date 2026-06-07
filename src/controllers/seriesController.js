@@ -18,6 +18,11 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
         name: 'Servidor 1',
         url: `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=38bdf8&autoplay=true&title=false`,
         quality: 'HD'
+      },
+      {
+        name: 'Servidor 4',
+        url: `https://vsembed.ru/embed/tv/${imdbId || tmdbId}/${season}-${episode}`,
+        quality: 'HD'
       }
     ],
     castellano: [
