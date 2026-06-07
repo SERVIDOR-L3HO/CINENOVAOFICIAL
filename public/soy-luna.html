@@ -682,9 +682,17 @@
     <!-- ── VIDEO ── -->
     <div style="flex:1;position:relative;background:#000;min-height:0;">
         <iframe id="video-frame" style="width:100%;height:100%;border:none;display:none;"
-            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>
         <video id="hls-video" style="width:100%;height:100%;display:none;background:#000;"
             controls autoplay playsinline></video>
+        <!-- Ad killer overlay: cubre el banner inferior (#ad720) y botones laterales de ads -->
+        <div id="ad-overlay-bottom"
+             style="position:absolute;bottom:0;left:0;right:0;height:60px;
+                    background:#000;z-index:10;pointer-events:none;display:none;"></div>
+        <div id="ad-overlay-side"
+             style="position:absolute;top:0;left:0;bottom:0;width:40px;
+                    background:#000;z-index:10;pointer-events:none;display:none;"></div>
 
         <!-- Loader -->
         <div id="player-loader"
@@ -1092,6 +1100,7 @@
         document.getElementById('video-frame').src = '';
         document.getElementById('video-frame').style.display = 'none';
         destroyHls();
+        hideAdOverlays();
         if (epCache[curSeason]) renderEpisodeList(epCache[curSeason]);
         updatePlayingCard();
         updateSeasonProgress();
@@ -1107,7 +1116,49 @@
         loadEmbed();
     }
 
+    // ── Ad blocker para iframe cross-origin ──────────────────────────────────────
+    // vsembed.ru es cross-origin: no podemos acceder a su DOM.
+    // Usamos 3 capas de defensa desde el padre:
+    //   1) sandbox en el iframe → bloquea window.open, top-navigation redirects
+    //   2) overlay CSS → cubre #ad720 (banner inferior) y #onexbet (lateral)
+    //   3) postMessage listener → bloquea reload_page y otros mensajes de vsembed
+    function injectAdBlockIntoFrame(frame) {
+        // Mostrar overlays que tapan las posiciones de anuncios de vsembed
+        const bot = document.getElementById('ad-overlay-bottom');
+        const sid = document.getElementById('ad-overlay-side');
+        if (bot) bot.style.display = 'block';
+        if (sid) sid.style.display = 'block';
+
+        // Intentar acceso same-origin (falla silenciosamente si es cross-origin)
+        try {
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            if (doc && doc.body) {
+                const s = doc.createElement('style');
+                s.textContent = [
+                    '#ad720,#AdWidgetContainer,#onexbet,#histats_counter',
+                    '[id*="ad"],[class*="ad-banner"],[class*="ad_container"]',
+                    '.preroll,.midroll,.postroll,.vast-container',
+                    '.ima-ad-container,.jw-ads-container,.jw-ad',
+                ].join(',') + '{display:none!important;height:0!important;pointer-events:none!important}';
+                (doc.head || doc.documentElement).appendChild(s);
+            }
+        } catch (_) { /* cross-origin: silencioso */ }
+    }
+
+    // Bloquear mensajes de vsembed que causan reloads/redirects
+    window.addEventListener('message', function(ev) {
+        if (ev.data === 'reload_page') return; // silenciar
+        if (typeof ev.data === 'string' && /tvfull|reload|redirect/i.test(ev.data)) return;
+    }, true);
+
     let hlsInstance = null;
+
+    function hideAdOverlays() {
+        const bot = document.getElementById('ad-overlay-bottom');
+        const sid = document.getElementById('ad-overlay-side');
+        if (bot) bot.style.display = 'none';
+        if (sid) sid.style.display = 'none';
+    }
 
     function destroyHls() {
         if (hlsInstance) {
@@ -1129,6 +1180,7 @@
         frame.style.display  = 'none';
         frame.src = '';
         destroyHls();
+        hideAdOverlays();
 
         try {
             const r = await fetch(
@@ -1178,10 +1230,12 @@
         }
 
         function useFallbackIframe() {
-            const rawUrl = getEmbedUrl(curSeason, curEpisode);
-            const url = `/api/proxy/embed?url=${encodeURIComponent(rawUrl)}`;
+            const url = getEmbedUrl(curSeason, curEpisode);
             frame.style.display = 'block';
-            frame.onload = () => { loader.style.display = 'none'; };
+            frame.onload = () => {
+                loader.style.display = 'none';
+                injectAdBlockIntoFrame(frame);
+            };
             setTimeout(() => { frame.src = url; }, 150);
         }
     }
