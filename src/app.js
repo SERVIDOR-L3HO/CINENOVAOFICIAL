@@ -55,7 +55,136 @@ app.get('/api/stream', async (req, res) => {
   }
 });
 
-// Proxy anti-anuncios para embeds de Castellano
+// ── Utilidad: convierte URL relativa/protocol-relative en absoluta ──
+function toAbsolute(href, parsedBase) {
+  if (!href) return null;
+  if (/^(https?:)?\/\//i.test(href)) {
+    return href.startsWith('//') ? `${parsedBase.protocol}${href}` : href;
+  }
+  if (/^(data:|javascript:|blob:|about:|#)/i.test(href)) return null;
+  return href.startsWith('/')
+    ? `${parsedBase.protocol}//${parsedBase.host}${href}`
+    : `${parsedBase.protocol}//${parsedBase.host}/${href}`;
+}
+
+// ── Código anti-anuncios que se inyecta en CADA página proxiada ──
+const AD_BLOCK_CODE = `
+<style>
+  [class*="ad-"],[class*="-ad"],[id*="ad-"],[id*="-ad"],
+  [class*="advert"],[id*="advert"],[class*="sponsor"],
+  .preroll,.midroll,.postroll,.vast-container,
+  .ima-ad-container,.video-ads,.ad-overlay,.overlay-ad,
+  [id*="VAST"],[class*="VAST"],.jw-ads-container,
+  .jw-ad,.jw-flag-ads,.jw-ima-container,
+  div[class*="Advertisement"],div[class*="advertisement"],
+  .advertisement,.banner-ad,.popup-overlay,.modal-ad { 
+    display:none!important; visibility:hidden!important;
+    pointer-events:none!important; height:0!important;
+    width:0!important; opacity:0!important; 
+  }
+  video,iframe { display:block!important; opacity:1!important; }
+</style>
+<script>
+(function(){
+  // 1. Neutralizar google.ima ANTES de que cargue (IMA SDK = sistema de anuncios de supervideo)
+  window.google = window.google || {};
+  window.google.ima = {
+    AdDisplayContainer: function(){ return { initialize:function(){}, destroy:function(){} }; },
+    AdsLoader: function(){ return { 
+      requestAds:function(){}, 
+      addEventListener:function(){},
+      getSettings:function(){ return { setAutoPlayAdBreaks:function(){}, setDisableCustomPlaybackForIOS10Plus:function(){} }; },
+      destroy:function(){}
+    }; },
+    AdsRequest: function(){ return {}; },
+    AdsManagerLoadedEvent: { Type: { ADS_MANAGER_LOADED:'' } },
+    AdErrorEvent: { Type: { AD_ERROR:'' } },
+    AdEvent: { Type: { CONTENT_PAUSE_REQUESTED:'',CONTENT_RESUME_REQUESTED:'',ALL_ADS_COMPLETED:'',STARTED:'',COMPLETE:'',SKIPPED:'',CLICK:'' } },
+    ViewMode: { NORMAL:'normal', FULLSCREEN:'fullscreen' },
+    UiElements: { AD_ATTRIBUTION:'', COUNTDOWN:'' },
+    settings: { setLocale:function(){}, setNumRedirects:function(){}, setPlayerVersion:function(){}, setPlayerType:function(){} },
+    ImaSdkSettings: function(){ return { setLocale:function(){}, setNumRedirects:function(){}, setPlayerVersion:function(){}, setPlayerType:function(){} }; }
+  };
+
+  // 2. Parchear jwplayer para remover advertising antes del setup
+  var _jw = window.jwplayer;
+  Object.defineProperty(window,'jwplayer',{
+    get: function(){
+      var inst = typeof _jw==='function' ? _jw.apply(this,arguments) : _jw;
+      if(inst && typeof inst.setup === 'function'){
+        var origSetup = inst.setup.bind(inst);
+        inst.setup = function(cfg){
+          if(cfg){ delete cfg.advertising; delete cfg.vast; delete cfg.ad; }
+          return origSetup(cfg);
+        };
+      }
+      return inst;
+    },
+    set: function(v){
+      _jw = v;
+      if(typeof v==='function'){
+        var orig = v;
+        window.jwplayer = function(){
+          var inst = orig.apply(this,arguments);
+          if(inst && typeof inst.setup==='function'){
+            var origSetup = inst.setup.bind(inst);
+            inst.setup = function(cfg){
+              if(cfg){ delete cfg.advertising; delete cfg.vast; delete cfg.ad; }
+              return origSetup(cfg);
+            };
+          }
+          return inst;
+        };
+      }
+    },
+    configurable:true
+  });
+
+  // 3. Bloquear fetch/XHR a servidores de anuncios
+  var AD_HOSTS = ['googlesyndication','doubleclick','exoclick','trafficjunky',
+    'adnxs','adskeeper','popads','propellerads','hilltopads','adsterra',
+    'mgid','bidvertiser','yllix','coinzilla','sapphirebet','imasdk.googleapis'];
+  var _fetch = window.fetch;
+  window.fetch = function(input){
+    var u = (typeof input==='string'?input:(input.url||''));
+    if(AD_HOSTS.some(function(h){ return u.includes(h); })){
+      return Promise.resolve(new Response('',{status:200}));
+    }
+    return _fetch.apply(this,arguments);
+  };
+  var _XHRopen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(m,u){
+    if(AD_HOSTS.some(function(h){ return String(u).includes(h); })){
+      this._blocked=true; return;
+    }
+    return _XHRopen.apply(this,arguments);
+  };
+  var _XHRsend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(){
+    if(this._blocked) return;
+    return _XHRsend.apply(this,arguments);
+  };
+
+  // 4. Bloquear window.open (popups)
+  window.open = function(){ return {focus:function(){},blur:function(){}}; };
+
+  // 5. Auto-skip + remover overlays cada 300ms
+  function killAds(){
+    // Click en botones de skip
+    document.querySelectorAll('[class*="skip"],[id*="skip"],.ima-skip-button,.jw-skip').forEach(function(el){
+      try{ el.click(); }catch(e){}
+    });
+    // Ocultar contenedores de ads que no tienen video real
+    document.querySelectorAll('.ima-ad-container,.jw-ima-container,.jw-ads-container,.video-ads,.ad-overlay,[class*="preroll"]').forEach(function(el){
+      if(!el.querySelector('video[src]')){ el.style.cssText='display:none!important'; }
+    });
+  }
+  setInterval(killAds, 300);
+  document.addEventListener('DOMContentLoaded', killAds);
+})();
+</script>`;
+
+// Proxy anti-anuncios con proxy recursivo de iframes anidados
 app.get('/api/proxy/embed', async (req, res) => {
   try {
     const { url } = req.query;
@@ -71,6 +200,7 @@ app.get('/api/proxy/embed', async (req, res) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Referer': baseUrl,
+        'Origin': baseUrl,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
       }
@@ -78,120 +208,77 @@ app.get('/api/proxy/embed', async (req, res) => {
 
     let html = upstream.data;
 
-    // --- Eliminar scripts de redes publicitarias ---
-    const adDomains = [
-      'googlesyndication', 'doubleclick', 'exoclick', 'trafficjunky',
-      'adnxs', 'adskeeper', 'popads', 'popcash', 'propellerads',
-      'hilltopads', 'adcash', 'revcontent', 'taboola', 'outbrain',
-      'juicyads', 'zedo', 'undertone', 'clicktripz', 'adsterra',
-      'mgid', 'bidvertiser', 'yllix', 'adspyglass', 'ero-advertising',
-      'coinzilla', 'a-ads', 'ads.js', 'adserver', 'ad-network',
-      'sapphirebet', 'betsson', 'betway', 'apuesta', 'casino'
+    // ── 1. Eliminar <script src> de redes publicitarias ──
+    const AD_SCRIPT_PATTERNS = [
+      'googlesyndication','doubleclick','exoclick','trafficjunky','imasdk.googleapis',
+      'adnxs','adskeeper','popads','popcash','propellerads','hilltopads','adcash',
+      'revcontent','taboola','outbrain','juicyads','zedo','adsterra','mgid',
+      'bidvertiser','yllix','coinzilla','a-ads','ads\\.js','adserver','ad-network',
+      'sapphirebet','betsson','betway','clicktripz','ero-advertising'
     ];
-    adDomains.forEach(domain => {
-      html = html.replace(new RegExp(`<script[^>]*src=["'][^"']*${domain}[^"']*["'][^>]*>(?:.*?</script>)?`, 'gis'), '<!-- ad removed -->');
+    AD_SCRIPT_PATTERNS.forEach(p => {
+      html = html.replace(
+        new RegExp(`<script[^>]+src=["'][^"']*${p}[^"']*["'][^>]*>(?:[\\s\\S]*?</script>)?`, 'gi'),
+        '<!-- [cinenova] ad script removed -->'
+      );
     });
 
-    // Eliminar scripts inline sospechosos (popunders, redirects)
-    html = html.replace(/<script[^>]*>([\s\S]*?)(window\.open|pop(?:under|up)|\.redirect|location\.href\s*=(?!.*player))([\s\S]*?)<\/script>/gi, '<!-- ad script removed -->');
-
-    // Reescribir URLs relativas a absolutas para que los recursos carguen correctamente
-    html = html.replace(/(src|href|action)=["'](?!https?:\/\/|\/\/|data:|javascript:|blob:|#)([^"']+)["']/gi,
-      (match, attr, path) => {
-        const abs = path.startsWith('/') ? baseUrl + path : baseUrl + '/' + path;
-        return `${attr}="${abs}"`;
+    // ── 2. Eliminar scripts inline de popunders / redirects ──
+    html = html.replace(
+      /<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/gi,
+      (match, body) => {
+        if (/pop(under|up)|window\.open\s*\(|exoclick|propellerads|adsterra|ero-advertising|sapphirebet/i.test(body)) {
+          return '<!-- [cinenova] inline ad removed -->';
+        }
+        return match;
       }
     );
-    // Corregir URLs protocol-relative (//)
-    html = html.replace(/(src|href)=["']\/\/([^"']+)["']/gi,
-      (match, attr, rest) => `${attr}="${parsedUrl.protocol}//${rest}"`);
 
-    // --- Inyectar bloqueador de anuncios ---
-    const adBlockCode = `
-<style>
-  /* === CINENOVA Ad Blocker === */
-  [class*="ad-"],[class*="-ad "],[id*="ad-"],[id*="-ad"],
-  [class*="advert"],[id*="advert"],
-  .preroll,.midroll,.postroll,.vast-container,
-  .ima-ad-container,.video-ads,.ad-overlay,.overlay-ad,
-  [id*="VAST"],[class*="VAST"],
-  iframe[src*="googlesyndication"],iframe[src*="doubleclick"],
-  iframe[src*="exoclick"],iframe[src*="trafficjunky"],
-  iframe[src*="adnxs"],iframe[src*="popads"],
-  iframe[src*="sapphirebet"],iframe[src*="casino"],
-  .advertisement,.banner-ad,.sponsor-banner,
-  div[id*="banner"],div[class*="banner-container"],
-  .popup-overlay,.modal-ad,[class*="popup-ad"] {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    height: 0 !important;
-    width: 0 !important;
-    opacity: 0 !important;
-  }
-  video { display: block !important; opacity: 1 !important; }
-</style>
-<script>
-(function(){
-  // Bloquear ventanas emergentes
-  var _open = window.open;
-  window.open = function(){ return { focus: function(){}, blur: function(){} }; };
+    // ── 3. Neutralizar advertising en configs de jwplayer inline ──
+    html = html.replace(/["']?advertising["']?\s*:\s*\{[^}]*\}/gi, '"advertising":{}');
+    html = html.replace(/["']?vast["']?\s*:\s*["'][^"']+["']/gi, '"vast":""');
 
-  // Bloquear clicks que abren nuevas pestañas (anuncios)
-  document.addEventListener('click', function(e){
-    var link = e.target.closest('a[target]');
-    if(link && link.href && !link.href.startsWith(location.origin) &&
-       !e.target.closest('video, .jw-video, .plyr, button, .skip')){
-      e.preventDefault(); e.stopImmediatePropagation();
-    }
-  }, true);
-
-  // Saltar anuncios automáticamente
-  function skipAds(){
-    var skips = document.querySelectorAll('[class*="skip"],[id*="skip"],.ima-skip-button,.ytp-ad-skip-button');
-    skips.forEach(function(el){ try{ el.click(); }catch(e){} });
-
-    // Eliminar overlays de anuncios que no son el video
-    var adEls = document.querySelectorAll(
-      '.preroll,.midroll,.ad-overlay,.overlay-ad,.ima-ad-container,.video-ads,[class*="ad-container"],[id*="ad-container"]'
-    );
-    adEls.forEach(function(el){
-      if(!el.querySelector('video')) { el.style.display='none'; el.style.pointerEvents='none'; }
-    });
-
-    // Remover iframes de publicidad
-    document.querySelectorAll('iframe').forEach(function(f){
-      var src = f.src || f.getAttribute('src') || '';
-      var adKeywords = ['googlesyndication','doubleclick','exoclick','trafficjunky',
-        'popads','adnxs','sapphirebet','casino','apuesta','bet','ad.'];
-      if(adKeywords.some(function(k){ return src.includes(k); })){
-        f.remove();
+    // ── 4. Convertir URLs relativas/protocol-relative a absolutas ──
+    // src y href normales
+    html = html.replace(/((?:src|href|action)=["'])(?!https?:\/\/|\/\/|data:|javascript:|blob:|#|\/api\/proxy)([^"']+)(["'])/gi,
+      (match, prefix, path, suffix) => {
+        const abs = toAbsolute(path, parsedUrl);
+        return abs ? `${prefix}${abs}${suffix}` : match;
       }
-    });
-  }
+    );
+    // Protocol-relative (//)
+    html = html.replace(/((?:src|href)=["'])\/\/([^"']+)(["'])/gi,
+      (m, pre, rest, suf) => `${pre}${parsedUrl.protocol}//${rest}${suf}`
+    );
 
-  setInterval(skipAds, 400);
-  document.addEventListener('DOMContentLoaded', skipAds);
-  window.addEventListener('load', skipAds);
-})();
-</script>`;
+    // ── 5. CLAVE: Reescribir iframes para que pasen por nuestro proxy ──
+    html = html.replace(/<iframe([^>]*)(?:\ssrc=["']([^"']+)["'])([^>]*)>/gi,
+      (match, before, iframeSrc, after) => {
+        if (!iframeSrc) return match;
+        if (iframeSrc.includes('/api/proxy/') || /^(data:|about:|javascript:)/i.test(iframeSrc)) return match;
+        const absIframeSrc = toAbsolute(iframeSrc, parsedUrl) || iframeSrc;
+        const proxied = `/api/proxy/embed?url=${encodeURIComponent(absIframeSrc)}`;
+        return `<iframe${before} src="${proxied}"${after}>`;
+      }
+    );
 
-    if (html.includes('</head>')) {
-      html = html.replace('</head>', adBlockCode + '\n</head>');
-    } else if (html.includes('<body')) {
-      html = html.replace('<body', adBlockCode + '\n<body');
+    // ── 6. Inyectar bloqueador antes de cualquier script de la página ──
+    if (html.includes('<head>')) {
+      html = html.replace('<head>', `<head>${AD_BLOCK_CODE}`);
+    } else if (html.includes('</head>')) {
+      html = html.replace('</head>', `${AD_BLOCK_CODE}</head>`);
     } else {
-      html = adBlockCode + html;
+      html = AD_BLOCK_CODE + html;
     }
 
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('X-Frame-Options', 'ALLOWALL');
-    res.setHeader('Access-Control-Allow-Origin', '*');
     res.removeHeader('X-Frame-Options');
+    res.removeHeader('Content-Security-Policy');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.send(html);
   } catch (err) {
     console.error('Proxy embed error:', err.message);
-    res.status(500).send(`<html><body style="background:#111;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><p>⚠️ No se pudo cargar el servidor. Intenta con otro.</p></body></html>`);
+    res.status(500).send(`<html><body style="background:#111;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;"><p>⚠️ No se pudo cargar el servidor.<br><small>${err.message}</small></p></body></html>`);
   }
 });
 
