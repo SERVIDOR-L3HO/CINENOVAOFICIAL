@@ -617,16 +617,16 @@
     // ─── Servers per audio ───────────────────────────────────────────────────────
     const SERVERS = {
         latino: [
-            { id: 'vl-vidlink',   label: 'Servidor 1', quality: 'HD',     fn: (s,e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
-            { id: 'vl-vidsrc',   label: 'Servidor 2', quality: 'HD',     fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
-            { id: 'vl-embed',    label: 'Servidor 3', quality: 'HD',     fn: (s,e) => `https://multiembed.mov/?video_id=${IMDB_ID}&s=${s}&e=${e}` },
-            { id: 'vl-2embed',   label: 'Servidor 4', quality: 'HD',     fn: (s,e) => `https://www.2embed.cc/embedtv/${IMDB_ID}&s=${s}&e=${e}` },
+            { id: 'vl-vsembed',  label: 'Servidor 1', quality: '1080p', fn: (s,e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}` },
+            { id: 'vl-vidlink',  label: 'Servidor 2', quality: 'HD',    fn: (s,e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
+            { id: 'vl-vidsrc',  label: 'Servidor 3', quality: 'HD',    fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { id: 'vl-embed',   label: 'Servidor 4', quality: 'HD',    fn: (s,e) => `https://multiembed.mov/?video_id=${IMDB_ID}&s=${s}&e=${e}` },
         ],
         castellano: [
-            { id: 'ca-unlim',   label: 'Servidor 1', quality: '1080p',  fn: (s,e) => `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${s}/${e}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, extract: true },
-            { id: 'ca-vidsrc',  label: 'Servidor 2', quality: 'HD',     fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}?subtitle=es` },
-            { id: 'ca-2embed',  label: 'Servidor 3', quality: 'HD',     fn: (s,e) => `https://www.2embed.cc/embedtv/${IMDB_ID}&s=${s}&e=${e}` },
-            { id: 'ca-embedsu', label: 'Servidor 4', quality: 'HD',     fn: (s,e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { id: 'ca-vsembed', label: 'Servidor 1', quality: '1080p', fn: (s,e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}` },
+            { id: 'ca-unlim',   label: 'Servidor 2', quality: '1080p', fn: (s,e) => `https://unlimplay.com/play/embed/tv/${TMDB_ID}/${s}/${e}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, extract: true },
+            { id: 'ca-vidsrc',  label: 'Servidor 3', quality: 'HD',    fn: (s,e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}?subtitle=es` },
+            { id: 'ca-embedsu', label: 'Servidor 4', quality: 'HD',    fn: (s,e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
         ]
     };
 
