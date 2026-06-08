@@ -209,6 +209,7 @@
             <div class="hidden lg:flex gap-7 text-[10px] font-black tracking-[3px] uppercase italic">
                 <a href="#" id="nav-movies" class="text-accent transition hover:text-white" onclick="loadCategory('movies')">CINE</a>
                 <a href="#" id="nav-series" class="text-gray-400 transition hover:text-white" onclick="loadCategory('series')">SERIES</a>
+                <a href="#" id="nav-anime" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('anime')"><span style="font-size:11px;">⛩</span> ANIME</a>
                 <a href="#" id="nav-favorites" class="text-gray-400 transition hover:text-white relative" onclick="loadCategory('favorites')">FAVORITOS<span id="nav-fav-badge" class="fav-count hidden"></span></a>
             </div>
         </div>
@@ -255,6 +256,9 @@
         </button>
         <button onclick="loadCategory('series')" id="mob-series" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
             <i class="fas fa-tv text-base"></i> SERIES
+        </button>
+        <button onclick="loadCategory('anime')" id="mob-anime" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
+            <span style="font-size:18px;line-height:1;">⛩</span> ANIME
         </button>
         <button onclick="loadCategory('favorites')" id="mob-favorites" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1 relative">
             <i class="fas fa-heart text-base"></i> MI LISTA
@@ -535,13 +539,14 @@
         }
 
         function updateNavHighlight(category) {
-            const navMap = { movies: 'nav-movies', series: 'nav-series', tv: 'nav-tv', favorites: 'nav-favorites' };
-            const mobMap = { movies: 'mob-movies', series: 'mob-series', tv: 'mob-tv', favorites: 'mob-favorites' };
-            ['movies','series','tv','favorites'].forEach(c => {
+            const navMap = { movies: 'nav-movies', series: 'nav-series', anime: 'nav-anime', tv: 'nav-tv', favorites: 'nav-favorites' };
+            const mobMap = { movies: 'mob-movies', series: 'mob-series', anime: 'mob-anime', tv: 'mob-tv', favorites: 'mob-favorites' };
+            ['movies','series','anime','tv','favorites'].forEach(c => {
                 const nav = document.getElementById(navMap[c]);
                 const mob = document.getElementById(mobMap[c]);
-                if (nav) { nav.style.color = c === category ? 'var(--accent)' : '#9ca3af'; }
-                if (mob) { mob.style.color = c === category ? 'var(--accent)' : '#6b7280'; }
+                const activeColor = c === 'anime' ? '#f97316' : 'var(--accent)';
+                if (nav) { nav.style.color = c === category ? activeColor : '#9ca3af'; }
+                if (mob) { mob.style.color = c === category ? activeColor : '#6b7280'; }
             });
         }
 
@@ -556,10 +561,112 @@
             } else if (cat === 'favorites') {
                 setHeroVisible(false);
                 renderFavoritesView();
+            } else if (cat === 'anime') {
+                setHeroVisible(false);
+                loadAndRenderAnime();
             } else {
                 setHeroVisible(true);
                 loadAndRenderCategories(cat);
             }
+        }
+
+        async function loadAndRenderAnime() {
+            const area = document.getElementById('content-area');
+            area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
+                <div class="w-12 h-12 rounded-full animate-spin" style="border:3px solid #f97316; border-top-color:transparent;"></div>
+                <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Cargando anime...</p>
+            </div>`;
+            try {
+                const res = await fetch(`/api/anime/categories?lang=${currentLang}`);
+                const categories = await res.json();
+                area.innerHTML = '';
+
+                // Banner especial de anime
+                const banner = document.createElement('div');
+                banner.style.cssText = 'position:relative;overflow:hidden;margin-bottom:2rem;padding:48px 48px 40px;background:linear-gradient(135deg,#0c0c0c 0%,#1a0a00 50%,#0c0c0c 100%);border-bottom:1px solid rgba(249,115,22,0.15);';
+                banner.innerHTML = `
+                  <div style="position:absolute;inset:0;background:url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg') center/cover no-repeat;opacity:0.04;pointer-events:none;"></div>
+                  <div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,0.12) 0%,transparent 70%);pointer-events:none;"></div>
+                  <div style="position:relative;z-index:1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                    <div style="font-size:52px;line-height:1;filter:drop-shadow(0 0 20px rgba(249,115,22,0.5));">⛩</div>
+                    <div>
+                      <div style="font-size:9px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#f97316;margin-bottom:6px;">UNIVERSO ANIME · JAPÓN</div>
+                      <h1 style="font-size:clamp(28px,5vw,52px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">
+                        <span style="color:#fff;">MUNDO </span><span style="background:linear-gradient(90deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ANIME</span>
+                      </h1>
+                      <p style="font-size:12px;color:#9ca3af;max-width:480px;line-height:1.6;">Los mejores animes japoneses organizados por género. Desde shōnen épicos hasta romance y terror.</p>
+                    </div>
+                  </div>
+                `;
+                area.appendChild(banner);
+
+                categories.forEach(cat => {
+                    if (cat.items.length > 0) area.appendChild(renderAnimeCarousel(cat));
+                });
+            } catch (err) {
+                console.error('Error loading anime:', err);
+                area.innerHTML = '<div class="text-center py-20 text-gray-600 font-bold tracking-widest uppercase">Error al cargar anime</div>';
+            }
+        }
+
+        function renderAnimeCarousel(cat) {
+            const section = document.createElement('section');
+            section.className = 'mb-10 md:mb-14';
+            section.innerHTML = `
+                <div class="flex items-center justify-between px-4 md:px-12 mb-5 md:mb-6">
+                    <div class="flex items-center gap-4">
+                        <div style="width:3px;height:100%;min-height:36px;border-radius:99px;background:${cat.accent};box-shadow:0 0 10px ${cat.accent}55;margin-right:4px;flex-shrink:0;"></div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:${cat.accent}">${cat.label}</span>
+                                <span class="text-[7px] font-black text-gray-600 tracking-widest">• ${cat.items.length} TÍTULOS</span>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-black italic uppercase tracking-tighter leading-none">${cat.title}</h2>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);" onclick="scrollCarousel('${cat.id}', -1)">
+                            <i class="fas fa-chevron-left" style="font-size:10px;color:${cat.accent}"></i>
+                        </button>
+                        <button class="arrow-btn w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);" onclick="scrollCarousel('${cat.id}', 1)">
+                            <i class="fas fa-chevron-right" style="font-size:10px;color:${cat.accent}"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div id="carousel-${cat.id}" class="carousel-track flex gap-3 md:gap-4 overflow-x-auto px-4 md:px-12 pb-4">
+                        ${cat.items.map(item => renderAnimePosterCard(item, cat.accent)).join('')}
+                    </div>
+                    <div class="absolute left-0 top-0 bottom-4 w-8 md:w-20 pointer-events-none fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-4 w-8 md:w-20 pointer-events-none fade-right"></div>
+                </div>`;
+            section.querySelectorAll('.poster-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(cat.items[i]);
+            });
+            return section;
+        }
+
+        function renderAnimePosterCard(item, accent) {
+            const poster = item.poster || 'https://placehold.co/300x450/111/222?text=N/A';
+            const rating = item.rating ? item.rating.toFixed(1) : '—';
+            return `<div class="poster-card flex-shrink-0 cursor-pointer group relative" style="width:clamp(120px,18vw,160px);">
+                <div class="relative rounded-xl overflow-hidden" style="aspect-ratio:2/3;">
+                    <img src="${poster}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onerror="this.src='https://placehold.co/300x450/111/222?text=N/A'">
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center" style="background:rgba(0,0,0,0.55);">
+                        <div class="w-11 h-11 rounded-full flex items-center justify-center" style="background:${accent};box-shadow:0 0 20px ${accent}88;">
+                            <i class="fas fa-play text-white text-sm ml-0.5"></i>
+                        </div>
+                    </div>
+                    <div class="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.8);border:1px solid rgba(249,115,22,0.3);">
+                        <i class="fas fa-star text-[8px]" style="color:#f97316;"></i>
+                        <span class="text-[9px] font-black text-white">${rating}</span>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none" style="background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);"></div>
+                    <div class="absolute bottom-0 left-0 right-0 px-2 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <p class="text-[9px] font-black uppercase tracking-wide text-white truncate" style="text-shadow:0 1px 4px rgba(0,0,0,0.9);">${item.title}</p>
+                    </div>
+                </div>
+            </div>`;
         }
 
         async function loadAndRenderCategories(category) {
