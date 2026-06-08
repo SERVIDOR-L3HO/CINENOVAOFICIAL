@@ -1637,7 +1637,8 @@
             document.getElementById('info-trailer-block').classList.add('hidden');
             document.getElementById('info-trailer-iframe').src = '';
 
-            const endpoint = currentCategory === 'series'
+            const isSeries = currentCategory === 'series' || currentCategory === 'anime' || currentCategory === 'drama' || item.type === 'series';
+            const endpoint = isSeries
                 ? `/api/series/${item.id}/details?lang=${currentLang}`
                 : `/api/movies/${item.id}/details?lang=${currentLang}`;
 
@@ -1717,7 +1718,7 @@
                 episodesDrawer.classList.add('hidden');
                 document.getElementById('server-row').classList.add('hidden');
                 playFromServer(item.embeds.vip);
-            } else if (currentCategory === 'series') {
+            } else if (currentCategory === 'series' || currentCategory === 'anime' || currentCategory === 'drama' || item.type === 'series') {
                 episodesRow.classList.remove('hidden');
                 episodesDrawer.classList.remove('hidden');
                 document.getElementById('server-row').classList.remove('hidden');
