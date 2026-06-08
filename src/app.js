@@ -594,7 +594,7 @@ app.get('/api/player', async (req, res) => {
 app.get('/api/proxy/pelisjuanita-soy-luna', async (req, res) => {
   try {
     const { s = 1, e = 1 } = req.query;
-    const url = `https://full-online.xyz/series/serieInfo.php?nombreSerie=soy-luna&snum=${s}&enum=${e}`;
+    const url = `https://full-online.xyz/series/serieInfo.php?nombreSerie=soy-luna&nroTemporada=${s}&nroEpisodio=${e}`;
 
     const resp = await axios.get(url, {
       timeout: 18000,
