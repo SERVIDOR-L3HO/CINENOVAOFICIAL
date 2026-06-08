@@ -652,19 +652,24 @@
         <!-- Thin glass divider -->
         <div style="width:1px;height:22px;background:linear-gradient(to bottom,transparent,rgba(168,85,247,.3),transparent);flex-shrink:0;"></div>
 
-        <!-- Server indicator (single, no switch needed) -->
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <span style="display:inline-flex;align-items:center;gap:6px;
-                         padding:6px 14px;border-radius:99px;
-                         background:rgba(168,85,247,.12);
-                         border:1px solid rgba(168,85,247,.35);
-                         font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
-                         color:#c084fc;
-                         box-shadow:0 0 14px rgba(168,85,247,.15),inset 0 1px 0 rgba(255,255,255,.07);">
-                <i class="fas fa-server" style="font-size:7px;opacity:.8;"></i>
-                VSEMBED
-                <span style="font-size:7px;opacity:.6;font-weight:700;">1080p</span>
-            </span>
+        <!-- Server switcher -->
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;" id="server-btns">
+            <button onclick="switchServer(0)" id="srv-0"
+                style="display:inline-flex;align-items:center;gap:5px;
+                       padding:6px 12px;border-radius:99px;cursor:pointer;transition:all .2s;
+                       background:rgba(168,85,247,.18);border:1px solid rgba(168,85,247,.55);
+                       font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+                       color:#e9d5ff;box-shadow:0 0 14px rgba(168,85,247,.2);">
+                <i class="fas fa-server" style="font-size:7px;"></i> S1
+            </button>
+            <button onclick="switchServer(1)" id="srv-1"
+                style="display:inline-flex;align-items:center;gap:5px;
+                       padding:6px 12px;border-radius:99px;cursor:pointer;transition:all .2s;
+                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                       font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+                       color:#4b5563;">
+                <i class="fas fa-server" style="font-size:7px;"></i> S2
+            </button>
         </div>
 
         <!-- Prev / Next — pushed right -->
@@ -715,7 +720,7 @@
                 </div>
             </div>
             <p style="font-size:8px;font-weight:900;letter-spacing:5px;color:#3b1f5a;text-transform:uppercase;margin-bottom:6px;">CARGANDO</p>
-            <p style="font-size:7px;font-weight:700;letter-spacing:2px;color:#1f1030;text-transform:uppercase;">vsembed · 1080p</p>
+            <p id="loader-server-label" style="font-size:7px;font-weight:700;letter-spacing:2px;color:#1f1030;text-transform:uppercase;">SERVIDOR 1 · HD</p>
         </div>
     </div>
 
@@ -771,8 +776,17 @@
         3: 'En la temporada final, los secretos salen a la luz y los sueños de Luna alcanzan su punto más alto sobre ruedas.'
     };
 
-    // ─── Embed URL (único servidor: vsembed.ru) ──────────────────────────────────
-    const getEmbedUrl = (s, e) => `https://vsembed.ru/embed/tv/${IMDB_ID}/${s}-${e}`;
+    // ─── Servidores disponibles por idioma ───────────────────────────────────────
+    const SERVERS = {
+        latino: [
+            { name: 'SERVIDOR 1', tag: 'MULTI',  url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'SERVIDOR 2', tag: 'AUTO',   url: (s,e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
+        ],
+        castellano: [
+            { name: 'SERVIDOR 1', tag: 'AUTO',   url: (s,e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'SERVIDOR 2', tag: 'MULTI',  url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+        ]
+    };
 
     // ─── State ───────────────────────────────────────────────────────────────────
     let curSeason   = 1;
@@ -1109,6 +1123,7 @@
 
     function switchAudio(type) {
         curAudio = type;
+        curServerIdx = 0;
         document.querySelectorAll('.aud-tab').forEach(t => t.classList.remove('aud-active'));
         document.getElementById(`aud-${type}`).classList.add('aud-active');
         const label = document.getElementById('bottom-audio-label');
@@ -1171,84 +1186,51 @@
         vid.style.display = 'none';
     }
 
+    function updateServerButtons() {
+        const servers = SERVERS[curAudio];
+        servers.forEach((srv, i) => {
+            const btn = document.getElementById(`srv-${i}`);
+            if (!btn) return;
+            const active = i === curServerIdx;
+            btn.style.background    = active ? 'rgba(168,85,247,.18)' : 'rgba(255,255,255,.04)';
+            btn.style.borderColor   = active ? 'rgba(168,85,247,.55)' : 'rgba(255,255,255,.08)';
+            btn.style.color         = active ? '#e9d5ff' : '#4b5563';
+            btn.style.boxShadow     = active ? '0 0 14px rgba(168,85,247,.2)' : 'none';
+            btn.innerHTML = `<i class="fas fa-server" style="font-size:7px;"></i> S${i+1}`;
+        });
+    }
+
+    function switchServer(idx) {
+        curServerIdx = idx;
+        updateServerButtons();
+        loadEmbed();
+    }
+
     async function loadEmbed() {
         const loader = document.getElementById('player-loader');
         const frame  = document.getElementById('video-frame');
-        const vid    = document.getElementById('hls-video');
 
         loader.style.display = 'flex';
         frame.style.display  = 'none';
         frame.src = '';
         destroyHls();
         hideAdOverlays();
+        updateServerButtons();
 
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 7000);
-            let data = { ok: false };
-            try {
-                const r = await fetch(
-                    `/api/proxy/vsembed?imdb=${IMDB_ID}&s=${curSeason}&e=${curEpisode}`,
-                    { signal: controller.signal }
-                );
-                clearTimeout(timeoutId);
-                data = await r.json();
-            } catch (fetchErr) {
-                clearTimeout(timeoutId);
-                console.warn('vsembed proxy no disponible, usando iframe directo');
-            }
+        const servers = SERVERS[curAudio];
+        const server  = servers[curServerIdx % servers.length];
+        const url     = server.url(curSeason, curEpisode);
 
-            if (data.ok && data.m3u8) {
-                // ── Reproducir m3u8 nativo con HLS.js ──────────────────────
-                const proxied = `/api/proxy/hls?url=${encodeURIComponent(data.m3u8)}&ref=${encodeURIComponent('https://vsembed.ru/')}`;
+        // Update loader label
+        const loaderLabel = document.getElementById('loader-server-label');
+        if (loaderLabel) loaderLabel.textContent = server.name + ' · HD';
 
-                if (Hls.isSupported()) {
-                    const hls = new Hls({ maxBufferLength: 30, enableWorker: true });
-                    hlsInstance = hls;
-                    hls.loadSource(proxied);
-                    hls.attachMedia(vid);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        loader.style.display = 'none';
-                        vid.style.display = 'block';
-                        vid.play().catch(() => {});
-                    });
-                    hls.on(Hls.Events.ERROR, (_, d) => {
-                        if (d.fatal) {
-                            console.warn('HLS error, fallback al iframe:', d);
-                            destroyHls();
-                            useFallbackIframe();
-                        }
-                    });
-                } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-                    // Safari nativo
-                    vid.src = proxied;
-                    vid.style.display = 'block';
-                    vid.addEventListener('loadedmetadata', () => {
-                        loader.style.display = 'none';
-                        vid.play().catch(() => {});
-                    }, { once: true });
-                } else {
-                    useFallbackIframe();
-                }
-            } else {
-                // No se encontró m3u8 → iframe fallback
-                useFallbackIframe();
-            }
-        } catch (err) {
-            console.error('loadEmbed error:', err);
-            useFallbackIframe();
-        }
-
-        function useFallbackIframe() {
-            const rawUrl = getEmbedUrl(curSeason, curEpisode);
-            const url = `/api/proxy/embed?url=${encodeURIComponent(rawUrl)}`;
-            frame.style.display = 'block';
-            frame.onload = () => {
-                loader.style.display = 'none';
-                injectAdBlockIntoFrame(frame);
-            };
-            setTimeout(() => { frame.src = url; }, 150);
-        }
+        frame.style.display = 'block';
+        frame.onload = () => {
+            loader.style.display = 'none';
+            injectAdBlockIntoFrame(frame);
+        };
+        setTimeout(() => { frame.src = url; }, 150);
     }
 
     // ─── Navigation ──────────────────────────────────────────────────────────────
