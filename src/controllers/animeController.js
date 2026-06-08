@@ -20,6 +20,23 @@ const mapAnime = s => ({
   type: 'series'
 });
 
+exports.searchAnime = async (req, res) => {
+  try {
+    const { query, lang } = req.query;
+    if (!query) return res.json([]);
+    const response = await tmdb.get('/search/tv', {
+      params: { language: lang || 'es-MX', query, include_adult: false }
+    });
+    const results = response.data.results
+      .filter(s => s.original_language === 'ja' && s.poster_path)
+      .map(mapAnime);
+    res.json(results);
+  } catch (err) {
+    console.error('Anime search error:', err.message);
+    res.status(500).json({ error: 'Error en búsqueda de anime' });
+  }
+};
+
 exports.getAnimeCategories = async (req, res) => {
   try {
     const lang = req.query.lang || 'es-MX';

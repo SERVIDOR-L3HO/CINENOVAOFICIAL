@@ -578,6 +578,9 @@
             }
         }
 
+        let _animeSearchTimer = null;
+        let _dramaSearchTimer = null;
+
         async function loadAndRenderAnime() {
             const area = document.getElementById('content-area');
             area.innerHTML = `<div class="flex flex-col items-center justify-center py-24 gap-4">
@@ -589,32 +592,106 @@
                 const categories = await res.json();
                 area.innerHTML = '';
 
-                // Banner especial de anime
                 const banner = document.createElement('div');
-                banner.style.cssText = 'position:relative;overflow:hidden;margin-bottom:2rem;padding:48px 48px 40px;background:linear-gradient(135deg,#0c0c0c 0%,#1a0a00 50%,#0c0c0c 100%);border-bottom:1px solid rgba(249,115,22,0.15);';
+                banner.style.cssText = 'position:relative;overflow:hidden;margin-bottom:2rem;padding:40px 48px 36px;background:linear-gradient(135deg,#0c0c0c 0%,#1a0a00 50%,#0c0c0c 100%);border-bottom:1px solid rgba(249,115,22,0.15);';
                 banner.innerHTML = `
-                  <div style="position:absolute;inset:0;background:url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg') center/cover no-repeat;opacity:0.04;pointer-events:none;"></div>
+                  <div style="position:absolute;inset:0;opacity:0.04;pointer-events:none;background:url('https://image.tmdb.org/t/p/original/mXVr88l7877i0P4cLQl1mUvaXGJ.jpg') center/cover no-repeat;"></div>
                   <div style="position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,0.12) 0%,transparent 70%);pointer-events:none;"></div>
-                  <div style="position:relative;z-index:1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-                    <div style="font-size:52px;line-height:1;filter:drop-shadow(0 0 20px rgba(249,115,22,0.5));">⛩</div>
-                    <div>
-                      <div style="font-size:9px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#f97316;margin-bottom:6px;">UNIVERSO ANIME · JAPÓN</div>
-                      <h1 style="font-size:clamp(28px,5vw,52px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">
-                        <span style="color:#fff;">MUNDO </span><span style="background:linear-gradient(90deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ANIME</span>
-                      </h1>
-                      <p style="font-size:12px;color:#9ca3af;max-width:480px;line-height:1.6;">Los mejores animes japoneses organizados por género. Desde shōnen épicos hasta romance y terror.</p>
+                  <div style="position:relative;z-index:1;">
+                    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+                      <div style="font-size:48px;line-height:1;filter:drop-shadow(0 0 20px rgba(249,115,22,0.5));">⛩</div>
+                      <div>
+                        <div style="font-size:9px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#f97316;margin-bottom:6px;">UNIVERSO ANIME · JAPÓN</div>
+                        <h1 style="font-size:clamp(26px,4vw,48px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:6px;">
+                          <span style="color:#fff;">MUNDO </span><span style="background:linear-gradient(90deg,#f97316,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ANIME</span>
+                        </h1>
+                        <p style="font-size:12px;color:#9ca3af;max-width:480px;line-height:1.5;">Los mejores animes japoneses organizados por género. Desde shōnen épicos hasta romance y terror.</p>
+                      </div>
+                    </div>
+                    <div style="position:relative;max-width:520px;">
+                      <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#f97316;font-size:13px;pointer-events:none;"></i>
+                      <input id="anime-search-input" type="text" placeholder="Buscar anime... (ej: Naruto, One Piece, Attack on Titan)"
+                        style="width:100%;background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.3);border-radius:999px;padding:12px 44px 12px 42px;color:#fff;font-size:13px;font-weight:700;outline:none;font-family:'Outfit',sans-serif;transition:all .2s;"
+                        onfocus="this.style.borderColor='rgba(249,115,22,0.7)';this.style.background='rgba(249,115,22,0.11)'"
+                        onblur="this.style.borderColor='rgba(249,115,22,0.3)';this.style.background='rgba(249,115,22,0.07)'"
+                        oninput="onAnimeSearchInput(this.value)">
+                      <button id="anime-search-clear" onclick="clearAnimeSearch()" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(249,115,22,0.2);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#f97316;font-size:10px;font-weight:900;">✕</button>
                     </div>
                   </div>
                 `;
                 area.appendChild(banner);
 
+                const searchResults = document.createElement('div');
+                searchResults.id = 'anime-search-results';
+                searchResults.style.cssText = 'display:none;padding:0 16px 24px;';
+                area.appendChild(searchResults);
+
+                const carousels = document.createElement('div');
+                carousels.id = 'anime-carousels';
                 categories.forEach(cat => {
-                    if (cat.items.length > 0) area.appendChild(renderAnimeCarousel(cat));
+                    if (cat.items.length > 0) carousels.appendChild(renderAnimeCarousel(cat));
                 });
+                area.appendChild(carousels);
+
             } catch (err) {
                 console.error('Error loading anime:', err);
                 area.innerHTML = '<div class="text-center py-20 text-gray-600 font-bold tracking-widest uppercase">Error al cargar anime</div>';
             }
+        }
+
+        function onAnimeSearchInput(val) {
+            clearTimeout(_animeSearchTimer);
+            const clearBtn = document.getElementById('anime-search-clear');
+            if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+            if (!val.trim()) { clearAnimeSearch(); return; }
+            _animeSearchTimer = setTimeout(() => runAnimeSearch(val.trim()), 400);
+        }
+
+        async function runAnimeSearch(query) {
+            const resultsEl = document.getElementById('anime-search-results');
+            const carouselsEl = document.getElementById('anime-carousels');
+            if (!resultsEl) return;
+            resultsEl.style.display = 'block';
+            if (carouselsEl) carouselsEl.style.display = 'none';
+            resultsEl.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:20px 0 16px;">
+                <div style="width:18px;height:18px;border-radius:50%;border:2px solid #f97316;border-top-color:transparent;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
+                <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#6b7280;">Buscando anime...</span>
+            </div>`;
+            try {
+                const res = await fetch(`/api/anime/search?query=${encodeURIComponent(query)}&lang=${currentLang}`);
+                const items = await res.json();
+                if (!items.length) {
+                    resultsEl.innerHTML = `<div style="text-align:center;padding:48px 0;color:#4b5563;">
+                        <div style="font-size:36px;margin-bottom:12px;">⛩</div>
+                        <p style="font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">Sin resultados para "<span style="color:#f97316;">${query}</span>"</p>
+                    </div>`;
+                    return;
+                }
+                resultsEl.innerHTML = `
+                  <div style="display:flex;align-items:center;gap:8px;padding:16px 0 20px;">
+                    <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#f97316;">RESULTADOS</span>
+                    <span style="font-size:8px;font-weight:900;color:#4b5563;letter-spacing:2px;">— ${items.length} ANIMES ENCONTRADOS</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;">
+                    ${items.map(item => renderAnimePosterCard(item, '#f97316')).join('')}
+                  </div>`;
+                resultsEl.querySelectorAll('.poster-card').forEach((card, i) => {
+                    card.onclick = () => openInfoModal(items[i]);
+                });
+            } catch (e) {
+                resultsEl.innerHTML = `<div style="text-align:center;padding:32px;color:#4b5563;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">Error en la búsqueda</div>`;
+            }
+        }
+
+        function clearAnimeSearch() {
+            const input = document.getElementById('anime-search-input');
+            const clearBtn = document.getElementById('anime-search-clear');
+            const resultsEl = document.getElementById('anime-search-results');
+            const carouselsEl = document.getElementById('anime-carousels');
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+            if (carouselsEl) carouselsEl.style.display = 'block';
         }
 
         function renderAnimeCarousel(cat) {
@@ -689,30 +766,105 @@
                 area.innerHTML = '';
 
                 const banner = document.createElement('div');
-                banner.style.cssText = 'position:relative;overflow:hidden;margin-bottom:2rem;padding:48px 48px 40px;background:linear-gradient(135deg,#0c0c0c 0%,#1a0010 50%,#0c0c0c 100%);border-bottom:1px solid rgba(236,72,153,0.15);';
+                banner.style.cssText = 'position:relative;overflow:hidden;margin-bottom:2rem;padding:40px 48px 36px;background:linear-gradient(135deg,#0c0c0c 0%,#1a0010 50%,#0c0c0c 100%);border-bottom:1px solid rgba(236,72,153,0.15);';
                 banner.innerHTML = `
                   <div style="position:absolute;top:-60px;right:-60px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,0.1) 0%,transparent 70%);pointer-events:none;"></div>
                   <div style="position:absolute;bottom:-40px;left:20%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(244,63,94,0.07) 0%,transparent 70%);pointer-events:none;"></div>
-                  <div style="position:relative;z-index:1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-                    <div style="font-size:52px;line-height:1;filter:drop-shadow(0 0 20px rgba(236,72,153,0.6));">🎭</div>
-                    <div>
-                      <div style="font-size:9px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#ec4899;margin-bottom:6px;">K-DRAMA · C-DRAMA · DİZİ</div>
-                      <h1 style="font-size:clamp(28px,5vw,52px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">
-                        <span style="color:#fff;">MUNDO </span><span style="background:linear-gradient(90deg,#ec4899,#f43f5e,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">DRAMA</span>
-                      </h1>
-                      <p style="font-size:12px;color:#9ca3af;max-width:500px;line-height:1.6;">K-Dramas coreanos, C-Dramas chinos, Dizis turcos y mucho más. Romance, intriga, historia y lágrimas garantizadas.</p>
+                  <div style="position:relative;z-index:1;">
+                    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+                      <div style="font-size:48px;line-height:1;filter:drop-shadow(0 0 20px rgba(236,72,153,0.6));">🎭</div>
+                      <div>
+                        <div style="font-size:9px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#ec4899;margin-bottom:6px;">K-DRAMA · C-DRAMA · DİZİ</div>
+                        <h1 style="font-size:clamp(26px,4vw,48px);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:6px;">
+                          <span style="color:#fff;">MUNDO </span><span style="background:linear-gradient(90deg,#ec4899,#f43f5e,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">DRAMA</span>
+                        </h1>
+                        <p style="font-size:12px;color:#9ca3af;max-width:500px;line-height:1.5;">K-Dramas coreanos, C-Dramas chinos, Dizis turcos y mucho más. Romance, intriga y lágrimas garantizadas.</p>
+                      </div>
+                    </div>
+                    <div style="position:relative;max-width:520px;">
+                      <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#ec4899;font-size:13px;pointer-events:none;"></i>
+                      <input id="drama-search-input" type="text" placeholder="Buscar drama... (ej: Crash Landing, Goblin, Squid Game)"
+                        style="width:100%;background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.3);border-radius:999px;padding:12px 44px 12px 42px;color:#fff;font-size:13px;font-weight:700;outline:none;font-family:'Outfit',sans-serif;transition:all .2s;"
+                        onfocus="this.style.borderColor='rgba(236,72,153,0.7)';this.style.background='rgba(236,72,153,0.11)'"
+                        onblur="this.style.borderColor='rgba(236,72,153,0.3)';this.style.background='rgba(236,72,153,0.07)'"
+                        oninput="onDramaSearchInput(this.value)">
+                      <button id="drama-search-clear" onclick="clearDramaSearch()" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(236,72,153,0.2);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#ec4899;font-size:10px;font-weight:900;">✕</button>
                     </div>
                   </div>
                 `;
                 area.appendChild(banner);
 
+                const searchResults = document.createElement('div');
+                searchResults.id = 'drama-search-results';
+                searchResults.style.cssText = 'display:none;padding:0 16px 24px;';
+                area.appendChild(searchResults);
+
+                const carousels = document.createElement('div');
+                carousels.id = 'drama-carousels';
                 categories.forEach(cat => {
-                    if (cat.items.length > 0) area.appendChild(renderDramaCarousel(cat));
+                    if (cat.items.length > 0) carousels.appendChild(renderDramaCarousel(cat));
                 });
+                area.appendChild(carousels);
+
             } catch (err) {
                 console.error('Error loading drama:', err);
                 area.innerHTML = '<div class="text-center py-20 text-gray-600 font-bold tracking-widest uppercase">Error al cargar dramas</div>';
             }
+        }
+
+        function onDramaSearchInput(val) {
+            clearTimeout(_dramaSearchTimer);
+            const clearBtn = document.getElementById('drama-search-clear');
+            if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+            if (!val.trim()) { clearDramaSearch(); return; }
+            _dramaSearchTimer = setTimeout(() => runDramaSearch(val.trim()), 400);
+        }
+
+        async function runDramaSearch(query) {
+            const resultsEl = document.getElementById('drama-search-results');
+            const carouselsEl = document.getElementById('drama-carousels');
+            if (!resultsEl) return;
+            resultsEl.style.display = 'block';
+            if (carouselsEl) carouselsEl.style.display = 'none';
+            resultsEl.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:20px 0 16px;">
+                <div style="width:18px;height:18px;border-radius:50%;border:2px solid #ec4899;border-top-color:transparent;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
+                <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#6b7280;">Buscando drama...</span>
+            </div>`;
+            try {
+                const res = await fetch(`/api/drama/search?query=${encodeURIComponent(query)}&lang=${currentLang}`);
+                const items = await res.json();
+                if (!items.length) {
+                    resultsEl.innerHTML = `<div style="text-align:center;padding:48px 0;color:#4b5563;">
+                        <div style="font-size:36px;margin-bottom:12px;">🎭</div>
+                        <p style="font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">Sin resultados para "<span style="color:#ec4899;">${query}</span>"</p>
+                    </div>`;
+                    return;
+                }
+                resultsEl.innerHTML = `
+                  <div style="display:flex;align-items:center;gap:8px;padding:16px 0 20px;">
+                    <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#ec4899;">RESULTADOS</span>
+                    <span style="font-size:8px;font-weight:900;color:#4b5563;letter-spacing:2px;">— ${items.length} DRAMAS ENCONTRADOS</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;">
+                    ${items.map(item => renderDramaPosterCard(item, '#ec4899')).join('')}
+                  </div>`;
+                resultsEl.querySelectorAll('.poster-card').forEach((card, i) => {
+                    card.onclick = () => openInfoModal(items[i]);
+                });
+            } catch (e) {
+                resultsEl.innerHTML = `<div style="text-align:center;padding:32px;color:#4b5563;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">Error en la búsqueda</div>`;
+            }
+        }
+
+        function clearDramaSearch() {
+            const input = document.getElementById('drama-search-input');
+            const clearBtn = document.getElementById('drama-search-clear');
+            const resultsEl = document.getElementById('drama-search-results');
+            const carouselsEl = document.getElementById('drama-carousels');
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
+            if (carouselsEl) carouselsEl.style.display = 'block';
         }
 
         function renderDramaCarousel(cat) {

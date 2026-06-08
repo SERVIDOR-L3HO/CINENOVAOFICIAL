@@ -22,6 +22,24 @@ const mapDrama = s => ({
 
 const unique = arr => [...new Map(arr.map(x => [x.id, x])).values()];
 
+exports.searchDrama = async (req, res) => {
+  try {
+    const { query, lang } = req.query;
+    if (!query) return res.json([]);
+    const response = await tmdb.get('/search/tv', {
+      params: { language: lang || 'es-MX', query, include_adult: false }
+    });
+    const DRAMA_LANGS = ['ko', 'zh', 'tr', 'th', 'zh-TW', 'zh-HK'];
+    const results = response.data.results
+      .filter(s => DRAMA_LANGS.includes(s.original_language) && s.poster_path)
+      .map(mapDrama);
+    res.json(results);
+  } catch (err) {
+    console.error('Drama search error:', err.message);
+    res.status(500).json({ error: 'Error en búsqueda de drama' });
+  }
+};
+
 exports.getDramaCategories = async (req, res) => {
   try {
     const lang = req.query.lang || 'es-MX';
