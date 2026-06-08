@@ -9,6 +9,7 @@ const movieRoutes = require('./routes/movieRoutes');
 const seriesRoutes = require('./routes/seriesRoutes');
 const tvRoutes = require('./routes/tvRoutes');
 const animeRoutes = require('./routes/animeRoutes');
+const dramaRoutes = require('./routes/dramaRoutes');
 
 const app = express();
 
@@ -644,6 +645,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/series', seriesRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/anime', animeRoutes);
+app.use('/api/drama', dramaRoutes);
 
 // Root path handler
 app.get('/', (req, res) => {
