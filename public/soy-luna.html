@@ -647,6 +647,16 @@
             <button class="aud-tab"            id="aud-castellano" onclick="switchAudio('castellano')">🇪🇸 CAST</button>
         </div>
 
+        <!-- Fullscreen / Landscape -->
+        <button id="btn-fullscreen" onclick="toggleFullscreen()"
+                title="Pantalla completa"
+                style="width:30px;height:30px;border-radius:50%;
+                       background:rgba(168,85,247,.10);border:1px solid rgba(168,85,247,.25);
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;
+                       flex-shrink:0;transition:all .2s;">
+            <i id="fs-icon" class="fas fa-expand" style="font-size:10px;color:#c084fc;"></i>
+        </button>
+
         <!-- Close -->
         <button onclick="closePlayer()"
                 style="width:30px;height:30px;border-radius:50%;
@@ -1417,6 +1427,40 @@
         if (!about) return;
         about.style.gridTemplateColumns = window.innerWidth < 640 ? '1fr' : '1fr 1fr';
     }
+
+    // ─── Pantalla completa / landscape ────────────────────────────────────────────
+    async function toggleFullscreen() {
+      const el = document.getElementById('player-view');
+      const icon = document.getElementById('fs-icon');
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+
+      if (!isFs) {
+        // Entrar a pantalla completa
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+        // Bloquear orientación horizontal en móvil
+        try {
+          await screen.orientation.lock('landscape');
+        } catch(e) {}
+        icon.className = 'fas fa-compress';
+      } else {
+        // Salir de pantalla completa
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        try { screen.orientation.unlock(); } catch(e) {}
+        icon.className = 'fas fa-expand';
+      }
+    }
+
+    // Actualizar ícono si el usuario sale con Esc
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.getElementById('fs-icon');
+      if (icon) icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      const icon = document.getElementById('fs-icon');
+      if (icon) icon.className = document.webkitFullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+    });
 
     // ─── Init ─────────────────────────────────────────────────────────────────────
     updateHeroCTA();
