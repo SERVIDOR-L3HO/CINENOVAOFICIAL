@@ -687,8 +687,7 @@
     <!-- ── VIDEO ── -->
     <div style="flex:1;position:relative;background:#000;min-height:0;">
         <iframe id="video-frame" style="width:100%;height:100%;border:none;display:none;"
-            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
         <video id="hls-video" style="width:100%;height:100%;display:none;background:#000;"
             controls autoplay playsinline></video>
         <!-- Ad killer overlay: cubre el banner inferior (#ad720) y botones laterales de ads -->
@@ -779,12 +778,12 @@
     // ─── Servidores disponibles por idioma ───────────────────────────────────────
     const SERVERS = {
         latino: [
-            { name: 'SERVIDOR 1', tag: 'MULTI',  url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
-            { name: 'SERVIDOR 2', tag: 'AUTO',   url: (s,e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'SERVIDOR 1', tag: 'MULTI',   url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'SERVIDOR 2', tag: 'VIDSRC',  url: (s,e) => `https://vidsrc.to/embed/tv/${TMDB_ID}/${s}/${e}` },
         ],
         castellano: [
-            { name: 'SERVIDOR 1', tag: 'AUTO',   url: (s,e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
-            { name: 'SERVIDOR 2', tag: 'MULTI',  url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'SERVIDOR 1', tag: 'VIDSRC',  url: (s,e) => `https://vidsrc.to/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'SERVIDOR 2', tag: 'MULTI',   url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
         ]
     };
 
