@@ -670,6 +670,14 @@
                        color:#4b5563;">
                 <i class="fas fa-server" style="font-size:7px;"></i> S2
             </button>
+            <button onclick="switchServer(2)" id="srv-2"
+                style="display:inline-flex;align-items:center;gap:5px;
+                       padding:6px 12px;border-radius:99px;cursor:pointer;transition:all .2s;
+                       background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                       font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+                       color:#4b5563;">
+                <i class="fas fa-server" style="font-size:7px;"></i> S3
+            </button>
         </div>
 
         <!-- Prev / Next — pushed right -->
@@ -778,12 +786,20 @@
     // ─── Servidores disponibles por idioma ───────────────────────────────────────
     const SERVERS = {
         latino: [
-            { name: 'SERVIDOR 1', tag: 'MULTI',   url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
-            { name: 'SERVIDOR 2', tag: 'VIDSRC',  url: (s,e) => `https://vidsrc.to/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'SERVIDOR 1', tag: 'MULTI',      url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'SERVIDOR 2', tag: 'VIDSRC',     url: (s,e) => `https://vidsrc.to/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'PELISJUANITA', tag: 'FASTREAM', async: true,
+              url: async (s,e) => {
+                  const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
+                  const d = await r.json();
+                  return d.embedUrl || null;
+              }
+            },
         ],
         castellano: [
             { name: 'SERVIDOR 1', tag: 'VIDSRC',  url: (s,e) => `https://vidsrc.to/embed/tv/${TMDB_ID}/${s}/${e}` },
             { name: 'SERVIDOR 2', tag: 'MULTI',   url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'SERVIDOR 3', tag: 'MULTI',   url: (s,e) => `https://multiembed.mov/?tmdb=1&video_id=${TMDB_ID}&s=${s}&e=${e}` },
         ]
     };
 
@@ -1218,11 +1234,27 @@
 
         const servers = SERVERS[curAudio];
         const server  = servers[curServerIdx % servers.length];
-        const url     = server.url(curSeason, curEpisode);
 
         // Update loader label
         const loaderLabel = document.getElementById('loader-server-label');
         if (loaderLabel) loaderLabel.textContent = server.name + ' · HD';
+
+        // Resolver URL (puede ser sync o async)
+        let url;
+        try {
+            url = server.async
+                ? await server.url(curSeason, curEpisode)
+                : server.url(curSeason, curEpisode);
+        } catch(err) {
+            url = null;
+        }
+
+        if (!url) {
+            // Sin embed disponible — mostrar mensaje en el loader
+            if (loaderLabel) loaderLabel.textContent = 'SIN EPISODIO DISPONIBLE';
+            loader.style.display = 'flex';
+            return;
+        }
 
         frame.style.display = 'block';
         frame.onload = () => {

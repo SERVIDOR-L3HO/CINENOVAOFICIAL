@@ -590,6 +590,43 @@ app.get('/api/player', async (req, res) => {
   }
 });
 
+// ── Proxy Pelisjuanita → extrae embed Fastream para Soy Luna ─────────────────
+app.get('/api/proxy/pelisjuanita-soy-luna', async (req, res) => {
+  try {
+    const { s = 1, e = 1 } = req.query;
+    const url = `https://full-online.xyz/series/serieInfo.php?nombreSerie=soy-luna&snum=${s}&enum=${e}`;
+
+    const resp = await axios.get(url, {
+      timeout: 18000,
+      responseType: 'text',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': 'https://full-online.xyz/series/ver-serie/soy-luna',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-MX,es;q=0.9',
+      }
+    });
+
+    const html = resp.data;
+
+    // Buscar embed de Fastream en el iframe principal o en data-url
+    const iframeMatch = html.match(/src=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
+    const dataMatch   = html.match(/data-url=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
+    const rawMatch    = html.match(/https:\/\/fastream\.to\/embed-[a-z0-9]+\.html/i);
+
+    const embedUrl = (iframeMatch || dataMatch || rawMatch)?.[1] || rawMatch?.[0] || null;
+
+    if (!embedUrl) {
+      return res.json({ embedUrl: null, error: `Sin embed Fastream para T${s}E${e}` });
+    }
+
+    res.json({ embedUrl, source: 'pelisjuanita', season: Number(s), episode: Number(e) });
+  } catch (err) {
+    console.error('pelisjuanita-soy-luna error:', err.message);
+    res.json({ embedUrl: null, error: err.message });
+  }
+});
+
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
