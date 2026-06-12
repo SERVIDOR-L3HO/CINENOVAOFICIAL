@@ -840,19 +840,46 @@
     // ─── Servidores de reproducción ──────────────────────────────────────────────
     const SERVERS = {
         latino: [
-            { name: 'Servidor 1', tag: 'VIDLINK',    async: false,
+            // Servidor 1: Pelisjuanita (Fastream) — extrae embed o carga directo
+            { name: 'Pelisjuanita', tag: 'FASTREAM', async: true,
+              url: async (s, e) => {
+                try {
+                    const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
+                    const d = await r.json();
+                    // Si extrajimos el Fastream embed → usarlo
+                    if (d.embedUrl) return d.embedUrl;
+                    // Si Cloudflare bloqueó server-side → cargar pelisjuanita directo en el iframe
+                    // (el navegador del usuario ya pasó el challenge de Cloudflare)
+                    if (d.directUrl) return d.directUrl;
+                } catch (_) {}
+                return null;
+              }
+            },
+            { name: 'Vidlink',    tag: 'VIDLINK',    async: false,
               url: (s, e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
-            { name: 'Servidor 2', tag: 'VIDSRC',     async: false,
+            { name: 'VidSrc',     tag: 'VIDSRC',     async: false,
               url: (s, e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
-            { name: 'Servidor 3', tag: 'MULTIEMBED', async: false,
+            { name: 'MultiEmbed', tag: 'MULTIEMBED', async: false,
               url: (s, e) => `https://multiembed.mov/directstream.php?video_id=${TMDB_ID}&tmdb=1&s=${s}&e=${e}` },
         ],
         castellano: [
-            { name: 'Servidor 1', tag: 'AUTOEMBED',  async: false,
+            // Servidor 1: Pelisjuanita también tiene audio Español
+            { name: 'Pelisjuanita', tag: 'FASTREAM', async: true,
+              url: async (s, e) => {
+                try {
+                    const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
+                    const d = await r.json();
+                    if (d.embedUrl) return d.embedUrl;
+                    if (d.directUrl) return d.directUrl;
+                } catch (_) {}
+                return null;
+              }
+            },
+            { name: 'AutoEmbed',  tag: 'AUTOEMBED',  async: false,
               url: (s, e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
-            { name: 'Servidor 2', tag: '2EMBED',     async: false,
+            { name: '2Embed',     tag: '2EMBED',     async: false,
               url: (s, e) => `https://www.2embed.cc/embedtv/${TMDB_ID}&s=${s}&e=${e}` },
-            { name: 'Servidor 3', tag: 'EMBED.SU',   async: false,
+            { name: 'Embed.su',   tag: 'EMBED.SU',   async: false,
               url: (s, e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
         ]
     };

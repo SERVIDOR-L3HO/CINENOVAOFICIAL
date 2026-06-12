@@ -594,39 +594,48 @@ app.get('/api/player', async (req, res) => {
 
 // ── Proxy Pelisjuanita → extrae embed Fastream para Soy Luna ─────────────────
 app.get('/api/proxy/pelisjuanita-soy-luna', async (req, res) => {
-  try {
-    const { s = 1, e = 1 } = req.query;
-    const url = `https://full-online.xyz/series/serieInfo.php?nombreSerie=soy-luna&nroTemporada=${s}&nroEpisodio=${e}`;
+  const { s = 1, e = 1 } = req.query;
+  // URL directa que el navegador del usuario puede cargar (pasa Cloudflare)
+  const directUrl = `https://pelisjuanita.com/series/soy-luna/temporada-${s}/capitulo-${e}`;
 
-    const resp = await axios.get(url, {
-      timeout: 18000,
-      responseType: 'text',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Referer': 'https://full-online.xyz/series/ver-serie/soy-luna',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'es-MX,es;q=0.9',
+  // Intentar extraer el embed Fastream vía server-side (puede fallar por Cloudflare)
+  const candidates = [
+    `https://pelisjuanita.com/series/serieInfo.php?nombreSerie=soy-luna&nroTemporada=${s}&nroEpisodio=${e}`,
+    `https://pelisjuanita.com/series/soy-luna/temporada-${s}/capitulo-${e}`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const resp = await axios.get(url, {
+        timeout: 12000,
+        responseType: 'text',
+        maxRedirects: 5,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': 'https://pelisjuanita.com/series/ver-serie/soy-luna',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'es-MX,es;q=0.9',
+        }
+      });
+
+      const html = resp.data;
+      // Si Cloudflare devuelve el challenge JS, saltamos
+      if (html.includes('cf_chl_opt') || html.includes('Just a moment')) continue;
+
+      const iframeMatch = html.match(/src=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
+      const dataMatch   = html.match(/data-url=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
+      const rawMatch    = html.match(/(https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)/i);
+      const embedUrl    = iframeMatch?.[1] || dataMatch?.[1] || rawMatch?.[1] || null;
+
+      if (embedUrl) {
+        return res.json({ embedUrl, directUrl, source: 'pelisjuanita', season: Number(s), episode: Number(e) });
       }
-    });
-
-    const html = resp.data;
-
-    // Buscar embed de Fastream en el iframe principal o en data-url
-    const iframeMatch = html.match(/src=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
-    const dataMatch   = html.match(/data-url=["'](https:\/\/fastream\.to\/embed-[a-z0-9]+\.html)["']/i);
-    const rawMatch    = html.match(/https:\/\/fastream\.to\/embed-[a-z0-9]+\.html/i);
-
-    const embedUrl = (iframeMatch || dataMatch || rawMatch)?.[1] || rawMatch?.[0] || null;
-
-    if (!embedUrl) {
-      return res.json({ embedUrl: null, error: `Sin embed Fastream para T${s}E${e}` });
-    }
-
-    res.json({ embedUrl, source: 'pelisjuanita', season: Number(s), episode: Number(e) });
-  } catch (err) {
-    console.error('pelisjuanita-soy-luna error:', err.message);
-    res.json({ embedUrl: null, error: err.message });
+    } catch (_) { /* continuar con siguiente candidato */ }
   }
+
+  // No se pudo extraer Fastream server-side → devolver URL directa para que el
+  // navegador del usuario la cargue directamente en el iframe (él ya pasó Cloudflare)
+  res.json({ embedUrl: null, directUrl, source: 'pelisjuanita-direct', season: Number(s), episode: Number(e) });
 });
 
 app.use(cors({
