@@ -6,7 +6,7 @@
     <title>CINENOVA - Premium Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0c0c0c">
@@ -157,6 +157,38 @@
         /* --- NAV ACTIVE INDICATOR --- */
         .nav-active { color: #ffffff !important; }
 
+        /* --- BOTTOM NAV GLASS --- */
+        .bottom-nav {
+            background: rgba(8, 8, 8, 0.55);
+            backdrop-filter: blur(32px) saturate(180%);
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
+            border-top: 1px solid rgba(255,255,255,0.09);
+            box-shadow: 0 -1px 0 rgba(255,255,255,0.04), 0 -12px 40px rgba(0,0,0,0.5);
+        }
+        .bottom-nav-btn {
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            padding: 6px 12px; border-radius: 14px;
+            color: rgba(255,255,255,0.38);
+            font-size: 9px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;
+            transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
+        }
+        .bottom-nav-btn i { font-size: 19px; transition: all 0.22s cubic-bezier(0.16,1,0.3,1); }
+        .bottom-nav-btn:hover { color: rgba(255,255,255,0.75); }
+        .bottom-nav-btn.mob-active {
+            color: #ffffff;
+        }
+        .bottom-nav-btn.mob-active i {
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
+        }
+        .bottom-nav-btn.mob-active::before {
+            content: '';
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 28px; height: 2px; border-radius: 0 0 3px 3px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
+        }
+
         /* --- HERO BADGE --- */
         .hero-badge {
             background: rgba(255,255,255,0.1);
@@ -207,11 +239,11 @@
         <div class="flex items-center gap-4 md:gap-10">
             <img src="/assets/cinenova_full_logo.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer" onclick="window.location.reload()">
             <div class="hidden lg:flex gap-7 text-[10px] font-black tracking-[3px] uppercase italic">
-                <a href="#" id="nav-movies" class="text-accent transition hover:text-white" onclick="loadCategory('movies')">CINE</a>
-                <a href="#" id="nav-series" class="text-gray-400 transition hover:text-white" onclick="loadCategory('series')">SERIES</a>
-                <a href="#" id="nav-anime" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('anime')"><span style="font-size:11px;">⛩</span> ANIME</a>
-                <a href="#" id="nav-drama" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('drama')"><span style="font-size:11px;">🎭</span> K-DRAMA</a>
-                <a href="#" id="nav-favorites" class="text-gray-400 transition hover:text-white relative" onclick="loadCategory('favorites')">FAVORITOS<span id="nav-fav-badge" class="fav-count hidden"></span></a>
+                <a href="#" id="nav-movies" class="text-accent transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('movies')"><i class="fas fa-clapperboard text-[10px]"></i> CINE</a>
+                <a href="#" id="nav-series" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('series')"><i class="fas fa-display text-[10px]"></i> SERIES</a>
+                <a href="#" id="nav-anime" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('anime')"><i class="fas fa-dragon text-[10px]"></i> ANIME</a>
+                <a href="#" id="nav-drama" class="text-gray-400 transition hover:text-white flex items-center gap-1.5" onclick="loadCategory('drama')"><i class="fas fa-masks-theater text-[10px]"></i> K-DRAMA</a>
+                <a href="#" id="nav-favorites" class="text-gray-400 transition hover:text-white flex items-center gap-1.5 relative" onclick="loadCategory('favorites')"><i class="fas fa-bookmark text-[10px]"></i> FAVORITOS<span id="nav-fav-badge" class="fav-count hidden"></span></a>
             </div>
         </div>
         <div class="flex items-center gap-4 md:gap-5">
@@ -251,21 +283,21 @@
     </nav>
 
     <!-- Mobile Bottom Nav -->
-    <div class="lg:hidden fixed bottom-0 w-full z-[100] flex justify-around py-4" style="background:rgba(8,8,8,0.97); border-top:1px solid rgba(255,255,255,0.07); backdrop-filter:blur(20px);">
-        <button onclick="loadCategory('movies')" id="mob-movies" class="text-xs font-black tracking-widest text-accent flex flex-col items-center gap-1">
-            <i class="fas fa-film text-base"></i> CINE
+    <div class="lg:hidden fixed bottom-0 w-full z-[100] bottom-nav flex justify-around items-center px-2 py-2 pb-safe" style="padding-bottom: max(8px, env(safe-area-inset-bottom));">
+        <button onclick="loadCategory('movies')" id="mob-movies" class="bottom-nav-btn mob-active">
+            <i class="fas fa-clapperboard"></i> CINE
         </button>
-        <button onclick="loadCategory('series')" id="mob-series" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
-            <i class="fas fa-tv text-base"></i> SERIES
+        <button onclick="loadCategory('series')" id="mob-series" class="bottom-nav-btn">
+            <i class="fas fa-display"></i> SERIES
         </button>
-        <button onclick="loadCategory('anime')" id="mob-anime" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
-            <span style="font-size:18px;line-height:1;">⛩</span> ANIME
+        <button onclick="loadCategory('anime')" id="mob-anime" class="bottom-nav-btn">
+            <i class="fas fa-dragon"></i> ANIME
         </button>
-        <button onclick="loadCategory('drama')" id="mob-drama" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1">
-            <span style="font-size:18px;line-height:1;">🎭</span> DRAMA
+        <button onclick="loadCategory('drama')" id="mob-drama" class="bottom-nav-btn">
+            <i class="fas fa-masks-theater"></i> DRAMA
         </button>
-        <button onclick="loadCategory('favorites')" id="mob-favorites" class="text-xs font-black tracking-widest text-gray-500 flex flex-col items-center gap-1 relative">
-            <i class="fas fa-heart text-base"></i> MI LISTA
+        <button onclick="loadCategory('favorites')" id="mob-favorites" class="bottom-nav-btn relative">
+            <i class="fas fa-bookmark"></i> MI LISTA
             <span id="mob-fav-badge" class="fav-count hidden"></span>
         </button>
     </div>
@@ -545,13 +577,14 @@
         function updateNavHighlight(category) {
             const navMap = { movies: 'nav-movies', series: 'nav-series', anime: 'nav-anime', drama: 'nav-drama', tv: 'nav-tv', favorites: 'nav-favorites' };
             const mobMap = { movies: 'mob-movies', series: 'mob-series', anime: 'mob-anime', drama: 'mob-drama', tv: 'mob-tv', favorites: 'mob-favorites' };
-            const accentMap = { anime: '#f97316', drama: '#ec4899' };
             ['movies','series','anime','drama','tv','favorites'].forEach(c => {
                 const nav = document.getElementById(navMap[c]);
                 const mob = document.getElementById(mobMap[c]);
-                const activeColor = accentMap[c] || 'var(--accent)';
-                if (nav) { nav.style.color = c === category ? activeColor : '#9ca3af'; }
-                if (mob) { mob.style.color = c === category ? activeColor : '#6b7280'; }
+                if (nav) { nav.style.color = c === category ? 'var(--accent)' : '#9ca3af'; }
+                if (mob) {
+                    if (c === category) { mob.classList.add('mob-active'); }
+                    else { mob.classList.remove('mob-active'); }
+                }
             });
         }
 
