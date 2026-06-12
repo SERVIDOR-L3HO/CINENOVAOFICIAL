@@ -1370,50 +1370,60 @@
         updateServerButtons();
 
         const servers = SERVERS[curAudio];
-        const server  = servers[curServerIdx % servers.length];
-
-        // Update loader label
         const loaderLabel = document.getElementById('loader-server-label');
-        if (loaderLabel) loaderLabel.textContent = server.name + ' · HD';
 
-        // Resolver URL (puede ser sync o async)
-        let url;
-        try {
-            url = server.async
-                ? await server.url(curSeason, curEpisode)
-                : server.url(curSeason, curEpisode);
-        } catch(err) {
-            url = null;
-        }
+        // Intentar servidores en orden empezando desde curServerIdx
+        for (let attempt = 0; attempt < servers.length; attempt++) {
+            const idx    = (curServerIdx + attempt) % servers.length;
+            const server = servers[idx];
 
-        if (!url) {
-            if (loaderLabel) loaderLabel.textContent = 'SIN EPISODIO DISPONIBLE';
-            loader.style.display = 'flex';
-            return;
-        }
+            if (loaderLabel) loaderLabel.textContent = server.name + ' · HD';
 
-        // ─── Servidor nativo (MP4 directo) ────────────────────────────────────
-        if (server.type === 'native' && native) {
-            native.style.display = 'block';
-            native.src = url;
-            native.load();
-            loader.style.display = 'none';
-            native.oncanplay = () => { loader.style.display = 'none'; };
-            native.onerror   = () => {
-                native.style.display = 'none';
-                if (loaderLabel) loaderLabel.textContent = 'ERROR DE STREAM';
-                loader.style.display = 'flex';
+            let url;
+            try {
+                url = server.async
+                    ? await server.url(curSeason, curEpisode)
+                    : server.url(curSeason, curEpisode);
+            } catch(err) {
+                url = null;
+            }
+
+            if (!url) continue; // este servidor no tiene el episodio, probar el siguiente
+
+            // Si encontramos URL en un servidor diferente al seleccionado, actualizar índice
+            if (attempt > 0) {
+                curServerIdx = idx;
+                updateServerButtons();
+            }
+
+            // ─── Servidor nativo (MP4 directo) ────────────────────────────────────
+            if (server.type === 'native' && native) {
+                native.style.display = 'block';
+                native.src = url;
+                native.load();
+                loader.style.display = 'none';
+                native.oncanplay = () => { loader.style.display = 'none'; };
+                native.onerror   = () => {
+                    native.style.display = 'none';
+                    loader.style.display = 'flex';
+                    if (loaderLabel) loaderLabel.textContent = 'ERROR DE STREAM';
+                };
+                return;
+            }
+
+            // ─── Iframe (embed externo) ───────────────────────────────────────────
+            frame.style.display = 'block';
+            frame.onload = () => {
+                loader.style.display = 'none';
+                injectAdBlockIntoFrame(frame);
             };
+            setTimeout(() => { frame.src = url; }, 150);
             return;
         }
 
-        // ─── Iframe (embed externo) ───────────────────────────────────────────
-        frame.style.display = 'block';
-        frame.onload = () => {
-            loader.style.display = 'none';
-            injectAdBlockIntoFrame(frame);
-        };
-        setTimeout(() => { frame.src = url; }, 150);
+        // Ningún servidor devolvió URL
+        if (loaderLabel) loaderLabel.textContent = 'SIN EPISODIO DISPONIBLE';
+        loader.style.display = 'flex';
     }
 
     // ─── Navigation ──────────────────────────────────────────────────────────────
