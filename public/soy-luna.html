@@ -686,6 +686,11 @@
                style="position:absolute;inset:0;width:100%;height:100%;display:none;background:#000;z-index:1;"
                controls autoplay playsinline></video>
 
+        <!-- Native MP4 player (MovieBox, etc.) -->
+        <video id="native-video"
+               style="position:absolute;inset:0;width:100%;height:100%;display:none;background:#000;z-index:1;"
+               controls autoplay playsinline preload="metadata"></video>
+
         <!-- Ad killers -->
         <div id="ad-overlay-bottom"
              style="position:absolute;bottom:0;left:0;right:0;height:55px;
@@ -838,23 +843,32 @@
     };
 
     // ─── Servidores de reproducción ──────────────────────────────────────────────
+    // La API de MovieBox tiene CORS abierto (Access-Control-Allow-Origin: *)
+    // → llamar desde el cliente genera una firma para la IP del usuario → el CDN acepta la petición
+    const MOVIEBOX_API = 'https://themoviebox.org/wefeed-h5api-bff/subject/play';
+    const MOVIEBOX_ID  = '7144491624448803360';
+
+    async function fetchMovieBoxStream(s, e, quality = '720') {
+        const r = await fetch(
+            `${MOVIEBOX_API}?subjectId=${MOVIEBOX_ID}&se=${s}&ep=${e}`,
+            { headers: { 'Referer': 'https://themoviebox.org/' } }
+        );
+        const d = await r.json();
+        if (!d?.data?.hasResource || !d.data.streams?.length) return null;
+        const streams = d.data.streams;
+        const preferred = streams.find(x => x.resolutions === quality) || streams[0];
+        return preferred?.url || null;
+    }
+
+    // Servers with type:'native' usan <video> nativo en lugar de iframe
     const SERVERS = {
         latino: [
-            // Servidor 1: Pelisjuanita (Fastream) — extrae embed o carga directo
-            { name: 'Pelisjuanita', tag: 'FASTREAM', async: true,
-              url: async (s, e) => {
-                try {
-                    const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
-                    const d = await r.json();
-                    // Si extrajimos el Fastream embed → usarlo
-                    if (d.embedUrl) return d.embedUrl;
-                    // Si Cloudflare bloqueó server-side → cargar pelisjuanita directo en el iframe
-                    // (el navegador del usuario ya pasó el challenge de Cloudflare)
-                    if (d.directUrl) return d.directUrl;
-                } catch (_) {}
-                return null;
-              }
-            },
+            // Servidor 1: MovieBox — MP4 directo 720p desde CDN, sin ads, sin proxy
+            { name: 'MovieBox', tag: 'HD 720P', type: 'native', async: true,
+              url: (s, e) => fetchMovieBoxStream(s, e, '720') },
+            // Servidor 2: MovieBox 360p (para conexiones lentas)
+            { name: 'MovieBox SD', tag: 'SD 360P', type: 'native', async: true,
+              url: (s, e) => fetchMovieBoxStream(s, e, '360') },
             { name: 'Vidlink',    tag: 'VIDLINK',    async: false,
               url: (s, e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
             { name: 'VidSrc',     tag: 'VIDSRC',     async: false,
@@ -863,18 +877,8 @@
               url: (s, e) => `https://multiembed.mov/directstream.php?video_id=${TMDB_ID}&tmdb=1&s=${s}&e=${e}` },
         ],
         castellano: [
-            // Servidor 1: Pelisjuanita también tiene audio Español
-            { name: 'Pelisjuanita', tag: 'FASTREAM', async: true,
-              url: async (s, e) => {
-                try {
-                    const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
-                    const d = await r.json();
-                    if (d.embedUrl) return d.embedUrl;
-                    if (d.directUrl) return d.directUrl;
-                } catch (_) {}
-                return null;
-              }
-            },
+            { name: 'MovieBox', tag: 'HD 720P', type: 'native', async: true,
+              url: (s, e) => fetchMovieBoxStream(s, e, '720') },
             { name: 'AutoEmbed',  tag: 'AUTOEMBED',  async: false,
               url: (s, e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
             { name: '2Embed',     tag: '2EMBED',     async: false,
@@ -1211,6 +1215,8 @@
         document.getElementById('player-view').classList.remove('open');
         document.getElementById('video-frame').src = '';
         document.getElementById('video-frame').style.display = 'none';
+        const nv = document.getElementById('native-video');
+        if (nv) { nv.pause(); nv.src = ''; nv.style.display = 'none'; }
         destroyHls();
         hideAdOverlays();
         if (epCache[curSeason]) renderEpisodeList(epCache[curSeason]);
@@ -1353,10 +1359,12 @@
     async function loadEmbed() {
         const loader = document.getElementById('player-loader');
         const frame  = document.getElementById('video-frame');
+        const native = document.getElementById('native-video');
 
         loader.style.display = 'flex';
         frame.style.display  = 'none';
         frame.src = '';
+        if (native) { native.pause(); native.src = ''; native.style.display = 'none'; }
         destroyHls();
         hideAdOverlays();
         updateServerButtons();
@@ -1379,12 +1387,27 @@
         }
 
         if (!url) {
-            // Sin embed disponible — mostrar mensaje en el loader
             if (loaderLabel) loaderLabel.textContent = 'SIN EPISODIO DISPONIBLE';
             loader.style.display = 'flex';
             return;
         }
 
+        // ─── Servidor nativo (MP4 directo) ────────────────────────────────────
+        if (server.type === 'native' && native) {
+            native.style.display = 'block';
+            native.src = url;
+            native.load();
+            loader.style.display = 'none';
+            native.oncanplay = () => { loader.style.display = 'none'; };
+            native.onerror   = () => {
+                native.style.display = 'none';
+                if (loaderLabel) loaderLabel.textContent = 'ERROR DE STREAM';
+                loader.style.display = 'flex';
+            };
+            return;
+        }
+
+        // ─── Iframe (embed externo) ───────────────────────────────────────────
         frame.style.display = 'block';
         frame.onload = () => {
             loader.style.display = 'none';

@@ -592,6 +592,86 @@ app.get('/api/player', async (req, res) => {
   }
 });
 
+// ── MovieBox → stream MP4 directo para Soy Luna ──────────────────────────────
+const MOVIEBOX_SUBJECT_ID = '7144491624448803360';
+const MOVIEBOX_REFERER    = 'https://themoviebox.org/';
+
+// 1. Obtiene la URL firmada del stream desde la API de MovieBox
+app.get('/api/moviebox/soy-luna', async (req, res) => {
+  try {
+    const { s = 1, e = 1 } = req.query;
+    const apiUrl = `https://themoviebox.org/wefeed-h5api-bff/subject/play?subjectId=${MOVIEBOX_SUBJECT_ID}&se=${s}&ep=${e}`;
+    const resp = await axios.get(apiUrl, {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': `https://themoviebox.org/movies/soy-luna-O7Z36yxQLv8?id=${MOVIEBOX_SUBJECT_ID}&type=/movie/detail&detailSe=${s}&detailEp=${e}&lang=en`,
+        'Accept': 'application/json',
+      }
+    });
+    const data = resp.data?.data;
+    if (!data?.hasResource || !data.streams?.length) {
+      return res.json({ hasResource: false });
+    }
+    // Preferir 720p, fallback a 360p
+    const s720 = data.streams.find(x => x.resolutions === '720');
+    const s360 = data.streams.find(x => x.resolutions === '360');
+    const best = s720 || s360;
+    res.json({
+      hasResource: true,
+      stream720: s720 ? `/api/moviebox/soy-luna/stream?url=${encodeURIComponent(s720.url)}` : null,
+      stream360: s360 ? `/api/moviebox/soy-luna/stream?url=${encodeURIComponent(s360.url)}` : null,
+      streamUrl: `/api/moviebox/soy-luna/stream?url=${encodeURIComponent(best.url)}`,
+      duration: best.duration,
+    });
+  } catch (err) {
+    console.error('moviebox-soy-luna error:', err.message);
+    res.json({ hasResource: false, error: err.message });
+  }
+});
+
+// 2. Proxy de streaming con soporte completo de Range (permite seek en el video)
+app.get('/api/moviebox/soy-luna/stream', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('Missing url');
+
+    const decodedUrl = decodeURIComponent(url);
+    // Validar que sea una URL del CDN de MovieBox
+    if (!decodedUrl.includes('hakunaymatata.com')) {
+      return res.status(403).send('Forbidden');
+    }
+
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Referer': MOVIEBOX_REFERER,
+      'Origin': 'https://themoviebox.org',
+    };
+    // Reenviar Range header si viene del cliente (para seeking)
+    if (req.headers.range) headers['Range'] = req.headers.range;
+
+    const upstream = await axios({
+      method: 'get',
+      url: decodedUrl,
+      responseType: 'stream',
+      timeout: 30000,
+      headers,
+    });
+
+    // Copiar headers relevantes al cliente
+    res.status(upstream.status);
+    const forward = ['content-type','content-length','content-range','accept-ranges','cache-control'];
+    forward.forEach(h => { if (upstream.headers[h]) res.setHeader(h, upstream.headers[h]); });
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    upstream.data.pipe(res);
+    req.on('close', () => { try { upstream.data.destroy(); } catch(_) {} });
+  } catch (err) {
+    console.error('moviebox-stream error:', err.message);
+    if (!res.headersSent) res.status(502).send('Stream error');
+  }
+});
+
 // ── Proxy Pelisjuanita → extrae embed Fastream para Soy Luna ─────────────────
 app.get('/api/proxy/pelisjuanita-soy-luna', async (req, res) => {
   const { s = 1, e = 1 } = req.query;

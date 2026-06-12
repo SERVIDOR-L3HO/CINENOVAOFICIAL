@@ -1,0 +1,1 @@
+- [MovieBox Soy Luna streams](moviebox-soyluna.md) — IP-bound signed MP4s; must call API client-side (CORS: *), never proxy server-side.
