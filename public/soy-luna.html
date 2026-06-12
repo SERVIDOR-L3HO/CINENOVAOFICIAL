@@ -647,6 +647,9 @@
             <button class="aud-tab"            id="aud-castellano" onclick="switchAudio('castellano')">🇪🇸 CAST</button>
         </div>
 
+        <!-- Server switcher -->
+        <div id="server-btns" style="display:flex;align-items:center;gap:5px;flex-shrink:0;"></div>
+
         <!-- Fullscreen / Landscape -->
         <button id="btn-fullscreen" onclick="toggleFullscreen()"
                 title="Pantalla completa"
@@ -723,8 +726,8 @@
         <!-- Info strip -->
         <div style="padding:7px 16px;display:flex;align-items:center;justify-content:center;
                     gap:10px;border-bottom:1px solid rgba(168,85,247,.08);">
-            <span style="font-size:7px;font-weight:900;letter-spacing:2px;
-                         text-transform:uppercase;color:#3b1f5a;">PELISJUANITA · FASTREAM</span>
+            <span id="bottom-server-label" style="font-size:7px;font-weight:900;letter-spacing:2px;
+                         text-transform:uppercase;color:#3b1f5a;">VIDLINK</span>
             <span style="width:3px;height:3px;border-radius:50%;background:rgba(168,85,247,.35);display:inline-block;"></span>
             <span id="bottom-audio-label"
                   style="font-size:7px;font-weight:900;letter-spacing:2px;
@@ -834,18 +837,24 @@
         3: 'En la temporada final, los secretos salen a la luz y los sueños de Luna alcanzan su punto más alto sobre ruedas.'
     };
 
-    // ─── Servidor: Pelisjuanita (Fastream) ───────────────────────────────────────
-    const FASTREAM_SERVER = {
-        name: 'PELISJUANITA', tag: 'FASTREAM', async: true,
-        url: async (s, e) => {
-            const r = await fetch(`/api/proxy/pelisjuanita-soy-luna?s=${s}&e=${e}`);
-            const d = await r.json();
-            return d.embedUrl || null;
-        }
-    };
+    // ─── Servidores de reproducción ──────────────────────────────────────────────
     const SERVERS = {
-        latino:     [FASTREAM_SERVER],
-        castellano: [FASTREAM_SERVER]
+        latino: [
+            { name: 'Servidor 1', tag: 'VIDLINK',    async: false,
+              url: (s, e) => `https://vidlink.pro/tv/${TMDB_ID}/${s}/${e}?primaryColor=a855f7&autoplay=true&title=false` },
+            { name: 'Servidor 2', tag: 'VIDSRC',     async: false,
+              url: (s, e) => `https://vidsrc.cc/v2/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'Servidor 3', tag: 'MULTIEMBED', async: false,
+              url: (s, e) => `https://multiembed.mov/directstream.php?video_id=${TMDB_ID}&tmdb=1&s=${s}&e=${e}` },
+        ],
+        castellano: [
+            { name: 'Servidor 1', tag: 'AUTOEMBED',  async: false,
+              url: (s, e) => `https://player.autoembed.cc/embed/tv/${TMDB_ID}/${s}/${e}` },
+            { name: 'Servidor 2', tag: '2EMBED',     async: false,
+              url: (s, e) => `https://www.2embed.cc/embedtv/${TMDB_ID}&s=${s}&e=${e}` },
+            { name: 'Servidor 3', tag: 'EMBED.SU',   async: false,
+              url: (s, e) => `https://embed.su/embed/tv/${TMDB_ID}/${s}/${e}` },
+        ]
     };
 
     // ─── State ───────────────────────────────────────────────────────────────────
@@ -1248,7 +1257,25 @@
         vid.style.display = 'none';
     }
 
-    function updateServerButtons() { /* single server — no buttons needed */ }
+    function updateServerButtons() {
+        const container = document.getElementById('server-btns');
+        if (!container) return;
+        const servers = SERVERS[curAudio];
+        container.innerHTML = servers.map((sv, i) => `
+            <button onclick="switchServer(${i})"
+                style="padding:5px 13px;border-radius:99px;font-size:9px;font-weight:900;
+                       letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;
+                       border:1px solid ${i===curServerIdx ? 'rgba(168,85,247,.7)' : 'rgba(255,255,255,.1)'};
+                       background:${i===curServerIdx ? 'rgba(168,85,247,.22)' : 'rgba(255,255,255,.04)'};
+                       color:${i===curServerIdx ? '#e9d5ff' : '#4b5563'};
+                       box-shadow:${i===curServerIdx ? '0 0 12px rgba(168,85,247,.25)' : 'none'};">
+                ${sv.name}
+            </button>
+        `).join('');
+        // Update bottom info label
+        const lbl = document.getElementById('bottom-server-label');
+        if (lbl) lbl.textContent = servers[curServerIdx % servers.length].tag;
+    }
     function switchServer(idx) { curServerIdx = idx; loadEmbed(); }
 
     // ─── Nav cards prev / next ────────────────────────────────────────────────────
