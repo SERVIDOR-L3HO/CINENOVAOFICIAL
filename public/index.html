@@ -1889,8 +1889,13 @@
                 if (isAnime) {
                     if (!embeds.latino) embeds.latino = [];
                     embeds.latino.unshift({
-                        name: 'StreamHG',
-                        url: `https://streamhg.to/embed/tv/${seriesId}/${season}/${episode}`,
+                        name: 'Servidor 2',
+                        url: `https://vidsrc.cc/v2/embed/tv/${seriesId}/${season}/${episode}`,
+                        quality: 'HD'
+                    });
+                    embeds.latino.unshift({
+                        name: 'Servidor 1',
+                        url: `https://vidlink.pro/tv/${seriesId}/${season}/${episode}?primaryColor=38bdf8&autoplay=true&title=false`,
                         quality: 'HD'
                     });
                 }
