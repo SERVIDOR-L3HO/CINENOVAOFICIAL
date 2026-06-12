@@ -1883,22 +1883,16 @@
             try {
                 const isAnime = currentCategory === 'anime';
 
-                const fetchBase = fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
-                const fetchHJ = isAnime
-                    ? fetch(`/api/anime/${seriesId}/henaojara?s=${season}&e=${episode}`).catch(() => null)
-                    : Promise.resolve(null);
-
-                const [baseRes, hjRes] = await Promise.all([fetchBase, fetchHJ]);
+                const baseRes = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await baseRes.json();
 
-                if (isAnime && hjRes) {
-                    try {
-                        const hjData = await hjRes.json();
-                        if (hjData && hjData.url) {
-                            if (!embeds.latino) embeds.latino = [];
-                            embeds.latino.unshift({ name: 'HJ Latino', url: hjData.url, quality: 'HD' });
-                        }
-                    } catch (e) {}
+                if (isAnime) {
+                    if (!embeds.latino) embeds.latino = [];
+                    embeds.latino.unshift({
+                        name: 'StreamHG',
+                        url: `https://streamhg.to/embed/tv/${seriesId}/${season}/${episode}`,
+                        quality: 'HD'
+                    });
                 }
 
                 currentEmbeds = embeds;
