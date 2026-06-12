@@ -1,22 +1,12 @@
 const axios = require('axios');
 
-const TMDB_TOKEN = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4NmQ5YTgzNGQ0NDEzNzAwYjQ5MWNjMjY4OTIxNDdhYSIsIm5iZiI6MTc1MjQ1NjQ4My4zNDUsInN1YiI6IjY4NzQ1ZDIzNjIwNzU1OWUwNDVhZTRjMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Mm-GBMnPS_WUAslIwTiewd6khCIFIqR4XDBqTlT9Yx0';
+const TMDB_TOKEN = process.env.TMDB_API_KEY;
 
 const tmdb = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
   headers: {
     accept: 'application/json',
     Authorization: `Bearer ${TMDB_TOKEN}`
-  }
-});
-
-const hjClient = axios.create({
-  timeout: 8000,
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'es-MX,es;q=0.9',
-    'Referer': 'https://henaojara.com/'
   }
 });
 
@@ -27,51 +17,6 @@ const slugify = (text) => (text || '')
   .replace(/\s+/g, '-')
   .replace(/-+/g, '-')
   .trim();
-
-const hjCache = new Map();
-
-async function findHenaojaraEmbed(title, season, episode) {
-  const baseSlug = slugify(title);
-  if (!baseSlug) return null;
-
-  const cacheKey = `${baseSlug}-s${season}e${episode}`;
-  if (hjCache.has(cacheKey)) return hjCache.get(cacheKey);
-
-  const slugCandidates = [
-    `${baseSlug}-espanol-latino-hd`,
-    `${baseSlug}-sub-espanol-hd`,
-    `${baseSlug}-temporada-${season}-espanol-latino-hd`,
-    `${baseSlug}-temporada-${season}-sub-espanol-hd`,
-    baseSlug
-  ];
-
-  for (const slug of slugCandidates) {
-    try {
-      const epUrl = `https://henaojara.com/view/episode/${slug}-${season}x${episode}/`;
-      const pageRes = await hjClient.get(epUrl);
-      const html = pageRes.data;
-
-      const tridMatch = html.match(/trid=(\d+)/);
-      if (!tridMatch) continue;
-
-      const trid = tridMatch[1];
-      const trembed = `https://henaojara.com/?trembed=0&trid=${trid}&trtype=2`;
-
-      hjCache.set(cacheKey, trembed);
-      if (hjCache.size > 500) {
-        const firstKey = hjCache.keys().next().value;
-        hjCache.delete(firstKey);
-      }
-      return trembed;
-
-    } catch (e) {
-      continue;
-    }
-  }
-
-  hjCache.set(cacheKey, null);
-  return null;
-}
 
 const mapAnime = s => ({
   id: s.id,
@@ -100,36 +45,31 @@ exports.searchAnime = async (req, res) => {
   }
 };
 
+// Devuelve la URL del episodio en henaojara sin hacer scraping
 exports.getHenaojaraEmbed = async (req, res) => {
   try {
     const { id } = req.params;
     const { s = 1, e = 1 } = req.query;
 
-    const [enRes, exRes] = await Promise.allSettled([
-      tmdb.get(`/tv/${id}`, { params: { language: 'en-US' } }),
-      tmdb.get(`/tv/${id}/external_ids`)
-    ]);
-
-    if (enRes.status !== 'fulfilled') {
-      return res.json({ url: null });
-    }
-
-    const show = enRes.value.data;
+    const enRes = await tmdb.get(`/tv/${id}`, { params: { language: 'en-US' } });
+    const show = enRes.data;
     const titleEn = show.name || '';
     const titleOrig = show.original_name || '';
 
-    const titlesToTry = [...new Set([titleEn, titleOrig].filter(Boolean))];
-    let mpUrl = null;
+    const title = titleEn || titleOrig;
+    const baseSlug = slugify(title);
 
-    for (const title of titlesToTry) {
-      mpUrl = await findHenaojaraEmbed(title, s, e);
-      if (mpUrl) break;
-    }
+    // Construye los candidatos de URL sin hacer ninguna petición a henaojara
+    const candidates = [
+      `${baseSlug}-espanol-latino-hd`,
+      `${baseSlug}-sub-espanol-hd`,
+      baseSlug
+    ].map(slug => `https://henaojara.com/view/episode/${slug}-${s}x${e}/`);
 
-    res.json({ url: mpUrl || null, title: titleEn });
+    res.json({ urls: candidates, title });
   } catch (err) {
     console.error('Henaojara embed error:', err.message);
-    res.json({ url: null });
+    res.json({ urls: [], title: '' });
   }
 };
 

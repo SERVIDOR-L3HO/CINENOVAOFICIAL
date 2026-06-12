@@ -1883,27 +1883,30 @@
             try {
                 const isAnime = currentCategory === 'anime';
 
+                if (isAnime) {
+                    // Para anime: carga henaojara vía proxy (muestra NYUU y otros servidores)
+                    const hjRes = await fetch(`/api/anime/${seriesId}/henaojara?s=${season}&e=${episode}`);
+                    const hjData = await hjRes.json();
+
+                    const servers = (hjData.urls || []).map((url, i) => ({
+                        name: i === 0 ? 'NYUU Latino' : `Alternativa ${i}`,
+                        url: `/api/proxy/embed?url=${encodeURIComponent(url)}`,
+                        quality: 'HD'
+                    }));
+
+                    currentEmbeds = { latino: servers, castellano: [], original: [] };
+                    currentAudioType = 'latino';
+                    renderServerButtons();
+                    if (servers.length > 0) playFromServer(servers[0].url);
+                    return;
+                }
+
+                // Para series/drama normales
                 const baseRes = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await baseRes.json();
 
-                if (isAnime) {
-                    if (!embeds.latino) embeds.latino = [];
-                    embeds.latino.unshift({
-                        name: 'Servidor 2',
-                        url: `https://vidsrc.cc/v2/embed/tv/${seriesId}/${season}/${episode}`,
-                        quality: 'HD'
-                    });
-                    embeds.latino.unshift({
-                        name: 'Servidor 1',
-                        url: `https://vidlink.pro/tv/${seriesId}/${season}/${episode}?primaryColor=38bdf8&autoplay=true&title=false`,
-                        quality: 'HD'
-                    });
-                }
-
                 currentEmbeds = embeds;
-                currentAudioType = (isAnime && currentEmbeds.latino && currentEmbeds.latino.length > 0)
-                    ? 'latino'
-                    : 'castellano';
+                currentAudioType = 'castellano';
                 renderServerButtons();
                 const firstServer = currentEmbeds[currentAudioType];
                 if (firstServer && firstServer.length > 0) {
