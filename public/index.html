@@ -248,7 +248,7 @@
         </div>
         <div class="flex items-center gap-4 md:gap-5">
             <div class="relative" id="search-wrapper">
-                <input type="text" id="global-search" placeholder="BUSCAR..." autocomplete="off"
+                <input type="text" id="global-search" placeholder="BUSCAR PELÍCULAS..." autocomplete="off"
                     class="rounded-full px-4 md:px-6 py-2 text-[10px] md:text-xs focus:outline-none w-32 md:w-48 focus:w-56 md:focus:w-68 transition-all duration-500 uppercase font-bold"
                     style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white;">
                 <i class="fas fa-search absolute right-4 top-2.5 text-gray-500 text-xs pointer-events-none"></i>
@@ -588,10 +588,18 @@
             });
         }
 
+        const SEARCH_PLACEHOLDER = {
+            movies: 'BUSCAR PELÍCULAS...', series: 'BUSCAR SERIES...',
+            anime: 'BUSCAR ANIME...', drama: 'BUSCAR DRAMA...',
+            favorites: 'BUSCAR EN MI LISTA...', tv: 'BUSCAR CANALES...'
+        };
+
         function loadCategory(cat) {
             currentCategory = cat;
             updateNavHighlight(cat);
-            document.getElementById('global-search').value = '';
+            const inp = document.getElementById('global-search');
+            inp.value = '';
+            inp.placeholder = SEARCH_PLACEHOLDER[cat] || 'BUSCAR...';
             hideSearchHistory();
             if (cat === 'tv') {
                 setHeroVisible(false);
@@ -611,8 +619,6 @@
             }
         }
 
-        let _animeSearchTimer = null;
-        let _dramaSearchTimer = null;
 
         async function loadAndRenderAnime() {
             const area = document.getElementById('content-area');
@@ -641,15 +647,6 @@
                         <p style="font-size:12px;color:#9ca3af;max-width:480px;line-height:1.5;">Los mejores animes japoneses organizados por género. Desde shōnen épicos hasta romance y terror.</p>
                       </div>
                     </div>
-                    <div style="position:relative;max-width:520px;">
-                      <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#f97316;font-size:13px;pointer-events:none;"></i>
-                      <input id="anime-search-input" type="text" placeholder="Buscar anime... (ej: Naruto, One Piece, Attack on Titan)"
-                        style="width:100%;background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.3);border-radius:999px;padding:12px 44px 12px 42px;color:#fff;font-size:13px;font-weight:700;outline:none;font-family:'Outfit',sans-serif;transition:all .2s;"
-                        onfocus="this.style.borderColor='rgba(249,115,22,0.7)';this.style.background='rgba(249,115,22,0.11)'"
-                        onblur="this.style.borderColor='rgba(249,115,22,0.3)';this.style.background='rgba(249,115,22,0.07)'"
-                        oninput="onAnimeSearchInput(this.value)">
-                      <button id="anime-search-clear" onclick="clearAnimeSearch()" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(249,115,22,0.2);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#f97316;font-size:10px;font-weight:900;">✕</button>
-                    </div>
                   </div>
                 `;
                 area.appendChild(banner);
@@ -672,60 +669,6 @@
             }
         }
 
-        function onAnimeSearchInput(val) {
-            clearTimeout(_animeSearchTimer);
-            const clearBtn = document.getElementById('anime-search-clear');
-            if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
-            if (!val.trim()) { clearAnimeSearch(); return; }
-            _animeSearchTimer = setTimeout(() => runAnimeSearch(val.trim()), 400);
-        }
-
-        async function runAnimeSearch(query) {
-            const resultsEl = document.getElementById('anime-search-results');
-            const carouselsEl = document.getElementById('anime-carousels');
-            if (!resultsEl) return;
-            resultsEl.style.display = 'block';
-            if (carouselsEl) carouselsEl.style.display = 'none';
-            resultsEl.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:20px 0 16px;">
-                <div style="width:18px;height:18px;border-radius:50%;border:2px solid #f97316;border-top-color:transparent;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
-                <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#6b7280;">Buscando anime...</span>
-            </div>`;
-            try {
-                const res = await fetch(`/api/anime/search?query=${encodeURIComponent(query)}&lang=${currentLang}`);
-                const items = await res.json();
-                if (!items.length) {
-                    resultsEl.innerHTML = `<div style="text-align:center;padding:48px 0;color:#4b5563;">
-                        <div style="font-size:36px;margin-bottom:12px;">⛩</div>
-                        <p style="font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">Sin resultados para "<span style="color:#f97316;">${query}</span>"</p>
-                    </div>`;
-                    return;
-                }
-                resultsEl.innerHTML = `
-                  <div style="display:flex;align-items:center;gap:8px;padding:16px 0 20px;">
-                    <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#f97316;">RESULTADOS</span>
-                    <span style="font-size:8px;font-weight:900;color:#4b5563;letter-spacing:2px;">— ${items.length} ANIMES ENCONTRADOS</span>
-                  </div>
-                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;">
-                    ${items.map(item => renderAnimePosterCard(item, '#f97316')).join('')}
-                  </div>`;
-                resultsEl.querySelectorAll('.poster-card').forEach((card, i) => {
-                    card.onclick = () => openInfoModal(items[i]);
-                });
-            } catch (e) {
-                resultsEl.innerHTML = `<div style="text-align:center;padding:32px;color:#4b5563;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">Error en la búsqueda</div>`;
-            }
-        }
-
-        function clearAnimeSearch() {
-            const input = document.getElementById('anime-search-input');
-            const clearBtn = document.getElementById('anime-search-clear');
-            const resultsEl = document.getElementById('anime-search-results');
-            const carouselsEl = document.getElementById('anime-carousels');
-            if (input) input.value = '';
-            if (clearBtn) clearBtn.style.display = 'none';
-            if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
-            if (carouselsEl) carouselsEl.style.display = 'block';
-        }
 
         function renderAnimeCarousel(cat) {
             const section = document.createElement('section');
@@ -814,15 +757,6 @@
                         <p style="font-size:12px;color:#9ca3af;max-width:500px;line-height:1.5;">K-Dramas coreanos, C-Dramas chinos, Dizis turcos y mucho más. Romance, intriga y lágrimas garantizadas.</p>
                       </div>
                     </div>
-                    <div style="position:relative;max-width:520px;">
-                      <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#ec4899;font-size:13px;pointer-events:none;"></i>
-                      <input id="drama-search-input" type="text" placeholder="Buscar drama... (ej: Crash Landing, Goblin, Squid Game)"
-                        style="width:100%;background:rgba(236,72,153,0.07);border:1px solid rgba(236,72,153,0.3);border-radius:999px;padding:12px 44px 12px 42px;color:#fff;font-size:13px;font-weight:700;outline:none;font-family:'Outfit',sans-serif;transition:all .2s;"
-                        onfocus="this.style.borderColor='rgba(236,72,153,0.7)';this.style.background='rgba(236,72,153,0.11)'"
-                        onblur="this.style.borderColor='rgba(236,72,153,0.3)';this.style.background='rgba(236,72,153,0.07)'"
-                        oninput="onDramaSearchInput(this.value)">
-                      <button id="drama-search-clear" onclick="clearDramaSearch()" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:rgba(236,72,153,0.2);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:#ec4899;font-size:10px;font-weight:900;">✕</button>
-                    </div>
                   </div>
                 `;
                 area.appendChild(banner);
@@ -845,60 +779,6 @@
             }
         }
 
-        function onDramaSearchInput(val) {
-            clearTimeout(_dramaSearchTimer);
-            const clearBtn = document.getElementById('drama-search-clear');
-            if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
-            if (!val.trim()) { clearDramaSearch(); return; }
-            _dramaSearchTimer = setTimeout(() => runDramaSearch(val.trim()), 400);
-        }
-
-        async function runDramaSearch(query) {
-            const resultsEl = document.getElementById('drama-search-results');
-            const carouselsEl = document.getElementById('drama-carousels');
-            if (!resultsEl) return;
-            resultsEl.style.display = 'block';
-            if (carouselsEl) carouselsEl.style.display = 'none';
-            resultsEl.innerHTML = `<div style="display:flex;align-items:center;gap:12px;padding:20px 0 16px;">
-                <div style="width:18px;height:18px;border-radius:50%;border:2px solid #ec4899;border-top-color:transparent;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
-                <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#6b7280;">Buscando drama...</span>
-            </div>`;
-            try {
-                const res = await fetch(`/api/drama/search?query=${encodeURIComponent(query)}&lang=${currentLang}`);
-                const items = await res.json();
-                if (!items.length) {
-                    resultsEl.innerHTML = `<div style="text-align:center;padding:48px 0;color:#4b5563;">
-                        <div style="font-size:36px;margin-bottom:12px;">🎭</div>
-                        <p style="font-size:11px;font-weight:900;letter-spacing:3px;text-transform:uppercase;">Sin resultados para "<span style="color:#ec4899;">${query}</span>"</p>
-                    </div>`;
-                    return;
-                }
-                resultsEl.innerHTML = `
-                  <div style="display:flex;align-items:center;gap:8px;padding:16px 0 20px;">
-                    <span style="font-size:9px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#ec4899;">RESULTADOS</span>
-                    <span style="font-size:8px;font-weight:900;color:#4b5563;letter-spacing:2px;">— ${items.length} DRAMAS ENCONTRADOS</span>
-                  </div>
-                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;">
-                    ${items.map(item => renderDramaPosterCard(item, '#ec4899')).join('')}
-                  </div>`;
-                resultsEl.querySelectorAll('.poster-card').forEach((card, i) => {
-                    card.onclick = () => openInfoModal(items[i]);
-                });
-            } catch (e) {
-                resultsEl.innerHTML = `<div style="text-align:center;padding:32px;color:#4b5563;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">Error en la búsqueda</div>`;
-            }
-        }
-
-        function clearDramaSearch() {
-            const input = document.getElementById('drama-search-input');
-            const clearBtn = document.getElementById('drama-search-clear');
-            const resultsEl = document.getElementById('drama-search-results');
-            const carouselsEl = document.getElementById('drama-carousels');
-            if (input) input.value = '';
-            if (clearBtn) clearBtn.style.display = 'none';
-            if (resultsEl) { resultsEl.style.display = 'none'; resultsEl.innerHTML = ''; }
-            if (carouselsEl) carouselsEl.style.display = 'block';
-        }
 
         function renderDramaCarousel(cat) {
             const section = document.createElement('section');
@@ -1475,33 +1355,38 @@
             _liveCount.textContent = 'BUSCANDO...';
             showLiveDropdown();
             try {
-                const [mr, sr] = await Promise.all([
-                    fetch(`/api/movies/search?query=${encodeURIComponent(query)}&lang=${currentLang}`).then(r => r.json()),
-                    fetch(`/api/series/search?query=${encodeURIComponent(query)}&lang=${currentLang}`).then(r => r.json())
-                ]);
-                const movies = (Array.isArray(mr) ? mr : []).slice(0, 5).map(i => ({ ...i, _type: 'movie' }));
-                const series = (Array.isArray(sr) ? sr : []).slice(0, 5).map(i => ({ ...i, _type: 'series' }));
-                const items = [...movies, ...series].slice(0, 9);
-                const totalM = Array.isArray(mr) ? mr.length : 0;
-                const totalS = Array.isArray(sr) ? sr.length : 0;
+                const cfg = SEARCH_CONFIG[currentCategory] || SEARCH_CONFIG.movies;
+                const enc = encodeURIComponent(query);
+                let items = [];
+
+                if (currentCategory === 'favorites') {
+                    const favs = JSON.parse(localStorage.getItem('cinenova_favorites') || '[]');
+                    items = favs.filter(i => i.title && i.title.toLowerCase().includes(query.toLowerCase())).slice(0, 8);
+                } else {
+                    const results = await Promise.all(cfg.apis.map(a =>
+                        fetch(a.url(enc)).then(r => r.json()).then(d => (Array.isArray(d) ? d : []).slice(0, 8).map(i => ({ ...i, _type: a.type })))
+                    ));
+                    items = results.flat().slice(0, 9);
+                }
+
                 _liveList.innerHTML = '';
                 if (items.length === 0) {
                     _liveEmpty.classList.remove('hidden');
                     _liveCount.textContent = 'SIN RESULTADOS';
                     return;
                 }
-                _liveCount.textContent = `${totalM} películas · ${totalS} series`;
+                _liveCount.textContent = `${items.length} resultado${items.length !== 1 ? 's' : ''} en ${cfg.label}`;
                 _liveList.innerHTML = items.map(item => `
                     <li class="live-result-item flex items-center gap-3 px-4 py-2.5 cursor-pointer"
                         style="border-bottom:1px solid rgba(255,255,255,0.03);"
-                        onclick="hideLiveDropdown(); openItem(${item.id}, '${item._type}');">
+                        onclick="hideLiveDropdown(); openInfoModal(${JSON.stringify(item).replace(/"/g, '&quot;')});">
                         <div class="flex-shrink-0 rounded-lg overflow-hidden" style="width:38px; height:57px; background:#0d1117; border:1px solid rgba(255,255,255,0.06);">
                             <img src="${item.poster || ''}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.opacity='0'">
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="live-item-title text-xs font-black uppercase italic tracking-tight truncate transition-colors duration-150">${item.title}</p>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style="background:${item._type === 'movie' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
+                                <span class="text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style="background:rgba(255,255,255,0.1); color:white;">${cfg.label}</span>
                                 ${item.year ? `<span class="text-[9px] text-gray-500 font-bold">${item.year}</span>` : ''}
                                 ${item.rating ? `<span class="text-[9px] text-yellow-400 font-black">⭐ ${Number(item.rating).toFixed(1)}</span>` : ''}
                             </div>
@@ -1543,6 +1428,16 @@
             }
         });
 
+        // Maps each category to its search API endpoint and display label
+        const SEARCH_CONFIG = {
+            movies:    { apis: [{ url: q => `/api/movies/search?query=${q}&lang=${currentLang}`, type: 'movie' }],  label: 'PELÍCULAS' },
+            series:    { apis: [{ url: q => `/api/series/search?query=${q}&lang=${currentLang}`, type: 'series' }], label: 'SERIES' },
+            anime:     { apis: [{ url: q => `/api/anime/search?query=${q}&lang=${currentLang}`, type: 'series' }],  label: 'ANIME' },
+            drama:     { apis: [{ url: q => `/api/drama/search?query=${q}&lang=${currentLang}`, type: 'series' }],  label: 'K-DRAMA' },
+            favorites: { apis: [], label: 'FAVORITOS' },
+            tv:        { apis: [], label: 'TV' },
+        };
+
         async function performSearch(query) {
             setHeroVisible(false);
             const area = document.getElementById('content-area');
@@ -1551,86 +1446,68 @@
                 <p class="text-[9px] font-black tracking-[4px] text-gray-600 uppercase">Buscando...</p>
             </div>`;
             try {
-                const [moviesRes, seriesRes] = await Promise.all([
-                    fetch(`/api/movies/search?query=${encodeURIComponent(query)}&lang=${currentLang}`),
-                    fetch(`/api/series/search?query=${encodeURIComponent(query)}&lang=${currentLang}`)
-                ]);
-                const [moviesData, seriesData] = await Promise.all([moviesRes.json(), seriesRes.json()]);
-                const movies = (Array.isArray(moviesData) ? moviesData : []).map(i => ({ ...i, _type: 'movie' }));
-                const series = (Array.isArray(seriesData) ? seriesData : []).map(i => ({ ...i, _type: 'series' }));
-                const data = [...movies, ...series].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+                const cfg = SEARCH_CONFIG[currentCategory] || SEARCH_CONFIG.movies;
+                const enc = encodeURIComponent(query);
 
-                if (data.length === 0) {
-                    area.innerHTML = `<div class="px-4 md:px-12 pt-8 pb-6 text-center">
-                        <p class="text-gray-600 font-black uppercase tracking-widest text-sm">Sin resultados para "${query}"</p>
-                    </div>`;
+                // Favorites: filter locally
+                if (currentCategory === 'favorites') {
+                    const favs = JSON.parse(localStorage.getItem('cinenova_favorites') || '[]');
+                    const data = favs.filter(i => i.title && i.title.toLowerCase().includes(query.toLowerCase()));
+                    renderSearchResults(area, query, data, cfg.label);
                     return;
                 }
-                area.innerHTML = `
-                    <div class="px-4 md:px-12 pt-8 pb-6">
-                        <div class="flex items-center gap-3 mb-5">
-                            <div class="cat-bar pl-4 py-2.5">
-                                <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">RESULTADOS DE BÚSQUEDA</span>
-                                <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter">"${query}"</h2>
-                                <p class="text-[9px] text-gray-600 font-bold mt-0.5">${movies.length} películas · ${series.length} series · ${data.length} total</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 mb-6">
-                            <button id="filter-all" class="search-filter-btn filter-active px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase transition-all" style="background:var(--accent);">TODO</button>
-                            <button id="filter-movies" class="search-filter-btn px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase glass-panel text-gray-400 hover:text-white transition-all">CINE</button>
-                            <button id="filter-series" class="search-filter-btn px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase glass-panel text-gray-400 hover:text-white transition-all">SERIES</button>
-                        </div>
-                        <div id="search-results-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 md:gap-4">
-                            ${data.map((item, i) => `
-                                <div class="poster-card cursor-pointer group" data-idx="${i}" data-type="${item._type}">
-                                    <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(255,255,255,0.05); box-shadow:0 6px 20px rgba(0,0,0,0.6);">
-                                        <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
-                                        <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 55%);"></div>
-                                        <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05);"></div>
-                                        <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
-                                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#ffffff; color:#0c0c0c;">
-                                                <i class="fas fa-play text-white ml-0.5 text-xs"></i>
-                                            </div>
-                                        </div>
-                                        <div class="absolute top-2 left-2">
-                                            <span class="text-[6px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full ${item._type === 'movie' ? '' : ''}" style="background:${item._type === 'movie' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.1)'}; color:white;">${item._type === 'movie' ? 'CINE' : 'SERIE'}</span>
-                                        </div>
-                                        <div class="poster-meta absolute bottom-0 left-0 right-0 p-2 opacity-0 transition-all duration-400" style="transform:translateY(4px);">
-                                            <h4 class="font-black text-[8px] uppercase italic tracking-tight line-clamp-2 mb-1">${item.title}</h4>
-                                            <span class="text-[7px] font-black" style="color:var(--accent)">${item.year || ''}</span>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2 px-0.5">
-                                        <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
-                                    </div>
-                                </div>`).join('')}
-                        </div>
-                    </div>`;
 
-                area.querySelectorAll('.poster-card').forEach((card, i) => {
-                    card.onclick = () => openInfoModal(data[i]);
-                });
+                const results = await Promise.all(cfg.apis.map(a =>
+                    fetch(a.url(enc)).then(r => r.json()).then(d => (Array.isArray(d) ? d : []).map(i => ({ ...i, _type: a.type })))
+                ));
+                const data = results.flat().sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-                function applyFilter(type) {
-                    area.querySelectorAll('.search-filter-btn').forEach(btn => {
-                        btn.classList.remove('filter-active');
-                        btn.style.background = '';
-                        btn.style.boxShadow = '';
-                    });
-                    const active = area.querySelector(`#filter-${type}`);
-                    active.classList.add('filter-active');
-                    active.style.background = 'var(--accent)';
-                    area.querySelectorAll('.poster-card').forEach(card => {
-                        if (type === 'all' || card.dataset.type === (type === 'movies' ? 'movie' : 'series')) {
-                            card.style.display = '';
-                        } else { card.style.display = 'none'; }
-                    });
-                }
-                area.querySelector('#filter-all').onclick = () => applyFilter('all');
-                area.querySelector('#filter-movies').onclick = () => applyFilter('movies');
-                area.querySelector('#filter-series').onclick = () => applyFilter('series');
-
+                renderSearchResults(area, query, data, cfg.label);
             } catch (err) { console.error('Search error:', err); }
+        }
+
+        function renderSearchResults(area, query, data, label) {
+            if (data.length === 0) {
+                area.innerHTML = `<div class="px-4 md:px-12 pt-16 pb-6 text-center">
+                    <i class="fas fa-search text-4xl text-gray-700 mb-4 block"></i>
+                    <p class="text-gray-600 font-black uppercase tracking-widest text-sm">Sin resultados para "${query}"</p>
+                    <p class="text-gray-700 text-[9px] font-bold mt-2 uppercase tracking-widest">en ${label}</p>
+                </div>`;
+                return;
+            }
+            area.innerHTML = `
+                <div class="px-4 md:px-12 pt-8 pb-6">
+                    <div class="cat-bar pl-4 py-2.5 mb-6">
+                        <span class="text-[8px] font-black tracking-[3px] uppercase" style="color:var(--accent)">${label} · RESULTADOS</span>
+                        <h2 class="text-xl md:text-2xl font-black italic uppercase tracking-tighter">"${query}"</h2>
+                        <p class="text-[9px] text-gray-600 font-bold mt-0.5">${data.length} resultado${data.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <div id="search-results-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 md:gap-4">
+                        ${data.map((item, i) => `
+                            <div class="poster-card cursor-pointer group" data-idx="${i}">
+                                <div class="relative overflow-hidden rounded-xl" style="aspect-ratio:2/3; border:1px solid rgba(255,255,255,0.05); box-shadow:0 6px 20px rgba(0,0,0,0.6);">
+                                    <img src="${item.poster || 'https://placehold.co/300x450/111/222?text=N/A'}" class="poster-img w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                                    <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 55%);"></div>
+                                    <div class="poster-overlay absolute inset-0 opacity-0 transition-opacity duration-400" style="background:rgba(255,255,255,0.05);"></div>
+                                    <div class="poster-play absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-400" style="transform:scale(0.7);">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#ffffff;">
+                                            <i class="fas fa-play text-black ml-0.5 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="poster-meta absolute bottom-0 left-0 right-0 p-2 opacity-0 transition-all duration-400" style="transform:translateY(4px);">
+                                        <h4 class="font-black text-[8px] uppercase italic tracking-tight line-clamp-2 mb-1">${item.title}</h4>
+                                        <span class="text-[7px] font-black" style="color:var(--accent)">${item.year || ''}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 px-0.5">
+                                    <p class="text-[8px] text-gray-400 font-bold line-clamp-1 uppercase italic tracking-tight">${item.title}</p>
+                                </div>
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+            area.querySelectorAll('.poster-card').forEach((card, i) => {
+                card.onclick = () => openInfoModal(data[i]);
+            });
         }
 
         /* ===================== HERO ===================== */
