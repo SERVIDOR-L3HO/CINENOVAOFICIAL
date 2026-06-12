@@ -1894,13 +1894,11 @@
                 const baseRes = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await baseRes.json();
 
-                if (isAnime && currentItem && currentItem.title) {
-                    const slug = slugifyTitle(currentItem.title);
-                    const slUrl = `https://sololatino.net/serie/${slug}/temporada/${season}/episodio/${episode}/`;
+                if (isAnime) {
                     if (!embeds.latino) embeds.latino = [];
                     embeds.latino.unshift({
-                        name: 'SoloLatino',
-                        url: `/api/proxy/embed?url=${encodeURIComponent(slUrl)}`,
+                        name: 'Servidor 1',
+                        url: `https://embed69.org/embed/tv/${seriesId}/${season}/${episode}`,
                         quality: 'HD'
                     });
                 }
