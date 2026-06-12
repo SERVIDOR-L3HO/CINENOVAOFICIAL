@@ -1881,12 +1881,35 @@
 
         async function loadEpisodeEmbed(seriesId, season, episode) {
             try {
-                const res = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
-                const embeds = await res.json();
+                const isAnime = currentCategory === 'anime';
+
+                const fetchBase = fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
+                const fetchHJ = isAnime
+                    ? fetch(`/api/anime/${seriesId}/henaojara?s=${season}&e=${episode}`).catch(() => null)
+                    : Promise.resolve(null);
+
+                const [baseRes, hjRes] = await Promise.all([fetchBase, fetchHJ]);
+                const embeds = await baseRes.json();
+
+                if (isAnime && hjRes) {
+                    try {
+                        const hjData = await hjRes.json();
+                        if (hjData && hjData.url) {
+                            if (!embeds.latino) embeds.latino = [];
+                            embeds.latino.unshift({ name: 'HJ Latino', url: hjData.url, quality: 'HD' });
+                        }
+                    } catch (e) {}
+                }
+
                 currentEmbeds = embeds;
-                currentAudioType = 'castellano';
+                currentAudioType = (isAnime && currentEmbeds.latino && currentEmbeds.latino.length > 0)
+                    ? 'latino'
+                    : 'castellano';
                 renderServerButtons();
-                playFromServer(currentEmbeds.castellano[0].url);
+                const firstServer = currentEmbeds[currentAudioType];
+                if (firstServer && firstServer.length > 0) {
+                    playFromServer(firstServer[0].url);
+                }
             } catch (err) { console.error('Episode embed error:', err); }
         }
 

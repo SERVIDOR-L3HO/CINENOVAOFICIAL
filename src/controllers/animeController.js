@@ -10,6 +10,69 @@ const tmdb = axios.create({
   }
 });
 
+const hjClient = axios.create({
+  timeout: 8000,
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'es-MX,es;q=0.9',
+    'Referer': 'https://henaojara.com/'
+  }
+});
+
+const slugify = (text) => (text || '')
+  .toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9\s-]/g, '')
+  .replace(/\s+/g, '-')
+  .replace(/-+/g, '-')
+  .trim();
+
+const hjCache = new Map();
+
+async function findHenaojaraEmbed(title, season, episode) {
+  const baseSlug = slugify(title);
+  if (!baseSlug) return null;
+
+  const cacheKey = `${baseSlug}-s${season}e${episode}`;
+  if (hjCache.has(cacheKey)) return hjCache.get(cacheKey);
+
+  const slugCandidates = [
+    `${baseSlug}-espanol-latino-hd`,
+    `${baseSlug}-sub-espanol-hd`,
+    `${baseSlug}-temporada-${season}-espanol-latino-hd`,
+    `${baseSlug}-temporada-${season}-sub-espanol-hd`,
+    baseSlug
+  ];
+
+  for (const slug of slugCandidates) {
+    try {
+      const epUrl = `https://henaojara.com/view/episode/${slug}-${season}x${episode}/`;
+      const pageRes = await hjClient.get(epUrl);
+      const html = pageRes.data;
+
+      const tridMatch = html.match(/trid=(\d+)/);
+      if (!tridMatch) continue;
+
+      const trid = tridMatch[1];
+      const trembed = `https://henaojara.com/?trembed=0&trid=${trid}&trtype=2`;
+
+      hjCache.set(cacheKey, trembed);
+      if (hjCache.size > 500) {
+        const firstKey = hjCache.keys().next().value;
+        hjCache.delete(firstKey);
+      }
+      return trembed;
+
+    } catch (e) {
+      continue;
+    }
+  }
+
+  hjCache.set(cacheKey, null);
+  return null;
+}
+
 const mapAnime = s => ({
   id: s.id,
   title: s.name || s.title,
@@ -34,6 +97,39 @@ exports.searchAnime = async (req, res) => {
   } catch (err) {
     console.error('Anime search error:', err.message);
     res.status(500).json({ error: 'Error en búsqueda de anime' });
+  }
+};
+
+exports.getHenaojaraEmbed = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { s = 1, e = 1 } = req.query;
+
+    const [enRes, exRes] = await Promise.allSettled([
+      tmdb.get(`/tv/${id}`, { params: { language: 'en-US' } }),
+      tmdb.get(`/tv/${id}/external_ids`)
+    ]);
+
+    if (enRes.status !== 'fulfilled') {
+      return res.json({ url: null });
+    }
+
+    const show = enRes.value.data;
+    const titleEn = show.name || '';
+    const titleOrig = show.original_name || '';
+
+    const titlesToTry = [...new Set([titleEn, titleOrig].filter(Boolean))];
+    let mpUrl = null;
+
+    for (const title of titlesToTry) {
+      mpUrl = await findHenaojaraEmbed(title, s, e);
+      if (mpUrl) break;
+    }
+
+    res.json({ url: mpUrl || null, title: titleEn });
+  } catch (err) {
+    console.error('Henaojara embed error:', err.message);
+    res.json({ url: null });
   }
 };
 
