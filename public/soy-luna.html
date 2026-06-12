@@ -849,15 +849,22 @@
     const MOVIEBOX_ID  = '7144491624448803360';
 
     async function fetchMovieBoxStream(s, e, quality = '720') {
+        // MovieBox usa stream URLs ligadas a la IP del cliente (no del servidor).
+        // CORS está abierto (*) → el navegador puede llamar la API directamente.
+        // La IP residencial/móvil del usuario es lo que MovieBox necesita para devolver streams.
         const r = await fetch(
-            `${MOVIEBOX_API}?subjectId=${MOVIEBOX_ID}&se=${s}&ep=${e}`,
-            { headers: { 'Referer': 'https://themoviebox.org/' } }
+            `https://themoviebox.org/wefeed-h5api-bff/subject/play?subjectId=${MOVIEBOX_ID}&se=${s}&ep=${e}`,
+            { referrerPolicy: 'no-referrer' }
         );
+        if (!r.ok) return null;
         const d = await r.json();
+        console.log('[MovieBox]', `T${s}E${e}`, JSON.stringify(d?.data)?.slice(0, 200));
         if (!d?.data?.hasResource || !d.data.streams?.length) return null;
         const streams = d.data.streams;
-        const preferred = streams.find(x => x.resolutions === quality) || streams[0];
-        return preferred?.url || null;
+        const qualityNum = parseInt(quality);
+        const preferred = streams.find(x => x.resolution === qualityNum || x.resolutions === quality || +x.resolution === qualityNum)
+                       || streams[0];
+        return preferred?.url || preferred?.videoUrl || preferred?.streamUrl || preferred?.stream || null;
     }
 
     // Servers with type:'native' usan <video> nativo en lugar de iframe

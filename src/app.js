@@ -726,6 +726,41 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
+// ── MovieBox API proxy — reenvía el IP real del usuario + Referer correcto ──
+app.get('/api/moviebox/play', async (req, res) => {
+  try {
+    const { subjectId, se, ep } = req.query;
+    if (!subjectId || !se || !ep) return res.status(400).json({ error: 'Parámetros requeridos: subjectId, se, ep' });
+
+    // Obtener IP real del usuario (detrás de proxy/Replit)
+    const clientIp =
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.headers['x-real-ip'] ||
+      req.socket.remoteAddress ||
+      '';
+
+    const url = `https://themoviebox.org/wefeed-h5api-bff/subject/play?subjectId=${subjectId}&se=${se}&ep=${ep}`;
+
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+        'Referer': 'https://themoviebox.org/',
+        'Origin': 'https://themoviebox.org',
+        'Accept': 'application/json',
+        'X-Forwarded-For': clientIp,
+        'X-Real-IP': clientIp,
+      }
+    });
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json(response.data);
+  } catch (err) {
+    console.error('MovieBox proxy error:', err.message);
+    res.status(500).json({ error: 'Error al contactar MovieBox' });
+  }
+});
+
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 
