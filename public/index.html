@@ -1879,6 +1879,14 @@
             }
         }
 
+        const slugifyTitle = (t) => (t || '')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+
         async function loadEpisodeEmbed(seriesId, season, episode) {
             try {
                 const isAnime = currentCategory === 'anime';
@@ -1886,11 +1894,13 @@
                 const baseRes = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await baseRes.json();
 
-                if (isAnime) {
+                if (isAnime && currentItem && currentItem.title) {
+                    const slug = slugifyTitle(currentItem.title);
+                    const slUrl = `https://sololatino.net/serie/${slug}/temporada/${season}/episodio/${episode}/`;
                     if (!embeds.latino) embeds.latino = [];
                     embeds.latino.unshift({
-                        name: 'Servidor 1',
-                        url: `https://vidsrc.cc/v2/embed/tv/${seriesId}/${season}/${episode}`,
+                        name: 'SoloLatino',
+                        url: `/api/proxy/embed?url=${encodeURIComponent(slUrl)}`,
                         quality: 'HD'
                     });
                 }
