@@ -512,14 +512,15 @@
             <iframe id="video-frame" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
             <video id="hls-video" class="w-full h-full hidden" controls autoplay playsinline style="background:#000; position:absolute; inset:0;"></video>
             <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
-                <div class="relative mb-6">
-                    <div class="w-16 h-16 rounded-full flex items-center justify-center" style="border:2px solid rgba(255,255,255,0.08);">
-                        <div class="w-11 h-11 rounded-full animate-spin" style="border:3px solid var(--accent); border-top-color:transparent;"></div>
+                <div class="w-full max-w-[300px] px-2">
+                    <p class="text-white font-bold text-[15px] mb-0.5" id="loader-content-title"></p>
+                    <p class="text-gray-600 text-[11px] mb-7 tracking-wide">Buscando el mejor servidor...</p>
+                    <div id="loader-servers" class="flex flex-col gap-[18px] mb-8"></div>
+                    <div class="flex gap-3">
+                        <button onclick="closePlayer()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold transition-all active:scale-95" style="background:rgba(255,255,255,0.07); color:#d1d5db; border:1px solid rgba(255,255,255,0.1);">Volver a inicio</button>
+                        <button onclick="retryCurrentServer()" class="flex-1 py-3 rounded-xl text-[13px] font-semibold transition-all active:scale-95" style="background:#4f46e5; color:#fff; border:1px solid rgba(99,102,241,0.4);">Intentar de nuevo</button>
                     </div>
-                    <div class="absolute inset-0 rounded-full animate-ping" style="background:rgba(255,255,255,0.04);"></div>
                 </div>
-                <p class="text-[8px] font-black tracking-[5px] text-gray-600 uppercase mb-1">CARGANDO SERVIDOR</p>
-                <p class="text-[7px] text-gray-700 font-bold tracking-widest uppercase">Por favor espera...</p>
             </div>
         </div>
 
@@ -561,6 +562,8 @@
         let currentEmbeds = null;
         let currentSeriesId = null;
         let currentSeason = 1;
+        let serverStatuses = [];
+        let currentServerIndex = 0;
         let currentEpisode = 1;
 
         function setLanguage(lang) {
@@ -1668,7 +1671,10 @@
                 document.getElementById('server-row').classList.remove('hidden');
                 currentEmbeds = item.embeds;
                 currentAudioType = 'castellano';
+                currentServerIndex = 0;
                 renderServerButtons();
+                serverStatuses[0] = 'checking';
+                renderLoaderServers();
                 playFromServer(currentEmbeds.castellano[0].url);
             }
 
@@ -1760,8 +1766,61 @@
         const SRV_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
         const SRV_IDLE_STYLE   = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
 
+        function renderLoaderServers() {
+            const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
+            const container = document.getElementById('loader-servers');
+            if (!container) return;
+            container.innerHTML = servers.map((s, i) => {
+                const status = serverStatuses[i] || 'pending';
+                const label = `${PREMIUM_ICONS[i] || '▶'} PREMIUM ${i + 1}`;
+                let iconHtml, nameStyle, statusHtml;
+                if (status === 'checking') {
+                    iconHtml = `<div style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(99,102,241,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <div style="width:20px;height:20px;border-radius:50%;border:2.5px solid #6366f1;border-top-color:transparent;animation:spin 0.8s linear infinite;"></div>
+                    </div>`;
+                    nameStyle = 'color:#fff;font-weight:700;';
+                    statusHtml = `<p style="color:#818cf8;font-size:11px;margin-top:2px;">Verificando vídeo...</p>`;
+                } else if (status === 'error') {
+                    iconHtml = `<div style="width:40px;height:40px;border-radius:50%;background:rgba(239,68,68,0.12);border:2px solid rgba(239,68,68,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </div>`;
+                    nameStyle = 'color:#9ca3af;font-weight:700;';
+                    statusHtml = `<p style="color:#f87171;font-size:11px;margin-top:2px;">Ocurrió un error</p>`;
+                } else if (status === 'no-video') {
+                    iconHtml = `<div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round"><path d="M20 12H4"/></svg>
+                    </div>`;
+                    nameStyle = 'color:#9ca3af;font-weight:700;';
+                    statusHtml = `<p style="color:#6b7280;font-size:11px;margin-top:2px;">No tiene el vídeo</p>`;
+                } else {
+                    iconHtml = `<div style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>`;
+                    nameStyle = 'color:#6b7280;font-weight:700;';
+                    statusHtml = '';
+                }
+                return `<div style="display:flex;align-items:center;gap:16px;">
+                    ${iconHtml}
+                    <div>
+                        <p style="${nameStyle}font-size:13px;letter-spacing:0.03em;">${label}</p>
+                        ${statusHtml}
+                    </div>
+                </div>`;
+            }).join('');
+            const titleEl = document.getElementById('loader-content-title');
+            if (titleEl && currentItem) titleEl.textContent = currentItem.title || '';
+        }
+
+        function retryCurrentServer() {
+            const servers = currentEmbeds && currentEmbeds[currentAudioType];
+            if (!servers || !servers[currentServerIndex]) return;
+            serverStatuses[currentServerIndex] = 'checking';
+            renderLoaderServers();
+            document.getElementById('player-loader').classList.remove('hidden');
+            playFromServer(servers[currentServerIndex].url);
+        }
+
         function renderServerButtons() {
             const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
+            serverStatuses = servers.map(() => 'pending');
             const container = document.getElementById('server-buttons');
             if (!container) return;
             container.innerHTML = servers.map((s, i) => `
@@ -1777,6 +1836,13 @@
         function switchServer(index) {
             const servers = currentEmbeds && currentEmbeds[currentAudioType];
             if (!servers || !servers[index]) return;
+            if (serverStatuses[currentServerIndex] === 'checking') {
+                serverStatuses[currentServerIndex] = 'no-video';
+            }
+            currentServerIndex = index;
+            serverStatuses[index] = 'checking';
+            renderLoaderServers();
+            document.getElementById('player-loader').classList.remove('hidden');
             document.querySelectorAll('.srv-btn').forEach((btn, i) => {
                 btn.style.cssText = i === index ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE;
             });
