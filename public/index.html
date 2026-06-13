@@ -1765,8 +1765,7 @@
                 }
 
                 for (const s of data.servers) {
-                    const proxyUrl = '/api/proxy/embed?url=' + encodeURIComponent(s.embedUrl);
-                    const entry = { url: proxyUrl, quality: 'HD', name: s.name };
+                    const entry = { url: s.embedUrl, quality: 'HD', name: s.name };
                     for (const lang of ['castellano', 'latino', 'original']) {
                         currentEmbeds[lang].push(entry);
                     }
