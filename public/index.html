@@ -486,13 +486,6 @@
 
         <!-- Server / Audio Row -->
         <div id="server-row" class="hidden flex-shrink-0 px-3 md:px-5 py-2.5 flex flex-col gap-2" style="background:linear-gradient(180deg,rgba(8,8,8,0.98) 0%,rgba(12,8,4,0.99) 100%); border-bottom:1px solid rgba(250,204,21,0.08); box-shadow:0 1px 20px rgba(0,0,0,0.6);">
-            <!-- Audio type tabs -->
-            <div class="flex items-center gap-2" id="audio-tabs">
-                <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">AUDIO</span>
-                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#9ca3af; backdrop-filter:blur(8px);">🇪🇸 <span>CASTELLANO</span></button>
-                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px);">🎙 <span>LATINO</span></button>
-                <button onclick="switchAudioType('original')" id="tab-original" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px);">🌐 <span>ORIGINAL</span></button>
-            </div>
             <!-- Server buttons -->
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">SERVIDOR</span>
@@ -1741,8 +1734,6 @@
         }
 
         const PREMIUM_ICONS = ['⚡','🔥','💎','🌟','🚀'];
-        const AUDIO_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(250,204,21,0.18) 0%,rgba(239,68,68,0.18) 100%); border:1px solid rgba(250,204,21,0.5); color:#facc15; backdrop-filter:blur(12px); border-radius:8px; box-shadow:0 0 12px rgba(250,204,21,0.15);';
-        const AUDIO_IDLE_STYLE   = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px); border-radius:8px;';
         const SRV_ACTIVE_STYLE   = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
         const SRV_IDLE_STYLE     = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
 
@@ -1758,18 +1749,6 @@
                     PREMIUM ${i + 1}
                     <span style="font-size:6px; opacity:0.6; letter-spacing:1px;">${s.quality || 'HD'}</span>
                 </button>`).join('');
-            ['latino','castellano','original'].forEach(type => {
-                const tab = document.getElementById(`tab-${type}`);
-                if (!tab) return;
-                tab.style.cssText = type === currentAudioType ? AUDIO_ACTIVE_STYLE : AUDIO_IDLE_STYLE;
-            });
-        }
-
-        function switchAudioType(type) {
-            if (!currentEmbeds || !currentEmbeds[type] || currentEmbeds[type].length === 0) return;
-            currentAudioType = type;
-            renderServerButtons();
-            playFromServer(currentEmbeds[type][0].url);
         }
 
         function switchServer(index) {
