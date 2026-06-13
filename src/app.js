@@ -171,19 +171,18 @@ const AD_BLOCK_CODE = `
     return _XHRsend.apply(this,arguments);
   };
 
-  // 4. Bloquear window.open y location redirects (popups/popunders)
-  window.open = function(){ return {focus:function(){},blur:function(){}}; };
-  // Bloquear redirects de top-level desde iframes de ads
-  try {
-    Object.defineProperty(window, 'location', {
-      get: function(){ return window._location || location; },
-      set: function(v){
-        // Solo permitir si viene de interacción del usuario, no de scripts de ads
-        if(document.hasFocus && document.hasFocus()) window._location = v;
-      },
-      configurable: true
-    });
-  } catch(e){}
+  // 4. Bloquear window.open solo para dominios de anuncios conocidos
+  var _open = window.open;
+  window.open = function(url, name, features){
+    var u = String(url || '');
+    var AD_OPEN_HOSTS = ['googlesyndication','doubleclick','exoclick','trafficjunky',
+      'adnxs','adskeeper','popads','popcash','propellerads','hilltopads','adsterra',
+      'mgid','bidvertiser','yllix','coinzilla','sapphirebet','ero-advertising'];
+    if(AD_OPEN_HOSTS.some(function(h){ return u.includes(h); })){
+      return {focus:function(){},blur:function(){}};
+    }
+    return _open.apply(this, arguments);
+  };
 
   // 5. Neutralizar DisableDevtool de vsembed
   window.DisableDevtool = function(){};

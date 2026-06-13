@@ -1734,13 +1734,6 @@
                 return;
             }
 
-            // ── Premium 2 (embed69) → cargar directo sin proxy ──
-            if (realUrl.includes('embed69.org')) {
-                showIframe();
-                frame.onload = () => loader.classList.add('hidden');
-                frame.src = realUrl;
-                return;
-            }
 
             // ── Servidor Castellano (unlimplay / verhdlink) → extractor sin anuncios ──
             if (realUrl.includes('unlimplay.com') || realUrl.includes('verhdlink.cam')) {
