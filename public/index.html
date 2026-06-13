@@ -1747,7 +1747,7 @@
                     class="srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200"
                     style="${i === 0 ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE}">
                     <span style="font-size:9px">${PREMIUM_ICONS[i] || '▶'}</span>
-                    ${s.name ? s.name : 'PREMIUM ' + (i + 1)}
+                    PREMIUM ${i + 1}
                     <span style="font-size:6px; opacity:0.6; letter-spacing:1px;">${s.quality || 'HD'}</span>
                 </button>`).join('');
         }
