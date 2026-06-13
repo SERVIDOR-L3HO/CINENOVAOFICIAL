@@ -221,6 +221,7 @@ app.get('/api/proxy/embed', async (req, res) => {
     const upstream = await axios.get(decodedUrl, {
       timeout: 20000,
       responseType: 'text',
+      validateStatus: () => true,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Referer': baseUrl,
@@ -229,6 +230,12 @@ app.get('/api/proxy/embed', async (req, res) => {
         'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
       }
     });
+
+    // Si el proveedor bloquea el servidor (403/401/5xx), redirigir al URL directo
+    // para que el navegador del usuario lo cargue directamente en el iframe
+    if (upstream.status === 403 || upstream.status === 401 || upstream.status >= 500) {
+      return res.redirect(decodedUrl);
+    }
 
     let html = upstream.data;
 
