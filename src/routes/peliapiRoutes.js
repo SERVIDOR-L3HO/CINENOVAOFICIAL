@@ -17,7 +17,7 @@ function pickBestMatch(results, query) {
 
 router.get('/servers', async (req, res) => {
   try {
-    const { title, type = 'movie', season = 1, episode = 1 } = req.query;
+    const { title, type = 'movie', season = 1, episode = 1, tmdbId } = req.query;
     if (!title) return res.status(400).json({ error: 'Se requiere el parámetro title' });
 
     let servers = [];
@@ -39,7 +39,7 @@ router.get('/servers', async (req, res) => {
       console.error('[PelisPlus] error en búsqueda:', e.message);
     }
 
-    // ── 2. Fallback a RePelisHD (solo películas por ahora) ──
+    // ── 2. Fallback a RePelisHD (solo películas) ──
     if (servers.length === 0 && type === 'movie') {
       try {
         const rpResults = await repelishd.searchContent(title);
@@ -51,6 +51,20 @@ router.get('/servers', async (req, res) => {
       } catch (e) {
         console.error('[RePelisHD] error en búsqueda:', e.message);
       }
+    }
+
+    // ── 3. Fallback por TMDB ID para series/anime ──
+    if (servers.length === 0 && (type === 'series' || type === 'anime') && tmdbId) {
+      const s = parseInt(season) || 1;
+      const e = parseInt(episode) || 1;
+      servers = [
+        { name: 'VidLink',      server: 'vidlink',     language: 'Latino',    embedUrl: `https://vidlink.pro/tv/${tmdbId}/${s}/${e}?primaryColor=38bdf8&autoplay=true` },
+        { name: 'MultiEmbed',   server: 'multiembed',  language: 'Latino',    embedUrl: `https://multiembed.mov/?tmdb=1&video_id=${tmdbId}&s=${s}&e=${e}` },
+        { name: 'VidSrc',       server: 'vidsrc',      language: 'Latino',    embedUrl: `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${s}/${e}` },
+        { name: 'AutoEmbed',    server: 'autoembed',   language: 'Castellano', embedUrl: `https://player.autoembed.cc/embed/tv/${tmdbId}/${s}/${e}` },
+        { name: '2Embed',       server: '2embed',      language: 'Castellano', embedUrl: `https://www.2embed.org/embed/tv&id=${tmdbId}&s=${s}&e=${e}` },
+      ];
+      source = 'tmdb-fallback';
     }
 
     res.json({ success: true, source, servers });

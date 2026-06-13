@@ -1848,7 +1848,8 @@
 
         async function fetchPeliApiServers(title, type, season, episode) {
             try {
-                let url = `/api/peliapi/servers?title=${encodeURIComponent(title)}&type=${type}`;
+                const tmdbId = currentItem ? currentItem.id : '';
+                let url = `/api/peliapi/servers?title=${encodeURIComponent(title)}&type=${type}&tmdbId=${tmdbId}`;
                 if (type === 'series' || type === 'anime') url += `&season=${season || 1}&episode=${episode || 1}`;
                 const res = await fetch(url);
                 const data = await res.json();
@@ -1881,6 +1882,11 @@
             mp4upload:   { icon: '📦', label: 'MP4Upload' },
             fastream:    { icon: '🚀', label: 'Fastream' },
             fembed:      { icon: '🌐', label: 'Fembed' },
+            vidlink:     { icon: '▶️', label: 'VidLink' },
+            multiembed:  { icon: '🔗', label: 'MultiEmbed' },
+            vidsrc:      { icon: '📡', label: 'VidSrc' },
+            autoembed:   { icon: '🤖', label: 'AutoEmbed' },
+            '2embed':    { icon: '🎞️', label: '2Embed' },
         };
 
         function getServerMeta(s) {
