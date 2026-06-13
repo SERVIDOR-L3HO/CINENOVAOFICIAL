@@ -485,14 +485,19 @@
         </div>
 
         <!-- Server / Audio Row -->
-        <div id="server-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-3 flex-wrap" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
-            <div class="flex items-center gap-1.5" id="audio-tabs">
-                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);">🇪🇸 CASTELLANO</button>
-                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🎙 LATINO</button>
-                <button onclick="switchAudioType('original')" id="tab-original" class="audio-tab px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;">🌐 ORIGINAL</button>
+        <div id="server-row" class="hidden flex-shrink-0 px-3 md:px-5 py-2.5 flex flex-col gap-2" style="background:linear-gradient(180deg,rgba(8,8,8,0.98) 0%,rgba(12,8,4,0.99) 100%); border-bottom:1px solid rgba(250,204,21,0.08); box-shadow:0 1px 20px rgba(0,0,0,0.6);">
+            <!-- Audio type tabs -->
+            <div class="flex items-center gap-2" id="audio-tabs">
+                <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">AUDIO</span>
+                <button onclick="switchAudioType('castellano')" id="tab-castellano" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#9ca3af; backdrop-filter:blur(8px);">🇪🇸 <span>CASTELLANO</span></button>
+                <button onclick="switchAudioType('latino')" id="tab-latino" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px);">🎙 <span>LATINO</span></button>
+                <button onclick="switchAudioType('original')" id="tab-original" class="audio-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-200" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px);">🌐 <span>ORIGINAL</span></button>
             </div>
-            <div class="w-px h-5 hidden md:block" style="background:rgba(255,255,255,0.1);"></div>
-            <div class="flex items-center gap-1.5 flex-wrap" id="server-buttons"></div>
+            <!-- Server buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">SERVIDOR</span>
+                <div class="flex items-center gap-1.5 flex-wrap" id="server-buttons"></div>
+            </div>
         </div>
 
         <!-- Episodes row (series only) -->
@@ -1735,22 +1740,28 @@
             setTimeout(() => { frame.src = url; }, 200);
         }
 
+        const PREMIUM_ICONS = ['⚡','🔥','💎','🌟','🚀'];
+        const AUDIO_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(250,204,21,0.18) 0%,rgba(239,68,68,0.18) 100%); border:1px solid rgba(250,204,21,0.5); color:#facc15; backdrop-filter:blur(12px); border-radius:8px; box-shadow:0 0 12px rgba(250,204,21,0.15);';
+        const AUDIO_IDLE_STYLE   = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#4b5563; backdrop-filter:blur(8px); border-radius:8px;';
+        const SRV_ACTIVE_STYLE   = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
+        const SRV_IDLE_STYLE     = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
+
         function renderServerButtons() {
             const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
             const container = document.getElementById('server-buttons');
             if (!container) return;
             container.innerHTML = servers.map((s, i) => `
                 <button onclick="switchServer(${i})" id="srv-btn-${i}"
-                    class="srv-btn px-2.5 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all"
-                    style="${i === 0 ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent);' : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280;'}">
-                    ${s.name}
+                    class="srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200"
+                    style="${i === 0 ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE}">
+                    <span style="font-size:9px">${PREMIUM_ICONS[i] || '▶'}</span>
+                    PREMIUM ${i + 1}
+                    <span style="font-size:6px; opacity:0.6; letter-spacing:1px;">${s.quality || 'HD'}</span>
                 </button>`).join('');
             ['latino','castellano','original'].forEach(type => {
                 const tab = document.getElementById(`tab-${type}`);
                 if (!tab) return;
-                tab.style.cssText = type === currentAudioType
-                    ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent); border-radius:9999px;'
-                    : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280; border-radius:9999px;';
+                tab.style.cssText = type === currentAudioType ? AUDIO_ACTIVE_STYLE : AUDIO_IDLE_STYLE;
             });
         }
 
@@ -1765,9 +1776,7 @@
             const servers = currentEmbeds && currentEmbeds[currentAudioType];
             if (!servers || !servers[index]) return;
             document.querySelectorAll('.srv-btn').forEach((btn, i) => {
-                btn.style.cssText = i === index
-                    ? 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--accent); border-radius:9999px;'
-                    : 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:#6b7280; border-radius:9999px;';
+                btn.style.cssText = i === index ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE;
             });
             playFromServer(servers[index].url);
         }
