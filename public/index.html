@@ -1735,6 +1735,17 @@
             v.classList.add('hidden');
         }
 
+        // Extrae la URL real de una URL proxy (/api/proxy/embed?url=...)
+        function extractRealUrl(url) {
+            if (url.includes('/api/proxy/embed?url=')) {
+                try {
+                    const match = url.match(/[?&]url=([^&]+)/);
+                    if (match) return decodeURIComponent(match[1]);
+                } catch(e) {}
+            }
+            return url;
+        }
+
         async function playFromServer(url) {
             const frame  = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
@@ -1744,13 +1755,25 @@
             destroyHls();
             frame.src = 'about:blank';
 
-            // ── Servidor Castellano (unlimplay) → cargar embed directo sin anuncios ──
-            // Llamamos a la API interna de unlimplay para obtener la URL del embed
-            // que se carga DESPUÉS de los anuncios, y la ponemos directo en el iframe.
-            if (url.includes('unlimplay.com') || url.includes('verhdlink.cam')) {
+            const realUrl = extractRealUrl(url);
+
+            // ── VidHide → cargar directo (el proxy rompe su player) ──
+            if (realUrl.includes('vidhide.com') || realUrl.includes('vidhide.to') || realUrl.includes('vidhide.stream')) {
+                showIframe();
+                frame.onload = () => loader.classList.add('hidden');
+                // Añadir autoplay si no lo tiene ya
+                let vhUrl = realUrl;
+                if (!vhUrl.includes('autoplay')) {
+                    vhUrl += (vhUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+                }
+                frame.src = vhUrl;
+                return;
+            }
+
+            // ── Servidor Castellano (unlimplay / verhdlink) → extractor sin anuncios ──
+            if (realUrl.includes('unlimplay.com') || realUrl.includes('verhdlink.cam')) {
                 try {
-                    const extractLang = url.includes('verhdlink.cam') ? currentAudioType : currentAudioType;
-                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(url)}&lang=${extractLang}`);
+                    const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(realUrl)}&lang=${currentAudioType}`);
                     const data = await resp.json();
 
                     if (data.embedUrl) {
@@ -1765,11 +1788,11 @@
                 // Fallback: cargar la URL original directamente
                 showIframe();
                 frame.onload = () => loader.classList.add('hidden');
-                frame.src = url;
+                frame.src = realUrl;
                 return;
             }
 
-            // ── Resto de servidores → iframe normal ──
+            // ── Resto de servidores → iframe normal (a través del proxy anti-anuncios) ──
             showIframe();
             frame.onload = () => loader.classList.add('hidden');
             setTimeout(() => { frame.src = url; }, 200);
