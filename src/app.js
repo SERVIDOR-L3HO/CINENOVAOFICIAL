@@ -769,8 +769,16 @@ app.get('/api/moviebox/play', async (req, res) => {
   }
 });
 
-// Static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Static files (assets con cache normal, index.html siempre sin cache)
+app.use(express.static(path.join(__dirname, '../public'), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
 // Routes
 app.use('/api/movies', movieRoutes);
@@ -780,14 +788,22 @@ app.use('/api/anime', animeRoutes);
 app.use('/api/drama', dramaRoutes);
 app.use('/api/peliapi', peliapiRoutes);
 
+// Helper para servir index.html siempre sin cache
+function sendNoCache(res, filePath) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(filePath);
+}
+
 // Root path handler
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  sendNoCache(res, path.join(__dirname, '../public/index.html'));
 });
 
 // Catch-all for Frontend (Non-API)
 app.get(/^(?!\/api).+/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  sendNoCache(res, path.join(__dirname, '../public/index.html'));
 });
 
 // Error handling
