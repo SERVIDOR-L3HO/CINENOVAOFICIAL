@@ -490,11 +490,6 @@
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">SERVIDOR</span>
                 <div class="flex items-center gap-1.5 flex-wrap" id="server-buttons"></div>
-                <button id="mas-servidores-btn" onclick="openServersModal()" class="hidden flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200 hover:scale-105 active:scale-95" style="background:linear-gradient(135deg,rgba(56,189,248,0.18) 0%,rgba(99,102,241,0.18) 100%); border:1px solid rgba(56,189,248,0.35); color:#7dd3fc; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 12px rgba(56,189,248,0.15),inset 0 1px 0 rgba(255,255,255,0.06);">
-                    <i class="fas fa-th-large" style="font-size:7px"></i>
-                    MÁS
-                    <span id="mas-count" class="text-[6px] opacity-60"></span>
-                </button>
             </div>
         </div>
 
@@ -1799,8 +1794,10 @@
         }
 
         const PREMIUM_ICONS = ['⚡','🔥','💎','🌟','🚀'];
-        const SRV_ACTIVE_STYLE   = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
-        const SRV_IDLE_STYLE     = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
+        const SRV_ACTIVE_STYLE     = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
+        const SRV_IDLE_STYLE       = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
+        const API_SRV_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(56,189,248,0.22) 0%,rgba(99,102,241,0.22) 100%); border:1px solid rgba(56,189,248,0.55); color:#7dd3fc; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(56,189,248,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
+        const API_SRV_IDLE_STYLE   = 'background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); color:#4b7fa3; backdrop-filter:blur(8px); border-radius:8px;';
 
         function renderServerButtons() {
             const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
@@ -1816,6 +1813,39 @@
                 </button>`).join('');
         }
 
+        function renderExtraServerButtons() {
+            const container = document.getElementById('server-buttons');
+            if (!container || extraServers.length === 0) return;
+
+            // Quitar botones API anteriores si hubiera
+            container.querySelectorAll('.api-srv-btn, .api-srv-divider').forEach(el => el.remove());
+
+            // Separador visual entre premium y API
+            const divider = document.createElement('span');
+            divider.className = 'api-srv-divider';
+            divider.style.cssText = 'width:1px; height:16px; background:rgba(255,255,255,0.1); margin:0 2px; flex-shrink:0; align-self:center;';
+            container.appendChild(divider);
+
+            extraServers.forEach((s, i) => {
+                const meta = getServerMeta(s);
+                const btn = document.createElement('button');
+                btn.id = `api-srv-btn-${i}`;
+                btn.className = 'api-srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200';
+                btn.style.cssText = API_SRV_IDLE_STYLE;
+                btn.innerHTML = `<span style="font-size:9px">${meta.icon}</span> ${meta.label} <span style="font-size:6px;opacity:0.5;letter-spacing:1px;">${(s.language||'HD').toUpperCase()}</span>`;
+                btn.onclick = () => selectApiServer(i);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectApiServer(index) {
+            document.querySelectorAll('.srv-btn').forEach(b => b.style.cssText = SRV_IDLE_STYLE);
+            document.querySelectorAll('.api-srv-btn').forEach((b, i) => {
+                b.style.cssText = i === index ? API_SRV_ACTIVE_STYLE : API_SRV_IDLE_STYLE;
+            });
+            if (extraServers[index]) playFromServer(extraServers[index].url);
+        }
+
         async function fetchPeliApiServers(title, type, season, episode) {
             try {
                 let url = `/api/peliapi/servers?title=${encodeURIComponent(title)}&type=${type}`;
@@ -1823,14 +1853,7 @@
                 const res = await fetch(url);
                 const data = await res.json();
 
-                const loadingEl = document.getElementById('extra-servers-loading');
-                const emptyEl   = document.getElementById('extra-servers-empty');
-
-                if (!data.success || !data.servers || data.servers.length === 0) {
-                    if (loadingEl) loadingEl.classList.add('hidden');
-                    if (emptyEl)   emptyEl.classList.remove('hidden');
-                    return;
-                }
+                if (!data.success || !data.servers || data.servers.length === 0) return;
 
                 extraServers = data.servers.map(s => ({
                     url: '/api/proxy/embed?url=' + encodeURIComponent(s.embedUrl),
@@ -1839,20 +1862,9 @@
                     language: s.language || 'HD'
                 }));
 
-                if (loadingEl) loadingEl.classList.add('hidden');
-
-                const masBtn  = document.getElementById('mas-servidores-btn');
-                const masCount = document.getElementById('mas-count');
-                if (masBtn) {
-                    masBtn.classList.remove('hidden');
-                    if (masCount) masCount.textContent = `${extraServers.length}`;
-                }
+                renderExtraServerButtons();
             } catch (e) {
                 console.warn('[PeliApi] No se pudieron cargar servidores extra:', e.message);
-                const loadingEl = document.getElementById('extra-servers-loading');
-                const emptyEl   = document.getElementById('extra-servers-empty');
-                if (loadingEl) loadingEl.classList.add('hidden');
-                if (emptyEl)   emptyEl.classList.remove('hidden');
             }
         }
 
@@ -1926,6 +1938,7 @@
             document.querySelectorAll('.srv-btn').forEach((btn, i) => {
                 btn.style.cssText = i === index ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE;
             });
+            document.querySelectorAll('.api-srv-btn').forEach(b => b.style.cssText = API_SRV_IDLE_STYLE);
             playFromServer(servers[index].url);
         }
 
