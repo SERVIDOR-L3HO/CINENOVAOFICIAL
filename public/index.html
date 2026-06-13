@@ -1670,6 +1670,7 @@
                 currentAudioType = 'castellano';
                 renderServerButtons();
                 playFromServer(currentEmbeds.castellano[0].url);
+                fetchPeliApiServers(item.title, 'movie');
             }
 
             document.getElementById('video-frame').onload = () =>
@@ -1746,9 +1747,34 @@
                     class="srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200"
                     style="${i === 0 ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE}">
                     <span style="font-size:9px">${PREMIUM_ICONS[i] || '▶'}</span>
-                    PREMIUM ${i + 1}
+                    ${s.name ? s.name : 'PREMIUM ' + (i + 1)}
                     <span style="font-size:6px; opacity:0.6; letter-spacing:1px;">${s.quality || 'HD'}</span>
                 </button>`).join('');
+        }
+
+        async function fetchPeliApiServers(title, type, season, episode) {
+            try {
+                let url = `/api/peliapi/servers?title=${encodeURIComponent(title)}&type=${type}`;
+                if (type === 'series' || type === 'anime') url += `&season=${season || 1}&episode=${episode || 1}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data.success || !data.servers || data.servers.length === 0) return;
+
+                for (const lang of ['castellano', 'latino', 'original']) {
+                    if (!currentEmbeds[lang]) currentEmbeds[lang] = [];
+                }
+
+                for (const s of data.servers) {
+                    const langKey = (s.language || '').toLowerCase().includes('castellano') ? 'castellano'
+                        : (s.language || '').toLowerCase().includes('latino') ? 'latino' : 'latino';
+                    const proxyUrl = '/api/proxy/embed?url=' + encodeURIComponent(s.embedUrl);
+                    currentEmbeds[langKey].push({ url: proxyUrl, quality: 'HD', name: s.name });
+                }
+
+                renderServerButtons();
+            } catch (e) {
+                console.warn('[PeliApi] No se pudieron cargar servidores extra:', e.message);
+            }
         }
 
         function switchServer(index) {
@@ -1892,6 +1918,8 @@
                 if (firstServer && firstServer.length > 0) {
                     playFromServer(firstServer[0].url);
                 }
+                const seriesType = isAnime ? 'anime' : 'series';
+                fetchPeliApiServers(currentItem ? currentItem.title : '', seriesType, season, episode);
             } catch (err) { console.error('Episode embed error:', err); }
         }
 
