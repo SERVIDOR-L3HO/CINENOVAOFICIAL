@@ -15,7 +15,7 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
   const se = `${season}x${ep}`;
   return {
     latino: [
-      { name: 'Servidor 1', url: `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=38bdf8&autoplay=true&title=false`, quality: 'HD' },
+      { name: 'Servidor 1', url: `https://unlimplay.com/play/embed/tv/${tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' },
       { name: 'Servidor 2', url: `https://embed69.org/f/${imdbId || tmdbId}-${se}`, quality: 'HD' }
     ],
     castellano: [
@@ -23,7 +23,7 @@ const getEmbedUrls = (imdbId, tmdbId, season = 1, episode = 1) => {
       { name: 'Servidor 2', url: `https://embed69.org/f/${imdbId || tmdbId}-${se}`, quality: 'HD' }
     ],
     original: [
-      { name: 'Servidor 1', url: `https://vaplayer.ru/embed/tv/${imdbId || tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: 'HD' },
+      { name: 'Servidor 1', url: `https://unlimplay.com/play/embed/tv/${tmdbId}/${season}/${episode}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' },
       { name: 'Servidor 2', url: `https://embed69.org/f/${imdbId || tmdbId}-${se}`, quality: 'HD' }
     ]
   };

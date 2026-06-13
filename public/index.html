@@ -1903,14 +1903,6 @@
                 const baseRes = await fetch(`/api/series/${seriesId}/episode?s=${season}&e=${episode}&lang=${currentLang}`);
                 const embeds = await baseRes.json();
 
-                if (isAnime) {
-                    if (!embeds.latino) embeds.latino = [];
-                    embeds.latino.unshift({
-                        name: 'Servidor 1',
-                        url: `https://embed69.org/embed/tv/${seriesId}/${season}/${episode}`,
-                        quality: 'HD'
-                    });
-                }
 
                 currentEmbeds = embeds;
                 currentAudioType = (isAnime && currentEmbeds.latino && currentEmbeds.latino.length > 0)
