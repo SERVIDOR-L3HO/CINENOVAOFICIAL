@@ -1710,11 +1710,19 @@
             return url;
         }
 
+        // Oculta el loader con onload + timeout de respaldo para iframes cross-origin
+        let _loaderFallbackTimer = null;
+        function hideLoaderReliably(loader, delayMs) {
+            if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer);
+            _loaderFallbackTimer = setTimeout(() => loader.classList.add('hidden'), delayMs || 5000);
+        }
+
         async function playFromServer(url) {
             const frame  = document.getElementById('video-frame');
             const loader = document.getElementById('player-loader');
             const hlsVid = document.getElementById('hls-video');
 
+            if (_loaderFallbackTimer) { clearTimeout(_loaderFallbackTimer); _loaderFallbackTimer = null; }
             loader.classList.remove('hidden');
             destroyHls();
             frame.src = 'about:blank';
@@ -1724,8 +1732,8 @@
             // ── VidHide → cargar directo (el proxy rompe su player) ──
             if (realUrl.includes('vidhide.com') || realUrl.includes('vidhide.to') || realUrl.includes('vidhide.stream')) {
                 showIframe();
-                frame.onload = () => loader.classList.add('hidden');
-                // Añadir autoplay si no lo tiene ya
+                frame.onload = () => { loader.classList.add('hidden'); if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer); };
+                hideLoaderReliably(loader, 5000);
                 let vhUrl = realUrl;
                 if (!vhUrl.includes('autoplay')) {
                     vhUrl += (vhUrl.includes('?') ? '&' : '?') + 'autoplay=1';
@@ -1733,7 +1741,6 @@
                 frame.src = vhUrl;
                 return;
             }
-
 
             // ── Servidor Castellano (unlimplay / verhdlink) → extractor sin anuncios ──
             if (realUrl.includes('unlimplay.com') || realUrl.includes('verhdlink.cam')) {
@@ -1743,7 +1750,8 @@
 
                     if (data.embedUrl) {
                         showIframe();
-                        frame.onload = () => loader.classList.add('hidden');
+                        frame.onload = () => { loader.classList.add('hidden'); if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer); };
+                        hideLoaderReliably(loader, 5000);
                         frame.src = data.embedUrl;
                         return;
                     }
@@ -1752,7 +1760,8 @@
                 }
                 // Fallback: cargar la URL original directamente
                 showIframe();
-                frame.onload = () => loader.classList.add('hidden');
+                frame.onload = () => { loader.classList.add('hidden'); if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer); };
+                hideLoaderReliably(loader, 5000);
                 frame.src = realUrl;
                 return;
             }
@@ -1760,14 +1769,16 @@
             // ── Premium 2 (índice 1) → cargar directo sin proxy ──
             if (currentServerIndex === 1) {
                 showIframe();
-                frame.onload = () => loader.classList.add('hidden');
+                frame.onload = () => { loader.classList.add('hidden'); if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer); };
+                hideLoaderReliably(loader, 4000);
                 setTimeout(() => { frame.src = realUrl; }, 200);
                 return;
             }
 
             // ── Resto de servidores → iframe a través del proxy anti-anuncios ──
             showIframe();
-            frame.onload = () => loader.classList.add('hidden');
+            frame.onload = () => { loader.classList.add('hidden'); if (_loaderFallbackTimer) clearTimeout(_loaderFallbackTimer); };
+            hideLoaderReliably(loader, 6000);
             setTimeout(() => { frame.src = `/api/proxy/embed?url=${encodeURIComponent(realUrl)}`; }, 200);
         }
 
