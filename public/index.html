@@ -1757,6 +1757,14 @@
                 return;
             }
 
+            // ── Premium 2 (índice 1) → cargar directo sin proxy ──
+            if (currentServerIndex === 1) {
+                showIframe();
+                frame.onload = () => loader.classList.add('hidden');
+                setTimeout(() => { frame.src = realUrl; }, 200);
+                return;
+            }
+
             // ── Resto de servidores → iframe a través del proxy anti-anuncios ──
             showIframe();
             frame.onload = () => loader.classList.add('hidden');
