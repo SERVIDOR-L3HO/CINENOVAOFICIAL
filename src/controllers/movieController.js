@@ -13,13 +13,19 @@ const tmdb = axios.create({
 const getEmbedUrls = (imdbId, tmdbId) => {
   return {
     latino: [
-      { name: 'Servidor 1', url: `https://verhdlink.cam/movie/${imdbId || tmdbId}`, quality: '1080p' }
+      { name: 'Servidor 1', url: `https://verhdlink.cam/movie/${imdbId || tmdbId}`, quality: '1080p' },
+      { name: 'Servidor 2', url: `https://player.pelisserieshoy.com/f/${imdbId || tmdbId}`, quality: 'HD' },
+      { name: 'Servidor 3', url: `https://embed69.org/f/${imdbId || tmdbId}`, quality: 'HD' }
     ],
     castellano: [
-      { name: 'Servidor 2', url: `https://unlimplay.com/play/embed/movie/${tmdbId}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' }
+      { name: 'Servidor 1', url: `https://unlimplay.com/play/embed/movie/${tmdbId}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: '1080p' },
+      { name: 'Servidor 2', url: `https://player.pelisserieshoy.com/f/${imdbId || tmdbId}`, quality: 'HD' },
+      { name: 'Servidor 3', url: `https://embed69.org/f/${imdbId || tmdbId}`, quality: 'HD' }
     ],
     original: [
-      { name: 'Servidor 3', url: `https://vaplayer.ru/embed/movie/${imdbId || tmdbId}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: 'HD' }
+      { name: 'Servidor 1', url: `https://vaplayer.ru/embed/movie/${imdbId || tmdbId}?sub=es&lang=es&audio=es&muted=0&autoplay=1`, quality: 'HD' },
+      { name: 'Servidor 2', url: `https://player.pelisserieshoy.com/f/${imdbId || tmdbId}`, quality: 'HD' },
+      { name: 'Servidor 3', url: `https://embed69.org/f/${imdbId || tmdbId}`, quality: 'HD' }
     ]
   };
 };
