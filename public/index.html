@@ -1750,10 +1750,10 @@
                 return;
             }
 
-            // ── Resto de servidores → iframe normal (a través del proxy anti-anuncios) ──
+            // ── Resto de servidores → iframe a través del proxy anti-anuncios ──
             showIframe();
             frame.onload = () => loader.classList.add('hidden');
-            setTimeout(() => { frame.src = url; }, 200);
+            setTimeout(() => { frame.src = `/api/proxy/embed?url=${encodeURIComponent(realUrl)}`; }, 200);
         }
 
         const PREMIUM_ICONS = ['⚡','🔥','💎','🌟','🚀'];
