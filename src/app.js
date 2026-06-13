@@ -31,7 +31,7 @@ app.get('/api/stream', async (req, res) => {
 
     const upstream = await axios.get(upstreamUrl, {
       timeout: 15000,
-      responseType: 'stream',
+      responseType: 'arraybuffer',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Referer': 'https://ultragol-api-3-six.vercel.app/',
@@ -42,16 +42,7 @@ app.get('/api/stream', async (req, res) => {
     const contentType = upstream.headers['content-type'] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (upstream.headers['content-length']) {
-      res.setHeader('Content-Length', upstream.headers['content-length']);
-    }
-
-    upstream.data.pipe(res);
-
-    upstream.data.on('error', (err) => {
-      console.error('Stream error:', err.message);
-      if (!res.headersSent) res.status(500).send('Error en el stream');
-    });
+    res.send(Buffer.from(upstream.data));
   } catch (err) {
     console.error('Error in /api/stream:', err.message);
     if (!res.headersSent) res.status(500).send('Error de conexión con la fuente');
@@ -427,7 +418,7 @@ app.get('/api/proxy/hls', async (req, res) => {
 
     const upstream = await axios.get(decodedUrl, {
       timeout: 20000,
-      responseType: isM3u8 ? 'text' : 'stream',
+      responseType: isM3u8 ? 'text' : 'arraybuffer',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Referer': referer,
@@ -445,9 +436,8 @@ app.get('/api/proxy/hls', async (req, res) => {
 
       content = content.split('\n').map(line => {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) return line; // comentarios M3U8, sin cambios
+        if (!trimmed || trimmed.startsWith('#')) return line;
 
-        // Construir URL absoluta del segmento
         let absUrl;
         if (/^https?:\/\//i.test(trimmed)) {
           absUrl = trimmed;
@@ -464,14 +454,10 @@ app.get('/api/proxy/hls', async (req, res) => {
       return res.send(content);
     }
 
-    // Segmento binario (.ts, .aac, etc.) — stream directo
+    // Segmento binario (.ts, .aac, etc.) — buffered para compatibilidad serverless
     const ct = upstream.headers['content-type'] || 'video/MP2T';
     res.setHeader('Content-Type', ct);
-    if (upstream.headers['content-length']) {
-      res.setHeader('Content-Length', upstream.headers['content-length']);
-    }
-    upstream.data.pipe(res);
-    upstream.data.on('error', () => { if (!res.headersSent) res.status(500).end(); });
+    res.send(Buffer.from(upstream.data));
 
   } catch (err) {
     console.error('HLS proxy error:', err.message);
@@ -660,7 +646,7 @@ app.get('/api/moviebox/soy-luna/stream', async (req, res) => {
     const upstream = await axios({
       method: 'get',
       url: decodedUrl,
-      responseType: 'stream',
+      responseType: 'arraybuffer',
       timeout: 30000,
       headers,
     });
@@ -670,9 +656,7 @@ app.get('/api/moviebox/soy-luna/stream', async (req, res) => {
     const forward = ['content-type','content-length','content-range','accept-ranges','cache-control'];
     forward.forEach(h => { if (upstream.headers[h]) res.setHeader(h, upstream.headers[h]); });
     res.setHeader('Accept-Ranges', 'bytes');
-
-    upstream.data.pipe(res);
-    req.on('close', () => { try { upstream.data.destroy(); } catch(_) {} });
+    res.send(Buffer.from(upstream.data));
   } catch (err) {
     console.error('moviebox-stream error:', err.message);
     if (!res.headersSent) res.status(502).send('Stream error');
