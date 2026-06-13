@@ -493,34 +493,6 @@
             </div>
         </div>
 
-        <!-- Extra Servers Glass Modal -->
-        <div id="extra-servers-modal" onclick="closeServersModal()" class="hidden fixed inset-0 z-[400] flex items-end sm:items-center justify-center" style="background:rgba(0,0,0,0.65); backdrop-filter:blur(10px);">
-            <div onclick="event.stopPropagation()" class="w-full max-w-sm mx-4 mb-4 sm:mb-0 overflow-hidden" style="background:linear-gradient(145deg,rgba(16,16,22,0.97) 0%,rgba(10,10,16,0.99) 100%); border:1px solid rgba(255,255,255,0.1); border-radius:20px; backdrop-filter:blur(40px); box-shadow:0 40px 100px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.03),inset 0 1px 0 rgba(255,255,255,0.07);">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);">
-                    <div>
-                        <p class="text-[7px] font-black tracking-[4px] uppercase mb-0.5" style="color:rgba(56,189,248,0.7);">SERVIDORES EXTRA</p>
-                        <h3 class="font-black uppercase tracking-tight text-white" style="font-size:14px;">Elige un servidor</h3>
-                    </div>
-                    <button onclick="closeServersModal()" class="w-8 h-8 flex items-center justify-center rounded-full transition-all hover:bg-white/10" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09);">
-                        <i class="fas fa-times text-xs text-gray-400"></i>
-                    </button>
-                </div>
-                <!-- Loading state -->
-                <div id="extra-servers-loading" class="flex items-center gap-3 px-5 py-6">
-                    <div class="w-4 h-4 rounded-full flex-shrink-0 animate-spin" style="border:2px solid rgba(56,189,248,0.3); border-top-color:#38bdf8;"></div>
-                    <span class="text-[10px] font-bold tracking-widest uppercase text-gray-500">Buscando servidores...</span>
-                </div>
-                <!-- Server list -->
-                <div id="extra-servers-list" class="hidden p-3 flex flex-col gap-2 overflow-y-auto" style="max-height:340px; scrollbar-width:none;"></div>
-                <!-- Empty state -->
-                <div id="extra-servers-empty" class="hidden px-5 py-6 text-center">
-                    <p class="text-2xl mb-2">📭</p>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sin servidores disponibles</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Episodes row (series only) -->
         <div id="episodes-row" class="hidden flex-shrink-0 px-4 md:px-6 py-2 flex items-center gap-2" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
             <button id="toggle-episodes-btn" onclick="toggleEpisodesDrawer()"
@@ -590,7 +562,6 @@
         let currentSeriesId = null;
         let currentSeason = 1;
         let currentEpisode = 1;
-        let extraServers = [];
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -1671,13 +1642,6 @@
         /* ===================== PLAYER ===================== */
         async function openItem(item) {
             currentItem = item;
-            extraServers = [];
-            const masBtn = document.getElementById('mas-servidores-btn');
-            if (masBtn) { masBtn.classList.add('hidden'); document.getElementById('mas-count').textContent = ''; }
-            document.getElementById('extra-servers-modal').classList.add('hidden');
-            document.getElementById('extra-servers-list').classList.add('hidden');
-            document.getElementById('extra-servers-loading').classList.remove('hidden');
-            document.getElementById('extra-servers-empty').classList.add('hidden');
             document.getElementById('player-title').innerText = item.title;
             document.getElementById('player-view').classList.remove('hidden');
             document.getElementById('player-loader').classList.remove('hidden');
@@ -1706,7 +1670,6 @@
                 currentAudioType = 'castellano';
                 renderServerButtons();
                 playFromServer(currentEmbeds.castellano[0].url);
-                fetchPeliApiServers(item.title, 'movie');
             }
 
             document.getElementById('video-frame').onload = () =>
@@ -1794,10 +1757,8 @@
         }
 
         const PREMIUM_ICONS = ['⚡','🔥','💎','🌟','🚀'];
-        const SRV_ACTIVE_STYLE     = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
-        const SRV_IDLE_STYLE       = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
-        const API_SRV_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(56,189,248,0.22) 0%,rgba(99,102,241,0.22) 100%); border:1px solid rgba(56,189,248,0.55); color:#7dd3fc; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(56,189,248,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
-        const API_SRV_IDLE_STYLE   = 'background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); color:#4b7fa3; backdrop-filter:blur(8px); border-radius:8px;';
+        const SRV_ACTIVE_STYLE = 'background:linear-gradient(135deg,rgba(250,204,21,0.22) 0%,rgba(239,68,68,0.22) 100%); border:1px solid rgba(250,204,21,0.55); color:#fde68a; backdrop-filter:blur(14px); border-radius:8px; box-shadow:0 0 16px rgba(239,68,68,0.2),inset 0 1px 0 rgba(255,255,255,0.08); transform:scale(1.04);';
+        const SRV_IDLE_STYLE   = 'background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280; backdrop-filter:blur(8px); border-radius:8px;';
 
         function renderServerButtons() {
             const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
@@ -1813,138 +1774,12 @@
                 </button>`).join('');
         }
 
-        function renderExtraServerButtons() {
-            const container = document.getElementById('server-buttons');
-            if (!container || extraServers.length === 0) return;
-
-            // Quitar botones API anteriores si hubiera
-            container.querySelectorAll('.api-srv-btn, .api-srv-divider').forEach(el => el.remove());
-
-            // Separador visual entre premium y API
-            const divider = document.createElement('span');
-            divider.className = 'api-srv-divider';
-            divider.style.cssText = 'width:1px; height:16px; background:rgba(255,255,255,0.1); margin:0 2px; flex-shrink:0; align-self:center;';
-            container.appendChild(divider);
-
-            extraServers.forEach((s, i) => {
-                const meta = getServerMeta(s);
-                const btn = document.createElement('button');
-                btn.id = `api-srv-btn-${i}`;
-                btn.className = 'api-srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest transition-all duration-200';
-                btn.style.cssText = API_SRV_IDLE_STYLE;
-                btn.innerHTML = `<span style="font-size:9px">${meta.icon}</span> ${meta.label} <span style="font-size:6px;opacity:0.5;letter-spacing:1px;">${(s.language||'HD').toUpperCase()}</span>`;
-                btn.onclick = () => selectApiServer(i);
-                container.appendChild(btn);
-            });
-        }
-
-        function selectApiServer(index) {
-            document.querySelectorAll('.srv-btn').forEach(b => b.style.cssText = SRV_IDLE_STYLE);
-            document.querySelectorAll('.api-srv-btn').forEach((b, i) => {
-                b.style.cssText = i === index ? API_SRV_ACTIVE_STYLE : API_SRV_IDLE_STYLE;
-            });
-            if (extraServers[index]) playFromServer(extraServers[index].url);
-        }
-
-        async function fetchPeliApiServers(title, type, season, episode) {
-            try {
-                const tmdbId = currentItem ? currentItem.id : '';
-                let url = `/api/peliapi/servers?title=${encodeURIComponent(title)}&type=${type}&tmdbId=${tmdbId}`;
-                if (type === 'series' || type === 'anime') url += `&season=${season || 1}&episode=${episode || 1}`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                if (!data.success || !data.servers || data.servers.length === 0) return;
-
-                extraServers = data.servers.map(s => ({
-                    url: '/api/proxy/embed?url=' + encodeURIComponent(s.embedUrl),
-                    name: s.name,
-                    server: s.server || '',
-                    language: s.language || 'HD'
-                }));
-
-                renderExtraServerButtons();
-            } catch (e) {
-                console.warn('[PeliApi] No se pudieron cargar servidores extra:', e.message);
-            }
-        }
-
-        const SERVER_META = {
-            streamwish:  { icon: '🎬', label: 'StreamWish' },
-            voe:         { icon: '⚡', label: 'Voe' },
-            streamtape:  { icon: '📼', label: 'StreamTape' },
-            vidhide:     { icon: '🔮', label: 'VidHide' },
-            doodstream:  { icon: '🎯', label: 'DoodStream' },
-            mixdrop:     { icon: '💫', label: 'MixDrop' },
-            supervideo:  { icon: '🎥', label: 'SuperVideo' },
-            filemoon:    { icon: '🌙', label: 'FileMoon' },
-            upstream:    { icon: '☁️', label: 'UpStream' },
-            mp4upload:   { icon: '📦', label: 'MP4Upload' },
-            fastream:    { icon: '🚀', label: 'Fastream' },
-            fembed:      { icon: '🌐', label: 'Fembed' },
-            vidlink:     { icon: '▶️', label: 'VidLink' },
-            multiembed:  { icon: '🔗', label: 'MultiEmbed' },
-            vidsrc:      { icon: '📡', label: 'VidSrc' },
-            autoembed:   { icon: '🤖', label: 'AutoEmbed' },
-            '2embed':    { icon: '🎞️', label: '2Embed' },
-        };
-
-        function getServerMeta(s) {
-            const raw = (s.server + ' ' + s.name).toLowerCase().replace(/[^a-z]/g, '');
-            const hit = Object.entries(SERVER_META).find(([k]) => raw.includes(k));
-            return hit ? hit[1] : { icon: '▶', label: s.name || 'Servidor' };
-        }
-
-        function openServersModal() {
-            const list    = document.getElementById('extra-servers-list');
-            const loading = document.getElementById('extra-servers-loading');
-            const empty   = document.getElementById('extra-servers-empty');
-
-            loading.classList.add('hidden');
-
-            if (extraServers.length === 0) {
-                empty.classList.remove('hidden');
-                list.classList.add('hidden');
-            } else {
-                empty.classList.add('hidden');
-                list.classList.remove('hidden');
-                list.innerHTML = extraServers.map((s, i) => {
-                    const meta = getServerMeta(s);
-                    const langLabel = (s.language || '').toLowerCase().includes('subtit') ? 'SUB' : (s.language || 'HD').toUpperCase();
-                    return `
-                    <button onclick="selectModalServer(${i})" class="w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150 hover:scale-[1.015] active:scale-[0.98]"
-                        style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; backdrop-filter:blur(8px);">
-                        <span class="w-10 h-10 flex items-center justify-center rounded-xl flex-shrink-0 text-lg" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09);">${meta.icon}</span>
-                        <div class="min-w-0 flex-1">
-                            <p class="text-white font-black uppercase tracking-wide truncate" style="font-size:11px;">${meta.label}</p>
-                            <p class="font-bold tracking-[2px] uppercase" style="font-size:8px; color:rgba(255,255,255,0.28);">${langLabel} &bull; HD</p>
-                        </div>
-                        <div class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.2);">
-                            <i class="fas fa-play" style="font-size:7px; color:#7dd3fc; margin-left:1px;"></i>
-                        </div>
-                    </button>`;
-                }).join('');
-            }
-
-            document.getElementById('extra-servers-modal').classList.remove('hidden');
-        }
-
-        function closeServersModal() {
-            document.getElementById('extra-servers-modal').classList.add('hidden');
-        }
-
-        function selectModalServer(index) {
-            closeServersModal();
-            if (extraServers[index]) playFromServer(extraServers[index].url);
-        }
-
         function switchServer(index) {
             const servers = currentEmbeds && currentEmbeds[currentAudioType];
             if (!servers || !servers[index]) return;
             document.querySelectorAll('.srv-btn').forEach((btn, i) => {
                 btn.style.cssText = i === index ? SRV_ACTIVE_STYLE : SRV_IDLE_STYLE;
             });
-            document.querySelectorAll('.api-srv-btn').forEach(b => b.style.cssText = API_SRV_IDLE_STYLE);
             playFromServer(servers[index].url);
         }
 
@@ -2080,8 +1915,6 @@
                 if (firstServer && firstServer.length > 0) {
                     playFromServer(firstServer[0].url);
                 }
-                const seriesType = isAnime ? 'anime' : 'series';
-                fetchPeliApiServers(currentItem ? currentItem.title : '', seriesType, season, episode);
             } catch (err) { console.error('Episode embed error:', err); }
         }
 
