@@ -1635,13 +1635,15 @@
         /* ===================== INFO MODAL ===================== */
         async function openInfoModal(item, pushHistory = true) {
             if (currentCategory === 'tv') { openItem(item); return; }
+            const isSeries = currentCategory === 'series' || currentCategory === 'anime' || currentCategory === 'drama' || item.type === 'series';
+            const urlPrefix = isSeries ? 'serie' : 'pelicula';
+            const slug = slugify(item.title || '');
+            window.location.href = `/${urlPrefix}/${item.id}-${slug}`;
+            return;
             currentItem = item;
 
             // Update URL for sharing
             if (pushHistory) {
-                const isSeries = currentCategory === 'series' || currentCategory === 'anime' || currentCategory === 'drama' || item.type === 'series';
-                const urlPrefix = isSeries ? 'serie' : 'pelicula';
-                const slug = slugify(item.title);
                 history.pushState({ modalOpen: true, itemId: item.id, urlPrefix, category: currentCategory }, '', `/${urlPrefix}/${item.id}-${slug}`);
             }
             updateShareMetaTags(item);

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CINENOVA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0c0c0c">
+    <style>
+        :root { --accent:#d4d4d8; --accent2:#a1a1aa; --bg:#0c0c0c; }
+        * { font-family:'Outfit',sans-serif; box-sizing:border-box; }
+        body { background:#0c0c0c; color:white; overflow-x:hidden; }
+        ::-webkit-scrollbar { width:4px; height:4px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:10px; }
+        .glass { background:rgba(10,10,10,0.92); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.08); }
+        .genre-badge { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2); color:#d4d4d8; font-size:8px; font-weight:900; letter-spacing:2.5px; text-transform:uppercase; padding:4px 11px; border-radius:999px; backdrop-filter:blur(8px); }
+        .meta-chip { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:5px 13px; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:6px; backdrop-filter:blur(8px); }
+        .cast-pill { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:999px; padding:5px 14px; font-size:10px; font-weight:700; color:#e2e8f0; white-space:nowrap; flex-shrink:0; backdrop-filter:blur(8px); transition:all 0.2s ease; }
+        .cast-pill:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25); color:#fff; }
+        .info-line { background:linear-gradient(90deg,var(--accent),var(--accent2)); height:2px; border-radius:2px; width:20px; flex-shrink:0; }
+        .shimmer { background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.06) 50%,rgba(255,255,255,0.03) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        @keyframes livePulse { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.5)} 50%{box-shadow:0 0 18px rgba(239,68,68,0.8)} }
+        #player-section { display:none; }
+        #player-section.visible { display:flex; }
+        .srv-btn { transition:all 0.2s ease; }
+        .episode-card { cursor:pointer; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); transition:all 0.2s ease; }
+        .episode-card:hover { background:rgba(255,255,255,0.08); }
+        .episode-card.active { background:rgba(255,255,255,0.15) !important; border-color:rgba(255,255,255,0.5) !important; }
+        .season-pill { transition:all 0.2s ease; }
+        .season-pill.active { background:rgba(255,255,255,0.15) !important; border-color:rgba(255,255,255,0.4) !important; color:#fff !important; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- NAV -->
+    <nav class="fixed w-full z-[100] glass px-4 md:px-10 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <button onclick="goBack()" class="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:bg-white/10" style="border:1px solid rgba(255,255,255,0.1);">
+                <i class="fas fa-chevron-left text-sm text-gray-300"></i>
+            </button>
+            <a href="/"><img src="/assets/cinenova_full_logo.png" alt="CINENOVA" class="h-8 md:h-10 cursor-pointer"></a>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[8px] font-black tracking-widest uppercase" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--accent);">
+                <i class="fas fa-shield-alt" style="font-size:7px"></i> HD PREMIUM
+            </span>
+        </div>
+    </nav>
+
+    <!-- LOADING STATE -->
+    <div id="loading-state" class="min-h-screen flex items-center justify-center pt-16">
+        <div class="text-center">
+            <div class="w-12 h-12 rounded-full border-2 border-white/10 border-t-white/60 animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-500 text-xs font-bold tracking-widest uppercase">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div id="error-state" class="hidden min-h-screen flex items-center justify-center pt-16 px-6">
+        <div class="text-center">
+            <i class="fas fa-exclamation-triangle text-4xl text-gray-600 mb-4"></i>
+            <p class="text-white font-bold text-lg mb-2">No encontrado</p>
+            <p class="text-gray-500 text-sm mb-6">No pudimos cargar este contenido.</p>
+            <a href="/" class="px-6 py-3 rounded-full font-black text-xs tracking-widest uppercase" style="background:#fff; color:#0c0c0c;">VOLVER AL INICIO</a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main-content" class="hidden">
+
+        <!-- HERO BANNER -->
+        <div class="relative w-full" style="height:60vh; min-height:340px; max-height:520px;">
+            <img id="page-banner" src="" alt="" class="absolute inset-0 w-full h-full object-cover object-top" style="filter:brightness(0.35) saturate(1.1);">
+            <div class="absolute inset-0" style="background:linear-gradient(180deg, rgba(12,12,12,0.2) 0%, rgba(12,12,12,0.7) 50%, #0c0c0c 100%);"></div>
+            <div class="absolute inset-0" style="background:linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 60%);"></div>
+            <!-- Blurred bg for cinematic effect -->
+            <div id="page-banner-blur" class="absolute inset-0" style="background-size:cover; background-position:center; filter:blur(60px) brightness(0.08) saturate(0.4); transform:scale(1.2); z-index:-1;"></div>
+        </div>
+
+        <!-- INFO SECTION -->
+        <div class="relative -mt-40 md:-mt-52 px-4 md:px-12 lg:px-20 pb-10 max-w-6xl mx-auto">
+            <div class="flex gap-5 md:gap-8 items-end mb-6 md:mb-8">
+                <!-- Poster -->
+                <div class="flex-shrink-0 relative z-10">
+                    <img id="page-poster" src="" alt="" class="rounded-xl block shadow-2xl"
+                        style="width:100px; md:width:140px; aspect-ratio:2/3; object-fit:cover; width:clamp(90px,18vw,140px); box-shadow:0 25px 70px rgba(0,0,0,0.95), 0 0 0 2px rgba(255,255,255,0.1);">
+                </div>
+                <!-- Title & Meta -->
+                <div class="flex-1 min-w-0 z-10 pb-1">
+                    <div id="page-genres" class="flex flex-wrap gap-1.5 mb-2"></div>
+                    <h1 id="page-title" class="font-black italic uppercase leading-none tracking-tighter text-white mb-3"
+                        style="font-size:clamp(1.5rem,5vw,3.2rem); text-shadow:0 4px 30px rgba(0,0,0,0.9);"></h1>
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <div id="page-rating-badge" class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                            style="background:rgba(0,0,0,0.65); backdrop-filter:blur(14px); border:1px solid rgba(250,204,21,0.38);">
+                            <span class="text-yellow-400 font-black" style="font-size:13px;">★</span>
+                            <span id="page-rating-val" class="font-black text-yellow-400" style="font-size:13px; letter-spacing:-0.5px;"></span>
+                            <span class="font-black text-gray-500 tracking-widest uppercase" style="font-size:7px;">TMDB</span>
+                        </div>
+                        <div id="page-meta" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-2 md:gap-3">
+                        <button id="play-btn" onclick="startPlayer()"
+                            class="flex items-center justify-center gap-2 px-6 py-3 rounded-full font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+                            style="background:#ffffff; color:#0c0c0c; box-shadow:0 0 20px rgba(255,255,255,0.15);">
+                            <i class="fas fa-play text-sm"></i> REPRODUCIR
+                        </button>
+                        <button onclick="copyLink()"
+                            class="flex items-center justify-center gap-2 px-5 py-3 rounded-full font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+                            style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:white;">
+                            <i class="fas fa-share-nodes text-xs"></i> COMPARTIR
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAYER SECTION -->
+            <div id="player-section" class="flex-col mb-8 rounded-2xl overflow-hidden" style="border:1px solid rgba(255,255,255,0.08); background:#060402;">
+                <!-- Player Header -->
+                <div class="flex items-center justify-between px-4 py-3" style="background:rgba(10,10,10,0.98); border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full inline-block" style="background:var(--accent); box-shadow:0 0 6px var(--accent); animation:livePulse 2s infinite;"></span>
+                        <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">REPRODUCIENDO</span>
+                        <span class="text-gray-700 text-[8px]">•</span>
+                        <span class="text-[8px] text-gray-500 font-bold tracking-widest uppercase">FULL HD</span>
+                    </div>
+                    <button onclick="closePlayer()" class="w-7 h-7 flex items-center justify-center rounded-full transition-all hover:bg-red-500/20" style="border:1px solid rgba(255,255,255,0.1);">
+                        <i class="fas fa-times text-xs text-gray-500 hover:text-red-400"></i>
+                    </button>
+                </div>
+
+                <!-- Server Row -->
+                <div id="server-row" class="hidden px-4 py-2.5 flex flex-col gap-2" style="background:rgba(8,8,8,0.98); border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">SERVIDOR</span>
+                        <div class="flex items-center gap-1.5 flex-wrap" id="server-buttons"></div>
+                    </div>
+                    <!-- Audio toggle (movies only) -->
+                    <div id="audio-row" class="hidden flex items-center gap-2 flex-wrap">
+                        <span class="text-[7px] font-black tracking-[3px] uppercase mr-1" style="color:rgba(255,255,255,0.25);">AUDIO</span>
+                        <button id="btn-castellano" onclick="switchAudio('castellano')"
+                            class="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4); color:#fff;">Castellano</button>
+                        <button id="btn-latino" onclick="switchAudio('latino')"
+                            class="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all"
+                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); color:#6b7280;">Latino</button>
+                    </div>
+                </div>
+
+                <!-- Episodes Row (series) -->
+                <div id="episodes-row" class="hidden px-4 py-2 flex items-center gap-3" style="background:rgba(10,10,10,0.99); border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <div id="season-pills-row" class="flex gap-2 overflow-x-auto" style="scrollbar-width:none;"></div>
+                </div>
+                <div id="episodes-drawer" class="hidden flex-col" style="background:#0a0a0a; border-bottom:1px solid rgba(255,255,255,0.08); max-height:200px; overflow-y:auto;"></div>
+
+                <!-- Video Area -->
+                <div class="relative bg-black" style="aspect-ratio:16/9;">
+                    <iframe id="video-frame" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+                    <video id="hls-video" class="absolute inset-0 w-full h-full hidden" controls autoplay playsinline style="background:#000;"></video>
+                    <!-- Loader overlay -->
+                    <div id="player-loader" class="absolute inset-0 flex flex-col items-center justify-center" style="background:#060402;">
+                        <div class="w-full max-w-[280px] px-4 text-center">
+                            <div class="w-10 h-10 rounded-full border-2 border-white/10 border-t-white/60 animate-spin mx-auto mb-5"></div>
+                            <p id="loader-title-el" class="text-white font-bold text-sm mb-1"></p>
+                            <p class="text-gray-600 text-xs mb-6 tracking-wide">Buscando el mejor servidor...</p>
+                            <div id="loader-servers" class="flex flex-col gap-4 mb-6 text-left"></div>
+                            <button onclick="closePlayer()" class="w-full py-3 rounded-xl text-sm font-semibold transition-all active:scale-95" style="background:rgba(255,255,255,0.07); color:#d1d5db; border:1px solid rgba(255,255,255,0.1);">Cerrar reproductor</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info bar -->
+                <div class="px-4 py-2 flex items-center justify-between" style="background:rgba(10,10,10,0.99); border-top:1px solid rgba(255,255,255,0.04);">
+                    <span class="text-[8px] text-gray-700 font-bold tracking-widest uppercase">SUPERVIDEO</span>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);">
+                        <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:var(--accent);"></span>
+                        <span class="text-[8px] font-black tracking-widest uppercase" style="color:var(--accent)">FULL HD 1080P</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="mb-6 h-px" style="background:linear-gradient(90deg, rgba(255,255,255,0.1), rgba(245,158,11,0.08), transparent);"></div>
+
+            <!-- SYNOPSIS -->
+            <div class="mb-7">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="info-line"></div>
+                    <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Sinopsis</span>
+                </div>
+                <p id="page-overview" class="leading-relaxed text-gray-300" style="font-size:14px; max-width:780px;"></p>
+            </div>
+
+            <!-- TRAILER -->
+            <div id="page-trailer-block" class="mb-8 hidden">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="info-line"></div>
+                    <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Tráiler Oficial</span>
+                </div>
+                <div class="relative w-full max-w-2xl rounded-2xl overflow-hidden"
+                    style="aspect-ratio:16/9; background:#000; border:1px solid rgba(255,255,255,0.07); box-shadow:0 10px 50px rgba(0,0,0,0.8);">
+                    <iframe id="page-trailer-iframe" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src=""></iframe>
+                </div>
+            </div>
+
+            <!-- DIRECTOR -->
+            <div id="page-director-block" class="mb-5 hidden">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="info-line"></div>
+                    <span id="page-director-label" class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Director</span>
+                </div>
+                <p id="page-director" class="text-white font-bold" style="font-size:13px;"></p>
+            </div>
+
+            <!-- CAST -->
+            <div id="page-cast-block" class="mb-8 hidden">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="info-line"></div>
+                    <span class="text-[9px] font-black tracking-[3px] uppercase" style="color:rgba(255,255,255,0.4);">Reparto</span>
+                </div>
+                <div id="page-cast" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ── State ──
+    let itemData = null;
+    let isSeries = false;
+    let currentEmbeds = null;
+    let currentAudioType = 'castellano';
+    let currentServerIndex = 0;
+    let serverStatuses = [];
+    let hlsInstance = null;
+    let currentSeason = 1;
+    let currentEpisode = 1;
+    let _loaderTimer = null;
+
+    const SRV_ACTIVE = 'background:linear-gradient(135deg,rgba(250,204,21,0.22),rgba(239,68,68,0.22));border:1px solid rgba(250,204,21,0.55);color:#fde68a;backdrop-filter:blur(14px);border-radius:8px;box-shadow:0 0 16px rgba(239,68,68,0.2);transform:scale(1.04);';
+    const SRV_IDLE   = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#6b7280;backdrop-filter:blur(8px);border-radius:8px;';
+    const ICONS = ['⚡','🔥','💎','🌟','🚀'];
+
+    // ── Boot ──
+    (async () => {
+        const path = window.location.pathname;
+        isSeries = path.startsWith('/serie/');
+        const seg = path.split('/')[2] || '';
+        const id = parseInt(seg);
+        if (!id) { showError(); return; }
+
+        try {
+            const lang = localStorage.getItem('cn-lang') || 'es-MX';
+            const endpoint = isSeries
+                ? `/api/series/${id}/details?lang=${lang}`
+                : `/api/movies/${id}/details?lang=${lang}`;
+            const res = await fetch(endpoint);
+            if (!res.ok) throw new Error('not found');
+            itemData = await res.json();
+            renderPage();
+        } catch (e) {
+            console.error(e);
+            showError();
+        }
+    })();
+
+    function showError() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
+    }
+
+    function renderPage() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+
+        const d = itemData;
+
+        // Meta
+        document.title = `${d.title || 'CINENOVA'} — CINENOVA`;
+
+        // Banner & poster
+        const banner = d.banner || d.poster || '';
+        const poster = d.poster || '';
+        document.getElementById('page-banner').src = banner;
+        document.getElementById('page-banner-blur').style.backgroundImage = `url('${banner}')`;
+        document.getElementById('page-poster').src = poster;
+
+        // Title
+        document.getElementById('page-title').textContent = d.title || '';
+
+        // Rating
+        if (d.rating) {
+            document.getElementById('page-rating-val').textContent = d.rating.toFixed(1);
+            document.getElementById('page-rating-badge').classList.remove('hidden');
+            document.getElementById('page-rating-badge').classList.add('flex');
+        }
+
+        // Genres
+        document.getElementById('page-genres').innerHTML = (d.genres || []).map(g => `<span class="genre-badge">${g}</span>`).join('');
+
+        // Meta chips
+        const chips = [];
+        if (d.year) chips.push(`<span class="meta-chip"><i class="fas fa-calendar-alt" style="font-size:9px;color:var(--accent)"></i>${d.year}</span>`);
+        if (d.runtime) chips.push(`<span class="meta-chip"><i class="fas fa-clock" style="font-size:9px;color:var(--accent)"></i>${d.runtime} min</span>`);
+        if (d.seasons) chips.push(`<span class="meta-chip"><i class="fas fa-layer-group" style="font-size:9px;color:var(--accent)"></i>${d.seasons} temp.</span>`);
+        if (d.episodes) chips.push(`<span class="meta-chip"><i class="fas fa-play-circle" style="font-size:9px;color:var(--accent)"></i>${d.episodes} ep.</span>`);
+        document.getElementById('page-meta').innerHTML = chips.join('');
+
+        // Overview
+        document.getElementById('page-overview').textContent = d.overview || 'Sin sinopsis disponible.';
+
+        // Trailer
+        if (d.trailerKey) {
+            document.getElementById('page-trailer-iframe').src = `https://www.youtube.com/embed/${d.trailerKey}?rel=0&modestbranding=1`;
+            document.getElementById('page-trailer-block').classList.remove('hidden');
+        }
+
+        // Director / Creator
+        if (d.director) {
+            document.getElementById('page-director-label').textContent = 'Director';
+            document.getElementById('page-director').textContent = d.director;
+            document.getElementById('page-director-block').classList.remove('hidden');
+        } else if (d.creators && d.creators.length > 0) {
+            document.getElementById('page-director-label').textContent = 'Creador';
+            document.getElementById('page-director').textContent = d.creators.join(', ');
+            document.getElementById('page-director-block').classList.remove('hidden');
+        }
+
+        // Cast
+        if (d.cast && d.cast.length > 0) {
+            document.getElementById('page-cast').innerHTML = d.cast.map(a => `<span class="cast-pill">${a}</span>`).join('');
+            document.getElementById('page-cast-block').classList.remove('hidden');
+        }
+    }
+
+    // ── Player ──
+    async function startPlayer() {
+        const section = document.getElementById('player-section');
+        section.classList.add('visible');
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        document.getElementById('loader-title-el').textContent = itemData.title || '';
+        document.getElementById('player-loader').classList.remove('hidden');
+        document.getElementById('video-frame').src = '';
+
+        if (isSeries) {
+            document.getElementById('episodes-row').classList.remove('hidden');
+            document.getElementById('episodes-drawer').classList.remove('hidden');
+            document.getElementById('server-row').classList.remove('hidden');
+            await loadSeriesEpisodes();
+        } else {
+            document.getElementById('server-row').classList.remove('hidden');
+            currentEmbeds = itemData.embeds;
+            if (currentEmbeds && (currentEmbeds.castellano || currentEmbeds.latino)) {
+                const hasCas = currentEmbeds.castellano && currentEmbeds.castellano.length > 0;
+                const hasLat = currentEmbeds.latino && currentEmbeds.latino.length > 0;
+                if (hasCas || hasLat) {
+                    document.getElementById('audio-row').classList.remove('hidden');
+                    document.getElementById('audio-row').classList.add('flex');
+                }
+                currentAudioType = hasCas ? 'castellano' : 'latino';
+                renderServerButtons();
+                serverStatuses[0] = 'checking';
+                renderLoaderServers();
+                const servers = currentEmbeds[currentAudioType] || [];
+                if (servers[0]) playFromServer(servers[0].url);
+                else showNoVideo();
+            } else {
+                showNoVideo();
+            }
+        }
+    }
+
+    function showNoVideo() {
+        document.getElementById('player-loader').innerHTML = `
+            <div class="text-center px-6">
+                <i class="fas fa-film text-4xl text-gray-600 mb-4"></i>
+                <p class="text-white font-bold mb-2">Sin servidores disponibles</p>
+                <p class="text-gray-500 text-sm mb-5">No encontramos un reproductor para este contenido.</p>
+                <button onclick="closePlayer()" class="px-6 py-3 rounded-xl text-sm font-semibold" style="background:rgba(255,255,255,0.07);color:#d1d5db;border:1px solid rgba(255,255,255,0.1);">Cerrar</button>
+            </div>`;
+    }
+
+    function closePlayer() {
+        destroyHls();
+        const section = document.getElementById('player-section');
+        section.classList.remove('visible');
+        document.getElementById('video-frame').src = 'about:blank';
+        document.getElementById('episodes-row').classList.add('hidden');
+        document.getElementById('episodes-drawer').classList.add('hidden');
+        document.getElementById('server-row').classList.add('hidden');
+        document.getElementById('audio-row').classList.add('hidden');
+        document.getElementById('audio-row').classList.remove('flex');
+    }
+
+    // ── Audio switch ──
+    function switchAudio(type) {
+        currentAudioType = type;
+        currentServerIndex = 0;
+        document.getElementById('btn-castellano').style.cssText = type === 'castellano'
+            ? 'background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:6px 12px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border-radius:8px;'
+            : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#6b7280;padding:6px 12px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border-radius:8px;';
+        document.getElementById('btn-latino').style.cssText = type === 'latino'
+            ? 'background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:6px 12px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border-radius:8px;'
+            : 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#6b7280;padding:6px 12px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;border-radius:8px;';
+        renderServerButtons();
+        const servers = currentEmbeds[currentAudioType] || [];
+        if (servers[0]) {
+            serverStatuses[0] = 'checking';
+            renderLoaderServers();
+            document.getElementById('player-loader').classList.remove('hidden');
+            playFromServer(servers[0].url);
+        }
+    }
+
+    // ── Server Buttons ──
+    function renderServerButtons() {
+        const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
+        serverStatuses = servers.map(() => 'pending');
+        const c = document.getElementById('server-buttons');
+        c.innerHTML = servers.map((s, i) => `
+            <button onclick="switchServer(${i})" id="srv-btn-${i}"
+                class="srv-btn flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest"
+                style="${i === 0 ? SRV_ACTIVE : SRV_IDLE}">
+                <span style="font-size:9px">${ICONS[i]||'▶'}</span> PREMIUM ${i+1}
+                <span style="font-size:6px;opacity:0.6;letter-spacing:1px;">${s.quality||'HD'}</span>
+            </button>`).join('');
+    }
+
+    function switchServer(i) {
+        const servers = currentEmbeds && currentEmbeds[currentAudioType];
+        if (!servers || !servers[i]) return;
+        if (serverStatuses[currentServerIndex] === 'checking') serverStatuses[currentServerIndex] = 'no-video';
+        currentServerIndex = i;
+        serverStatuses[i] = 'checking';
+        renderLoaderServers();
+        document.getElementById('player-loader').classList.remove('hidden');
+        document.querySelectorAll('.srv-btn').forEach((b, j) => b.style.cssText = j === i ? SRV_ACTIVE : SRV_IDLE);
+        playFromServer(servers[i].url);
+    }
+
+    function renderLoaderServers() {
+        const servers = (currentEmbeds && currentEmbeds[currentAudioType]) || [];
+        document.getElementById('loader-servers').innerHTML = servers.map((s, i) => {
+            const status = serverStatuses[i] || 'pending';
+            let icon = '', statusHtml = '', nameStyle = 'color:#6b7280;font-weight:700;';
+            if (status === 'checking') {
+                icon = `<div style="width:36px;height:36px;border-radius:50%;border:2px solid rgba(99,102,241,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><div style="width:18px;height:18px;border-radius:50%;border:2.5px solid #6366f1;border-top-color:transparent;animation:spin 0.8s linear infinite;"></div></div>`;
+                nameStyle = 'color:#fff;font-weight:700;';
+                statusHtml = `<p style="color:#818cf8;font-size:11px;margin-top:2px;">Verificando vídeo...</p>`;
+            } else if (status === 'error') {
+                icon = `<div style="width:36px;height:36px;border-radius:50%;background:rgba(239,68,68,0.12);border:2px solid rgba(239,68,68,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-times" style="color:#ef4444;font-size:12px;"></i></div>`;
+                statusHtml = `<p style="color:#f87171;font-size:11px;margin-top:2px;">Ocurrió un error</p>`;
+            } else if (status === 'no-video') {
+                icon = `<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-minus" style="color:#6b7280;font-size:10px;"></i></div>`;
+                statusHtml = `<p style="color:#6b7280;font-size:11px;margin-top:2px;">No tiene el vídeo</p>`;
+            } else {
+                icon = `<div style="width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>`;
+            }
+            return `<div style="display:flex;align-items:center;gap:14px;">${icon}<div><p style="${nameStyle}font-size:13px;">${ICONS[i]||'▶'} PREMIUM ${i+1}</p>${statusHtml}</div></div>`;
+        }).join('');
+    }
+
+    // ── Series ──
+    async function loadSeriesEpisodes() {
+        try {
+            const res = await fetch(`/api/series/${itemData.id}`);
+            const data = await res.json();
+            const validSeasons = (data.seasons || []).filter(s => s.number > 0);
+            const pillsRow = document.getElementById('season-pills-row');
+            pillsRow.innerHTML = validSeasons.map(s => `
+                <button class="season-pill flex-shrink-0 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest"
+                    data-season="${s.number}" data-episodes="${s.episodes}"
+                    style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#9ca3af;">T${s.number}</button>`).join('');
+            pillsRow.querySelectorAll('.season-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pillsRow.querySelectorAll('.season-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    const sNum = parseInt(pill.dataset.season);
+                    const eCount = parseInt(pill.dataset.episodes) || 1;
+                    currentSeason = sNum;
+                    renderEpisodes(eCount);
+                });
+            });
+            if (validSeasons.length > 0) {
+                pillsRow.querySelectorAll('.season-pill')[0].classList.add('active');
+                currentSeason = validSeasons[0].number;
+                const eCount = validSeasons[0].episodes || 1;
+                renderEpisodes(eCount);
+            }
+        } catch (e) {
+            console.error('Error loading seasons:', e);
+        }
+    }
+
+    function renderEpisodes(count) {
+        const drawer = document.getElementById('episodes-drawer');
+        drawer.innerHTML = `<div class="px-4 py-3 flex gap-2 flex-wrap">` +
+            Array.from({length:count}, (_, i) => i + 1).map(ep => `
+                <button class="episode-card text-[9px] font-black uppercase tracking-widest ${ep === 1 ? 'active' : ''}"
+                    onclick="playEpisode(${ep})">
+                    EP ${ep}
+                </button>`).join('') + `</div>`;
+        playEpisode(1);
+    }
+
+    async function playEpisode(ep) {
+        currentEpisode = ep;
+        document.querySelectorAll('.episode-card').forEach(c => {
+            c.classList.toggle('active', parseInt(c.textContent.replace('EP ','')) === ep);
+        });
+        currentServerIndex = 0;
+        document.getElementById('player-loader').classList.remove('hidden');
+        try {
+            const res = await fetch(`/api/series/${itemData.id}/episode/${currentSeason}/${ep}`);
+            const data = await res.json();
+            currentEmbeds = data.embeds || {};
+            renderServerButtons();
+            const servers = currentEmbeds[currentAudioType] || [];
+            if (servers[0]) {
+                serverStatuses[0] = 'checking';
+                renderLoaderServers();
+                playFromServer(servers[0].url);
+            } else {
+                showNoVideo();
+            }
+        } catch (e) {
+            console.error('Error loading episode:', e);
+            showNoVideo();
+        }
+    }
+
+    // ── Playback ──
+    function extractRealUrl(url) {
+        if (url.includes('/api/proxy/embed?url=')) {
+            try {
+                const match = url.match(/[?&]url=([^&]+)/);
+                if (match) return decodeURIComponent(match[1]);
+            } catch(e) {}
+        }
+        return url;
+    }
+
+    function hideLoaderReliably(loader, ms) {
+        if (_loaderTimer) clearTimeout(_loaderTimer);
+        _loaderTimer = setTimeout(() => loader.classList.add('hidden'), ms || 5000);
+    }
+
+    async function playFromServer(url) {
+        const frame  = document.getElementById('video-frame');
+        const loader = document.getElementById('player-loader');
+        if (_loaderTimer) { clearTimeout(_loaderTimer); _loaderTimer = null; }
+        loader.classList.remove('hidden');
+        destroyHls();
+        frame.src = 'about:blank';
+
+        const realUrl = extractRealUrl(url);
+
+        if (realUrl.includes('vidhide.com') || realUrl.includes('vidhide.to') || realUrl.includes('vidhide.stream')) {
+            showIframe();
+            frame.onload = () => { loader.classList.add('hidden'); if (_loaderTimer) clearTimeout(_loaderTimer); };
+            hideLoaderReliably(loader, 5000);
+            frame.src = realUrl + (realUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+            return;
+        }
+
+        if (realUrl.includes('unlimplay.com') || realUrl.includes('verhdlink.cam')) {
+            try {
+                const resp = await fetch(`/api/proxy/extract?url=${encodeURIComponent(realUrl)}&lang=${currentAudioType}`);
+                const data = await resp.json();
+                if (data.embedUrl) {
+                    showIframe();
+                    frame.onload = () => { loader.classList.add('hidden'); if (_loaderTimer) clearTimeout(_loaderTimer); };
+                    hideLoaderReliably(loader, 5000);
+                    frame.src = data.embedUrl;
+                    return;
+                }
+            } catch(e) {}
+            showIframe();
+            frame.onload = () => { loader.classList.add('hidden'); if (_loaderTimer) clearTimeout(_loaderTimer); };
+            hideLoaderReliably(loader, 5000);
+            frame.src = realUrl;
+            return;
+        }
+
+        if (currentServerIndex === 1) {
+            showIframe();
+            frame.onload = () => { loader.classList.add('hidden'); if (_loaderTimer) clearTimeout(_loaderTimer); };
+            hideLoaderReliably(loader, 4000);
+            setTimeout(() => { frame.src = realUrl; }, 200);
+            return;
+        }
+
+        showIframe();
+        frame.onload = () => { loader.classList.add('hidden'); if (_loaderTimer) clearTimeout(_loaderTimer); };
+        hideLoaderReliably(loader, 6000);
+        setTimeout(() => { frame.src = `/api/proxy/embed?url=${encodeURIComponent(realUrl)}`; }, 200);
+    }
+
+    function showIframe() {
+        document.getElementById('video-frame').classList.remove('hidden');
+        document.getElementById('hls-video').classList.add('hidden');
+    }
+
+    function destroyHls() {
+        if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+        const v = document.getElementById('hls-video');
+        v.src = '';
+        v.classList.add('hidden');
+    }
+
+    // ── Utilities ──
+    function goBack() {
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+            history.back();
+        } else {
+            window.location.href = '/';
+        }
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            const btn = event.currentTarget;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-xs"></i> COPIADO';
+            setTimeout(() => btn.innerHTML = orig, 2000);
+        });
+    }
+</script>
+</body>
+</html>

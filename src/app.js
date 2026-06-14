@@ -784,6 +784,11 @@ app.get('/', (req, res) => {
   sendNoCache(res, path.join(__dirname, '../public/index.html'));
 });
 
+// Dedicated movie / series detail pages
+app.get(['/pelicula/:slug', '/serie/:slug'], (req, res) => {
+  sendNoCache(res, path.join(__dirname, '../public/pelicula.html'));
+});
+
 // Catch-all for Frontend (Non-API)
 app.get(/^(?!\/api).+/, (req, res) => {
   sendNoCache(res, path.join(__dirname, '../public/index.html'));
