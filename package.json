@@ -10,9 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "engines": {
-    "node": "20.x"
-  },
   "dependencies": {
     "@types/node": "^22.19.15",
     "axios": "^1.13.6",
