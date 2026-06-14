@@ -14,6 +14,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CINENOVA">
     <link rel="apple-touch-icon" href="/assets/cinenova_icon.png">
+    <meta property="og:title" content="CINENOVA - Premium Streaming">
+    <meta property="og:description" content="La mejor plataforma de streaming de películas y series en español Latino.">
+    <meta property="og:image" content="">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CINENOVA">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CINENOVA - Premium Streaming">
+    <meta name="twitter:description" content="La mejor plataforma de streaming de películas y series en español Latino.">
+    <meta name="twitter:image" content="">
     <style>
         :root {
             --accent: #d4d4d8;
@@ -440,6 +449,11 @@
                             class="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 glow-orange"
                             style="background:#ffffff; color:#0c0c0c; box-shadow:0 8px 30px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.15);">
                             <i class="fas fa-play text-sm"></i> REPRODUCIR AHORA
+                        </button>
+                        <button onclick="copyShareLink()"
+                            class="flex-1 sm:flex-none flex items-center justify-center gap-3 px-7 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(12px);">
+                            <i class="fas fa-share-nodes text-xs"></i> COMPARTIR
                         </button>
                         <button onclick="closeInfoModal()"
                             class="flex-1 sm:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
@@ -1553,10 +1567,85 @@
             document.getElementById('hero-info-btn').onclick = () => openInfoModal(item);
         }
 
+        /* ===================== URL SHARING ===================== */
+        function slugify(title) {
+            return (title || '').toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '').trim()
+                .replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 60);
+        }
+
+        function updateShareMetaTags(item) {
+            const title = item.title || 'CINENOVA';
+            const desc = item.overview || `Mira ${title} en CINENOVA`;
+            const img = item.poster || item.banner || '';
+            document.title = `${title} — CINENOVA`;
+            const set = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+            set('meta[property="og:title"]', 'content', `${title} — CINENOVA`);
+            set('meta[property="og:description"]', 'content', desc);
+            set('meta[property="og:image"]', 'content', img);
+            set('meta[property="og:url"]', 'content', window.location.href);
+            set('meta[name="twitter:title"]', 'content', `${title} — CINENOVA`);
+            set('meta[name="twitter:description"]', 'content', desc);
+            set('meta[name="twitter:image"]', 'content', img);
+        }
+
+        function resetShareMetaTags() {
+            document.title = 'CINENOVA - Premium Streaming';
+            const set = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+            set('meta[property="og:title"]', 'content', 'CINENOVA - Premium Streaming');
+            set('meta[property="og:description"]', 'content', 'La mejor plataforma de streaming de películas y series en español Latino.');
+            set('meta[property="og:image"]', 'content', '');
+            set('meta[property="og:url"]', 'content', window.location.origin);
+            set('meta[name="twitter:title"]', 'content', 'CINENOVA - Premium Streaming');
+            set('meta[name="twitter:description"]', 'content', 'La mejor plataforma de streaming de películas y series en español Latino.');
+            set('meta[name="twitter:image"]', 'content', '');
+        }
+
+        function showToast(msg, icon = 'fa-check-circle', color = '#4ade80') {
+            const existing = document.getElementById('cn-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'cn-toast';
+            toast.innerHTML = `<i class="fas ${icon}" style="color:${color};font-size:13px;"></i> ${msg}`;
+            toast.style.cssText = 'position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:rgba(18,18,18,0.97);border:1px solid rgba(255,255,255,0.13);color:#fff;padding:11px 22px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;z-index:9999;backdrop-filter:blur(20px);display:flex;align-items:center;gap:9px;box-shadow:0 8px 30px rgba(0,0,0,0.8);white-space:nowrap;';
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2500);
+        }
+
+        function copyShareLink() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: document.title, url }).catch(() => {});
+                return;
+            }
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('¡Enlace copiado!');
+            }).catch(() => {
+                try {
+                    const el = document.createElement('textarea');
+                    el.value = url; el.style.position = 'fixed'; el.style.opacity = '0';
+                    document.body.appendChild(el); el.focus(); el.select();
+                    document.execCommand('copy'); document.body.removeChild(el);
+                    showToast('¡Enlace copiado!');
+                } catch (_) { showToast('Copia el enlace manualmente', 'fa-link', '#facc15'); }
+            });
+        }
+
         /* ===================== INFO MODAL ===================== */
-        async function openInfoModal(item) {
+        async function openInfoModal(item, pushHistory = true) {
             if (currentCategory === 'tv') { openItem(item); return; }
             currentItem = item;
+
+            // Update URL for sharing
+            if (pushHistory) {
+                const isSeries = currentCategory === 'series' || currentCategory === 'anime' || currentCategory === 'drama' || item.type === 'series';
+                const urlPrefix = isSeries ? 'serie' : 'pelicula';
+                const slug = slugify(item.title);
+                history.pushState({ modalOpen: true, itemId: item.id, urlPrefix, category: currentCategory }, '', `/${urlPrefix}/${item.id}-${slug}`);
+            }
+            updateShareMetaTags(item);
+
             document.body.style.overflow = 'hidden';
             const modal = document.getElementById('info-modal');
             modal.classList.remove('hidden');
@@ -1638,7 +1727,22 @@
             document.body.style.overflow = 'auto';
             document.getElementById('info-trailer-iframe').src = '';
             document.getElementById('info-trailer-block').classList.add('hidden');
+            resetShareMetaTags();
+            history.pushState({}, '', '/');
         }
+
+        // Handle browser back button
+        window.addEventListener('popstate', () => {
+            const modal = document.getElementById('info-modal');
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+                document.getElementById('info-trailer-iframe').src = '';
+                document.getElementById('info-trailer-block').classList.add('hidden');
+                resetShareMetaTags();
+            }
+        });
 
         function playFromInfoModal() { closeInfoModal(); openItem(currentItem); }
 
@@ -2162,9 +2266,34 @@
         }
 
         /* ===================== INIT ===================== */
+        // Detect shared URL on page load (e.g. /pelicula/123-titulo or /serie/456-titulo)
+        async function handleInitialUrl() {
+            const path = window.location.pathname;
+            const match = path.match(/^\/(pelicula|serie)\/(\d+)/);
+            if (!match) return;
+            const [, urlType, id] = match;
+            const isSeries = urlType === 'serie';
+            currentCategory = isSeries ? 'series' : 'movies';
+            try {
+                const endpoint = isSeries
+                    ? `/api/series/${id}/details?lang=${currentLang}`
+                    : `/api/movies/${id}/details?lang=${currentLang}`;
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                if (data && data.id) {
+                    // Replace history entry so back button goes to home
+                    history.replaceState({ fromSharedUrl: true }, '', path);
+                    openInfoModal(data, false);
+                }
+            } catch (err) {
+                console.error('[CINENOVA] Error al cargar URL compartida:', err);
+            }
+        }
+
         loadCategory('movies');
         updateFavCount();
         setLanguage('es-MX');
+        handleInitialUrl();
 
         /* ===================== PWA SERVICE WORKER ===================== */
         if ('serviceWorker' in navigator) {
